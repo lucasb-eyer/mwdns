@@ -3,8 +3,28 @@
 	<head>
 		<meta charset="utf-8" />
 		<title>Memory Battle</title>
+		<link rel="stylesheet" href="/static/css/bootstrap.min.css" />
+		<script src="/static/src/bootstarp.min.js"></script>
+		<style>
+			#thingy {
+				margin-top: 30px;
+			}	
+
+			body {
+				margin: 0px;
+				padding: 0px;
+				background-image: url(/static/patterns/subtle/px_by_Gre3g.png);
+				background-repeat: repeat;
+			}
+		</style>
 	</head>
 	<body>
-		<a>Stuff</a>
+		<div class="hero-unit span8 offset4" id="thingy">
+			<h1>Memory Battle <small>MWTNS</small></h1>
+		</div>
+		<div class="span8 offset5">
+			<a href="/game" class="span3 btn btn-large btn-success">CLASSIC</a>
+			<a href="/game" class="span3 btn btn-large btn-danger">RUSH</a>
+		</div>
 	</body>
 </html>
