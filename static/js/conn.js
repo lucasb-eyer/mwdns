@@ -147,4 +147,3 @@ function flipCardBack(card,json) {
 					});
 */
 }
->>>>>>> 25de5acf1758f22bd831901ac81a67f417e60970
