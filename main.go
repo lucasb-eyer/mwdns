@@ -15,6 +15,7 @@ import (
 
 var addr = flag.String("addr", ":8080", "http service address")
 var homeTempl = template.Must(template.ParseFiles("templates/index.html"))
+var gameTempl = template.Must(template.ParseFiles("templates/game.html"))
 var activeGames = make(map[string]*Game)
 
 const (
@@ -64,7 +65,7 @@ func gameHandler(w http.ResponseWriter, req *http.Request) {
 	} else {
 		// TODO: game already exists.
 		log.Println("Game ", gameId, "requested")
-		homeTempl.Execute(w, req.Host)
+		gameTempl.Execute(w, req.Host)
 	}
 }
 
