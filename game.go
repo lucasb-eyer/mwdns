@@ -212,7 +212,8 @@ func (g *Game) Run() {
 }
 
 func (g *Game) TryFlip(p *Player, cardid int) {
-	if !p.CanPlay {
+	// cease the funny stuff
+	if !p.CanPlay || g.Cards[cardid].IsOpen {
 		return
 	}
 
@@ -221,7 +222,6 @@ func (g *Game) TryFlip(p *Player, cardid int) {
 		g.Cards[cardid].IsOpen = true
 		g.Broadcast(g.Cards[cardid].GetJsonCard())
 
-		//TODO: broadcast open card with type to all players
 		if p.openCard == NO_CARD {
 			p.openCard = cardid
 		} else {
