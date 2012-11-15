@@ -109,11 +109,12 @@ func (c *Card) GetJsonCard() string {
 	return fmt.Sprintf(`{"msg": "card", "id": %v, "x": %v, "y": %v, "phi": %v, "type": %v}`, c.Id, c.X, c.Y, c.Phi, Type)
 }
 
-func NewGame(cardCount int) *Game {
+func NewGame(cardCount, gameType int) *Game {
 	//TODO: set game type?
 	g := new(Game)
 	//g.Players = make(map[int]*Player)
 	g.Players.Init()
+	g.Type = gameType
 	g.Cards = make(map[int]*Card)
 	g.cardCountLeft = cardCount
 
@@ -227,18 +228,16 @@ func (g *Game) Run() {
 
 func (g *Game) TryFlip(p *Player, cardid int) {
 	// cease the funny stuff
-	if !p.CanPlay || g.Cards[cardid].IsOpen {
+	if (!p.CanPlay && g.Type == GAME_TYPE_CLASSIC) || g.Cards[cardid].IsOpen {
 		return
 	}
 
-	switch g.Type {
-	case GAME_TYPE_CLASSIC:
-		g.Cards[cardid].IsOpen = true
-		g.Broadcast(g.Cards[cardid].GetJsonCard())
+	g.Cards[cardid].IsOpen = true
+	g.Broadcast(g.Cards[cardid].GetJsonCard())
 
-		if p.openCard == NO_CARD {
-			p.openCard = cardid
-		} else {
+	if p.openCard == NO_CARD {
+		p.openCard = cardid
+	} else {
 			// same card type? One point for the gentleman over there!
 			if g.Cards[p.openCard].Type == g.Cards[cardid].Type {
 				//SCOOORE!
@@ -260,30 +259,27 @@ func (g *Game) TryFlip(p *Player, cardid int) {
 				g.Cards[p.openCard].IsOpen = false
 				g.Broadcast(g.Cards[p.openCard].GetJsonCard())
 
-				// aww, no match. Next player please.
-				p.SetCanPlay(false,g)
+				if g.Type == GAME_TYPE_CLASSIC {
+					// aww, no match. Next player please.
+					p.SetCanPlay(false,g)
 
-				// iterate over the list to find the next player and tell him to play
-				for e := g.Players.Front(); e != nil; e = e.Next() {
-					if e.Value.(*Player) == p {
-						var nextPlayer *Player
-						if e == g.Players.Back() {
-							nextPlayer = g.Players.Front().Value.(*Player)
-						} else {
-							nextPlayer = e.Next().Value.(*Player)
+					// iterate over the list to find the next player and tell him to play
+					for e := g.Players.Front(); e != nil; e = e.Next() {
+						if e.Value.(*Player) == p {
+							var nextPlayer *Player
+							if e == g.Players.Back() {
+								nextPlayer = g.Players.Front().Value.(*Player)
+							} else {
+								nextPlayer = e.Next().Value.(*Player)
+							}
+							nextPlayer.SetCanPlay(true,g)
+							break
 						}
-						nextPlayer.SetCanPlay(true,g)
-						break
 					}
 				}
 			}
 
-			p.openCard = NO_CARD
-		}
-	case GAME_TYPE_RUSH:
-		log.Fatal("Not implemented that game type yet")
-	default:
-		log.Fatal("Wut (unknown game type)")
+		p.openCard = NO_CARD
 	}
 }
 

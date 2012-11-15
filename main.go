@@ -43,10 +43,16 @@ func gameHandler(w http.ResponseWriter, req *http.Request) {
 			log.Println("Invalid number of cards, defaulting to ", defaultCardCount)
 			nCards = defaultCardCount
 		}
+
+		gameType, err := strconv.Atoi(req.URL.Query().Get("t"))
+		if err != nil || (gameType != GAME_TYPE_CLASSIC && gameType != GAME_TYPE_RUSH) {
+			log.Println("Invalid game type, defaulting to ")
+		}
+
 		gameId = rndString(idlen)
-		g := NewGame(nCards)
+		g := NewGame(nCards, gameType)
 		activeGames[gameId] = g
-		log.Println("New game with ", nCards, " cards created: ", gameId)
+		log.Println("New game of type ", gameType, " with ", nCards, " cards created: ", gameId)
 		go g.Run()
 
 		http.Redirect(w, req, fmt.Sprintf("game?g=%v", gameId), 303)
