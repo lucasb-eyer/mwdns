@@ -5,6 +5,7 @@ import (
 	"log"
 	"strconv"
 	"bytes"
+	"math/rand"
 	"code.google.com/p/go.net/websocket"
 	"container/list"
 	"encoding/json"
@@ -109,12 +110,14 @@ func (c *Card) GetJsonCard() string {
 	return fmt.Sprintf(`{"msg": "card", "id": %v, "x": %v, "y": %v, "phi": %v, "type": %v}`, c.Id, c.X, c.Y, c.Phi, Type)
 }
 
-func NewGame(cardCount int) *Game {
+func NewGame(cardCount, gameType int) *Game {
 	//TODO: set game type?
 	g := new(Game)
 	//g.Players = make(map[int]*Player)
 	g.Players.Init()
+	g.Type = gameType
 	g.Cards = make(map[int]*Card)
+	g.cardCountLeft = cardCount
 
 	g.registerPlayer = make(chan *Player)
 	g.unregisterPlayer = make(chan *Player)
@@ -123,8 +126,8 @@ func NewGame(cardCount int) *Game {
 	for i := 0; i < cardCount; i++ {
 		c := Card{
 			Id:   i,
-			X:    i * 20,
-			Y:    0,
+			X:    rand.Intn(DEFAULT_W),
+			Y:    rand.Intn(DEFAULT_H),
 			Phi:  0,
 			Type: i / 2,
 			IsOpen: false}
@@ -146,6 +149,7 @@ type Game struct {
 	Players     list.List
 	maxPlayerId int
 	Cards       map[int]*Card
+	cardCountLeft int //how many cards are still playable
 
 	Type int
 
@@ -171,7 +175,15 @@ func (g *Game) Broadcast(m string) {
 	}
 }
 
+func (g *Game) BroadcastPlayerStates() {
+	for e := g.Players.Front(); e != nil; e = e.Next() {
+		g.Broadcast(e.Value.(*Player).GetJsonPlayer())
+	}
+}
+
 //TODO: handle client message "wantChangeName"
+//TODO: send out server message "end" which indicates the end of the game
+// preceded or followed by all player states
 
 func (g *Game) Run() {
 	for {
@@ -215,35 +227,41 @@ func (g *Game) Run() {
 	}
 }
 
+// Yeah, this is a God-method containing almost all game-logic... It's a hack.
 func (g *Game) TryFlip(p *Player, cardid int) {
 	// cease the funny stuff
-	if !p.CanPlay || g.Cards[cardid].IsOpen {
+	if (!p.CanPlay && g.Type == GAME_TYPE_CLASSIC) || g.Cards[cardid].IsOpen {
 		return
 	}
 
-	switch g.Type {
-	case GAME_TYPE_CLASSIC:
-		g.Cards[cardid].IsOpen = true
-		g.Broadcast(g.Cards[cardid].GetJsonCard())
+	g.Cards[cardid].IsOpen = true
+	g.Broadcast(g.Cards[cardid].GetJsonCard())
 
-		if p.openCard == NO_CARD {
-			p.openCard = cardid
+	if p.openCard == NO_CARD {
+		p.openCard = cardid
+	} else {
+		// same card type? One point for the gentleman over there!
+		if g.Cards[p.openCard].Type == g.Cards[cardid].Type {
+			//SCOOORE!
+			p.Points++
+			g.cardCountLeft-=2
+
+			if g.cardCountLeft == 0 {
+				//game over, broadcast player states, send out end message
+				g.BroadcastPlayerStates()
+				g.Broadcast(`{"msg": "end"}`)
+			}
+
+			//broadcast points - tell EVERYBODY
+			g.BroadcastPlayerStates()
 		} else {
-			// same card type? One point for the gentleman over there!
-			if g.Cards[p.openCard].Type == g.Cards[cardid].Type {
-				//SCOOORE!
-				p.Points++
-				//broadcast points - tell EVERYBODY
-				for e := g.Players.Front(); e != nil; e = e.Next() {
-					g.Broadcast(e.Value.(*Player).GetJsonPlayer())
-				}
-			} else {
-				// close those cards again! //TODO: check if the cards are not already closed?
-				g.Cards[cardid].IsOpen = false
-				g.Broadcast(g.Cards[cardid].GetJsonCard())
-				g.Cards[p.openCard].IsOpen = false
-				g.Broadcast(g.Cards[p.openCard].GetJsonCard())
+			// close those cards again! //TODO: check if the cards are not already closed?
+			g.Cards[cardid].IsOpen = false
+			g.Broadcast(g.Cards[cardid].GetJsonCard())
+			g.Cards[p.openCard].IsOpen = false
+			g.Broadcast(g.Cards[p.openCard].GetJsonCard())
 
+			if g.Type == GAME_TYPE_CLASSIC {
 				// aww, no match. Next player please.
 				p.SetCanPlay(false,g)
 
@@ -261,14 +279,9 @@ func (g *Game) TryFlip(p *Player, cardid int) {
 					}
 				}
 			}
-
-			p.openCard = NO_CARD
 		}
-		//g.Broadcast()
-	case GAME_TYPE_RUSH:
-		log.Fatal("Not implemented that game type yet")
-	default:
-		log.Fatal("Wut (unknown game type)")
+
+		p.openCard = NO_CARD
 	}
 }
 
