@@ -14,13 +14,18 @@ import (
 )
 
 var addr = flag.String("addr", ":8080", "http service address")
-var homeTempl = template.Must(template.ParseFiles("templates/index.html"))
+var homeTempl = template.Must(template.ParseFiles("templates/start.html"))
 var gameTempl = template.Must(template.ParseFiles("templates/game.html"))
 var activeGames = make(map[string]*Game)
 
-const idchars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-const idlen = 6
-const defaultCardCount = 20
+const (
+	IDCHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	IDLEN = 6
+	DEFAULT_CARD_COUNT = 20
+
+	DEFAULT_W = 1300 - 150 // minus card w because pos is top left
+	DEFAULT_H = 900 - 220  // idem
+)
 
 func homeHandler(c http.ResponseWriter, req *http.Request) {
 	homeTempl.Execute(c, req.Host)
@@ -29,7 +34,7 @@ func homeHandler(c http.ResponseWriter, req *http.Request) {
 func rndString(length int) string {
 	a := make([]string, length)
 	for i := 0; i < length; i++ {
-		a[i] = (string)(idchars[rand.Intn(len(idchars))])
+		a[i] = (string)(IDCHARS[rand.Intn(len(IDCHARS))])
 	}
 
 	return strings.Join(a, "")
@@ -41,8 +46,8 @@ func gameHandler(w http.ResponseWriter, req *http.Request) {
 		// create a new game if no gameid is given
 		nCards, err := strconv.Atoi(req.URL.Query().Get("n"))
 		if err != nil {
-			log.Println("Invalid number of cards, defaulting to ", defaultCardCount)
-			nCards = defaultCardCount
+			log.Println("Invalid number of cards, defaulting to ", DEFAULT_CARD_COUNT)
+			nCards = DEFAULT_CARD_COUNT
 		}
 
 		gameType, err := strconv.Atoi(req.URL.Query().Get("t"))
@@ -50,7 +55,7 @@ func gameHandler(w http.ResponseWriter, req *http.Request) {
 			log.Println("Invalid game type, defaulting to ")
 		}
 
-		gameId = rndString(idlen)
+		gameId = rndString(IDLEN)
 		g := NewGame(nCards, gameType)
 		activeGames[gameId] = g
 		log.Println("New game of type ", gameType, " with ", nCards, " cards created: ", gameId)
