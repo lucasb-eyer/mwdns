@@ -105,7 +105,7 @@ function handleMessage(msg){
 function flipCardFront(card,json) {
 	card.html($("#cardContent").html())
 	$(card).find("img").attr("src",zalando[json.type])
-	$(card).find(".informativeText").html("<a href='http://www.zalando.de/"+zalandoLinks[json.type]+"'>"+zalandoNames[json.type]+"</a>")
+	$(card).find(".informativeText").html("<a style='text-decoration: none;' href='http://www.zalando.de/"+zalandoLinks[json.type]+"'>"+zalandoNames[json.type]+"</a>")
 /*
     	 			flippingCard.flippy({
 						content:$("#cardContent"),
