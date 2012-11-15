@@ -40,6 +40,16 @@ the first card, so that everyone has enough time to see the second card.
 }
 ```
 
+### playermsg
+```javascript
+{
+		"msg":			"player"
+		"id":				13,
+		"canPlay":	true,
+    "points": 	9001
+}
+```
+
 Client to server
 ----------------
 

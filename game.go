@@ -84,10 +84,15 @@ type Player struct {
 	send chan string
 }
 
-func (p *Player) SetCanPlay(v bool) {
+func (p *Player) GetJsonPlayer() string {
+	return fmt.Sprintf(`{"msg": "player", "id": %v,"canPlay": %v, "points": %v}`,p.Id,p.CanPlay,p.Points)
+}
+
+func (p *Player) SetCanPlay(v bool, g *Game) {
 	p.CanPlay = v
-	//TODO: notify the respective player with a message
-	//TODO: everybody else too?
+	//notify the respective player with a message
+	//everybody else too
+	g.Broadcast(p.GetJsonPlayer())
 }
 
 type Card struct {
@@ -184,12 +189,12 @@ func (g *Game) Run() {
 			case GAME_TYPE_CLASSIC:
 				// the first player? you can play then.
 				if g.Players.Len() == 0 {
-					p.SetCanPlay(true)
+					p.SetCanPlay(true,g)
 				} else {
-					p.SetCanPlay(false)
+					p.SetCanPlay(false,g)
 				}
 			case GAME_TYPE_RUSH:
-				p.SetCanPlay(true)
+				p.SetCanPlay(true,g)
 			default:
 				log.Fatalln("Unknown game type in game.Run:", g.Type)
 			}
@@ -227,7 +232,12 @@ func (g *Game) TryFlip(p *Player, cardid int) {
 		} else {
 			// same card type? One point for the gentleman over there!
 			if g.Cards[p.openCard].Type == g.Cards[cardid].Type {
+				//SCOOORE!
 				p.Points++
+				//broadcast points - tell EVERYBODY
+				for e := g.Players.Front(); e != nil; e = e.Next() {
+					g.Broadcast(e.Value.(*Player).GetJsonPlayer())
+				}
 			} else {
 				// close those cards again! //TODO: check if the cards are not already closed?
 				g.Cards[cardid].IsOpen = false
@@ -236,7 +246,7 @@ func (g *Game) TryFlip(p *Player, cardid int) {
 				g.Broadcast(g.Cards[p.openCard].GetJsonCard())
 
 				// aww, no match. Next player please.
-				p.SetCanPlay(false)
+				p.SetCanPlay(false,g)
 
 				// iterate over the list to find the next player and tell him to play
 				for e := g.Players.Front(); e != nil; e = e.Next() {
@@ -247,7 +257,7 @@ func (g *Game) TryFlip(p *Player, cardid int) {
 						} else {
 							nextPlayer = e.Next().Value.(*Player)
 						}
-						nextPlayer.SetCanPlay(true)
+						nextPlayer.SetCanPlay(true,g)
 						break
 					}
 				}
