@@ -11,7 +11,8 @@ function connect() {
 		var g = vars["g"]
 		console.log("g value: " + g)
 
-		var address = "ws://localhost:8080/ws?g="+g
+		//var address = "ws://localhost/ws?g="+g
+		var address = "ws://"+window.location.hostname+":"+window.location.port+"/ws?g="+g
 		conn = new WebSocket(address);
 		console.log(address)
 		conn.onclose = function(evt) {
