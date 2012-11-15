@@ -160,6 +160,8 @@ func NewGame(cardCount, gameType int) *Game {
 	g.unregisterPlayer = make(chan *Player)
 	g.incomingPlayerMessages = make(chan string)
 
+	shuffling_aux := rand.Perm(cardCount)
+
 	for i := 0; i < cardCount; i++ {
 		c := Card{
 			Id:   i,
@@ -168,7 +170,7 @@ func NewGame(cardCount, gameType int) *Game {
 			X:    (i % 7)*180 + rand.Intn(10) - 5,
 			Y:    (i / 7)*250 + rand.Intn(10) - 5,
 			Phi:  (float64)(rand.Intn(20) - 10),
-			Type: i / 2,
+			Type: shuffling_aux[i] / 2,
 			IsOpen: false}
 
 		g.Cards[i] = &c
