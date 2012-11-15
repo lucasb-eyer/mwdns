@@ -5,6 +5,7 @@ import (
 	"log"
 	"strconv"
 	"bytes"
+	"math/rand"
 	"code.google.com/p/go.net/websocket"
 	"container/list"
 	"encoding/json"
@@ -125,8 +126,8 @@ func NewGame(cardCount, gameType int) *Game {
 	for i := 0; i < cardCount; i++ {
 		c := Card{
 			Id:   i,
-			X:    i * 20,
-			Y:    0,
+			X:    rand.Intn(DEFAULT_W),
+			Y:    rand.Intn(DEFAULT_H),
 			Phi:  0,
 			Type: i / 2,
 			IsOpen: false}
