@@ -22,11 +22,29 @@ This is necessary for the case of the second card being opened and not matching
 the first card, so that everyone has enough time to see the second card.
 ```javascript
 {
-	"msg": "card"
+	"msg": "card",
 	"id": 13,
 	"x": 124,
 	"y": 234,
 	"phi": 0.03,
+	"type": -1
+}
+```
+
+```javascript
+{
+	"msg": "cardMove",
+	"id": 13,
+	"x": 124,
+	"y": 234,
+	"phi": 0.03,
+}
+```
+
+```javascript
+{
+	"msg": "cardFlip",
+	"id": 13,
 	"type": -1
 }
 ```
@@ -81,5 +99,17 @@ The client should wait to get a "flipped" message, or nothing ever.
 ```javascript
 {
 	"wantChangeName": "Bob"
+}
+```
+
+### moveCard
+```javascript
+{
+	"moveCard": {
+		"id": 13,
+		"x": 123,
+		"y": 25,
+		"phi": 120
+	}
 }
 ```
