@@ -99,6 +99,9 @@ function handleMessage(msg){
 			setTimeout(function(){flipCardBack(flippingCard,json)}, 1000)
 		}
 	} else if ( json.msg == "player" ){
+	} else if ( json.msg == "end" ){
+		$("#wintext").text("Player " + json.winner + " wins!");
+		$("#winner").fadeIn();
 	}
 }
 

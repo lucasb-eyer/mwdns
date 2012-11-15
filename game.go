@@ -307,7 +307,7 @@ func (g *Game) TryFlip(p *Player, cardid int) {
 			if g.cardCountLeft == 0 {
 				//game over, broadcast player states, send out end message
 				g.BroadcastPlayerStates()
-				g.Broadcast(`{"msg": "end"}`)
+				g.Broadcast(fmt.Sprintf(`{"msg": "end", "winner": "%v"}`, p.Id))
 			} else {
 				// Check for combo
 				if p.PreviousWasGood {
