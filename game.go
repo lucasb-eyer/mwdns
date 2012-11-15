@@ -5,7 +5,7 @@ import (
 	"log"
 	"strconv"
 	"bytes"
-	"math/rand"
+//	"math/rand"
 	"code.google.com/p/go.net/websocket"
 	"container/list"
 	"encoding/json"
@@ -19,7 +19,7 @@ type cardPosition struct {
 	Id  int
 	X   int
 	Y   int
-	Phi int
+	Phi float64
 }
 
 func (p *Player) reader() {
@@ -160,8 +160,10 @@ func NewGame(cardCount, gameType int) *Game {
 	for i := 0; i < cardCount; i++ {
 		c := Card{
 			Id:   i,
-			X:    rand.Intn(DEFAULT_W),
-			Y:    rand.Intn(DEFAULT_H),
+//			X:    rand.Intn(DEFAULT_W),
+//			Y:    rand.Intn(DEFAULT_H),
+			X:    (i % 7)*180,
+			Y:    (i / 7)*250,
 			Phi:  0,
 			Type: i / 2,
 			IsOpen: false}
@@ -272,7 +274,7 @@ func (g *Game) TryFlip(p *Player, cardid int) {
 		//g.Broadcast(g.Cards[cardid].GetJsonCardFlip())
 	} else {
 		// In non-classic mode, we cheat by not opening the card but sending the card type to the single player only.
-		p.send <- g.Cards[cardid].GetJsonCardTypeAlways()
+		p.send <- g.Cards[cardid].GetJsonCardAlways()
 		//p.send <- g.Cards[cardid].GetJsonCardFlipAlways()
 	}
 
