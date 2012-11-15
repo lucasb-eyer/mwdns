@@ -24,7 +24,7 @@ const (
 	DEFAULT_CARD_COUNT = 20
 
 	DEFAULT_W = 1300 - 150 // minus card w because pos is top left
-	DEFAULT_H = 900 - 220  // idem
+	DEFAULT_H = 800 - 220  // idem
 )
 
 func homeHandler(c http.ResponseWriter, req *http.Request) {
