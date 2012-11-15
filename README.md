@@ -45,6 +45,7 @@ the first card, so that everyone has enough time to see the second card.
 {
 		"msg":			"player"
 		"id":				13,
+		"name":			"Bob",
 		"canPlay":	true,
     "points": 	9001
 }
@@ -69,3 +70,9 @@ The client should wait to get a "flipped" message, or nothing ever.
 }
 ```
 
+### wantChangeName
+```javascript
+{
+    "wantChangeName": "Bob"
+}
+```

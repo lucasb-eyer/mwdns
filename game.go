@@ -14,11 +14,6 @@ const (
 	NO_TYPE = -1
 )
 
-// Messages
-type MessageWantFlip struct {
-	id int
-}
-
 func (p *Player) reader() {
 	for {
 		var message string
@@ -77,6 +72,7 @@ type Player struct {
 	Points  int
 	Game    *Game
 
+	Name		string
 	openCard int // -1 if no card is opened yet, a card id if a card was already opened
 
 	ws *websocket.Conn
@@ -85,7 +81,7 @@ type Player struct {
 }
 
 func (p *Player) GetJsonPlayer() string {
-	return fmt.Sprintf(`{"msg": "player", "id": %v,"canPlay": %v, "points": %v}`,p.Id,p.CanPlay,p.Points)
+	return fmt.Sprintf(`{"msg": "player", "id": %v, "name": %v, "canPlay": %v, "points": %v}`,p.Id,p.Name,p.CanPlay,p.Points)
 }
 
 func (p *Player) SetCanPlay(v bool, g *Game) {
@@ -175,6 +171,8 @@ func (g *Game) Broadcast(m string) {
 	}
 }
 
+//TODO: handle client message "wantChangeName"
+
 func (g *Game) Run() {
 	for {
 		select {
@@ -182,6 +180,7 @@ func (g *Game) Run() {
 		case p := <-g.registerPlayer:
 			//send current board state to player
 			p.Id = g.maxPlayerId
+			p.Name = "Nobody" //TODO: set the name?
 			p.openCard = NO_CARD
 			p.Game = g
 
