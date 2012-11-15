@@ -5,7 +5,7 @@ import (
 	"log"
 	"strconv"
 	"bytes"
-//	"math/rand"
+	"math/rand"
 	"code.google.com/p/go.net/websocket"
 	"container/list"
 	"encoding/json"
@@ -90,6 +90,9 @@ type Player struct {
 
 	Name		string
 	openCard int // -1 if no card is opened yet, a card id if a card was already opened
+
+	// For the combo
+	PreviousWasGood bool
 
 	ws *websocket.Conn
 	// Buffered channel of outbound messages.
@@ -270,11 +273,13 @@ func (g *Game) TryFlip(p *Player, cardid int) {
 
 	if g.Type == GAME_TYPE_CLASSIC {
 		g.Cards[cardid].IsOpen = true
-		g.Broadcast(g.Cards[cardid].GetJsonCard())
-		//g.Broadcast(g.Cards[cardid].GetJsonCardFlip())
+		//g.Broadcast(g.Cards[cardid].GetJsonCard())
+		g.Broadcast(g.Cards[cardid].GetJsonCardFlip())
 	} else {
 		// In non-classic mode, we cheat by not opening the card but sending the card type to the single player only.
-		p.send <- g.Cards[cardid].GetJsonCardAlways()
+		//p.send <- g.Cards[cardid].GetJsonCardAlways()
+		c := g.Cards[cardid]
+		p.send <- fmt.Sprintf(`{"msg": "cardFlip", "id": %v, "type": %v}`, c.Id, c.Type)
 		//p.send <- g.Cards[cardid].GetJsonCardFlipAlways()
 	}
 
@@ -291,28 +296,43 @@ func (g *Game) TryFlip(p *Player, cardid int) {
 			if g.Type != GAME_TYPE_CLASSIC {
 				g.Cards[cardid].IsOpen = true
 				g.Cards[p.openCard].IsOpen = true
-				g.Broadcast(g.Cards[cardid].GetJsonCard())
-				g.Broadcast(g.Cards[p.openCard].GetJsonCard())
-				//g.Broadcast(g.Cards[cardid].GetJsonCardFlip())
-				//g.Broadcast(g.Cards[p.openCard].GetJsonCardFlip())
+				//g.Broadcast(g.Cards[cardid].GetJsonCard())
+				//g.Broadcast(g.Cards[p.openCard].GetJsonCard())
+				g.Broadcast(g.Cards[cardid].GetJsonCardFlip())
+				g.Broadcast(g.Cards[p.openCard].GetJsonCardFlip())
 			}
 
 			if g.cardCountLeft == 0 {
 				//game over, broadcast player states, send out end message
 				g.BroadcastPlayerStates()
 				g.Broadcast(`{"msg": "end"}`)
+			} else {
+				// Check for combo
+				if p.PreviousWasGood {
+					log.Println("cccccombo")
+					p.Points++
+					g.Broadcast(`{"msg": "combo"}`)
+					for k, _ := range(g.Cards) {
+						if rand.Intn(5) == 0 {
+							g.MoveCard(cardPosition{Id:k, X: rand.Intn(DEFAULT_W), Y: rand.Intn(DEFAULT_H), Phi: 0.0})
+						}
+					}
+				}
+
+				p.PreviousWasGood = true
 			}
 
 			//broadcast points - tell EVERYBODY
 			g.BroadcastPlayerStates()
 		} else {
+			p.PreviousWasGood=false
 			// close those cards again! //TODO: check if the cards are not already closed?
 			g.Cards[cardid].IsOpen = false
-			g.Broadcast(g.Cards[cardid].GetJsonCard())
-			//g.Broadcast(g.Cards[cardid].GetJsonCardFlip())
+			//g.Broadcast(g.Cards[cardid].GetJsonCard())
+			g.Broadcast(g.Cards[cardid].GetJsonCardFlip())
 			g.Cards[p.openCard].IsOpen = false
-			g.Broadcast(g.Cards[p.openCard].GetJsonCard())
-			//g.Broadcast(g.Cards[p.openCard].GetJsonCardFlip())
+			//g.Broadcast(g.Cards[p.openCard].GetJsonCard())
+			g.Broadcast(g.Cards[p.openCard].GetJsonCardFlip())
 
 			if g.Type == GAME_TYPE_CLASSIC {
 				// aww, no match. Next player please.
@@ -343,8 +363,8 @@ func (g *Game) MoveCard(cardp cardPosition) {
 	card.X = cardp.X
 	card.Y = cardp.Y
 	card.Phi = cardp.Phi
-	g.Broadcast(card.GetJsonCard())
-	//g.Broadcast(card.GetJsonCardMove())
+	//g.Broadcast(card.GetJsonCard())
+	g.Broadcast(card.GetJsonCardMove())
 }
 
 func (g *Game) Chat(pname, msg string) {
@@ -354,8 +374,8 @@ func (g *Game) Chat(pname, msg string) {
 // sends a board state to a player (ALL the cards)
 func (g *Game) SendBoardState(p *Player) {
 	for _, val := range g.Cards {
-		p.send <- val.GetJsonCard()
-		//p.send <- val.GetJsonCardMove()
+		//p.send <- val.GetJsonCard()
+		p.send <- val.GetJsonCardMove()
 	}
 }
 
