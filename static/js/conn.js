@@ -1,47 +1,52 @@
 var conn
 
 var zalando = new Array();
-var x = 0;
-var y = 0;
+var zalandoLinks = new Array();
+var zalandoNames = new Array();
 
-$.ajax({
-           url: 'http://www.zalando.de/schuhe/',
-           type: 'GET',
-		   dataType:'html',
-           success: function(res) {
-             $(res.responseText).find('.gItem .productBox img').each(function(index) {
-				 if (index > 9){
-					 return false;
-				 }
-    			 zalando[index] = $(this).attr('longdesc');
-				 x = x+1;
-			 });
-           }
-         });
+$(document).ready(function() {
+	$.ajax({
+		url: 'http://www.zalando.de/schuhe/',
+		type: 'GET',
+		dataType:'html',
+		success: function(res) {
+			$(res.responseText).find('.gItem .productBox').each(function(index,object) {
+				if (index > 9){
+				 return false;
+				}
+	
+				zalandoLinks[index] = $(object).attr('href');
+			});
+
+			$(res.responseText).find('.gItem .productBox img').each(function(index,object) {
+				if (index > 9){
+				 return false;
+				}
+	
+				zalando[index] = $(object).attr('longdesc');
+				zalandoNames[index] = $(object).attr('title');
+			});
+		}
+	});
+})
 
 function connect() {
 	var messagesCount = 0;
 	if (window["WebSocket"]) {
-		console.log("Connecting to websocket.")
 		// parse url parameters
 		var vars = {};
 		var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
 			vars[key] = value;
 		});
 		var g = vars["g"]
-		console.log("g value: " + g)
 
 		//var address = "ws://localhost/ws?g="+g
 		var address = "ws://"+window.location.hostname+":"+window.location.port+"/ws?g="+g
 		conn = new WebSocket(address);
-		console.log(address)
 		conn.onclose = function(evt) {
-			console.log("Connection closed.")
 			console.log(evt)
 		}
 		conn.onmessage = function(evt) {
-			console.log("Got a message! (see next line)");
-			console.log(evt.data);
 			handleMessage(evt.data);
 		}
 	} else {
@@ -64,7 +69,6 @@ function addClickHandler(i){
 
 function handleMessage(msg){
 	var json = jQuery.parseJSON(msg);
-	console.log(json)
 	if ( json.msg == "initBoard" ){
 		for (var i=0;i<json.cardCount;i++)
 		{
@@ -73,7 +77,6 @@ function handleMessage(msg){
 			$('#cardContainer').append('<div id="card_'+i+'"  class="flip_card card-boarder" style="top:'+top+'px; left:'+left+'px; " ></div>');
 			$("#card_"+i).html($("#cardBackContent").html());
 			addClickHandler(i);
-			
 
 		}
 	} else if ( json.msg == "cardMove" ){
@@ -96,7 +99,8 @@ function handleMessage(msg){
 
 function flipCardFront(card,json) {
 	card.html($("#cardContent").html())
-	$("#cardContent").find("img").attr("src",zalando[json.type])
+	$(card).find("img").attr("src",zalando[json.type])
+	$(card).find(".informativeText").html("<a href='http://www.zalando.de/"+zalandoLinks[json.type]+"'>"+zalandoNames[json.type]+"</a>")
 /*
     	 			flippingCard.flippy({
 						content:$("#cardContent"),
