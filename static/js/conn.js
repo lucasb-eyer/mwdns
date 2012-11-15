@@ -76,24 +76,22 @@ function handleMessage(msg){
 			
 
 		}
-	} else if ( json.msg == "card" ){
+	} else if ( json.msg == "cardMove" ){
 		$('#card_'+json.id).animate({
-    		 left: json.x,
+			 left: json.x,
 			 top: json.y,
-  		}, 1000, function() {});
-
+		}, 1000, function() {});
+	} else if ( json.msg == "cardFlip" ){
 		if (json.type > -1){
-			var flippingCard = $('#card_'+json.id);		
+			var flippingCard = $('#card_'+json.id);
 			flipCardFront(flippingCard,json)
-
 		}
 		if (json.type == -1){
 			var flippingCard = $('#card_'+json.id);
 			setTimeout(function(){flipCardBack(flippingCard,json)}, 1000)
 		}
-		
-	} else if ( json.msg == "player" ){}
-
+	} else if ( json.msg == "player" ){
+	}
 }
 
 function flipCardFront(card,json) {
