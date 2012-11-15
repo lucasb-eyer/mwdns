@@ -227,6 +227,7 @@ func (g *Game) Run() {
 	}
 }
 
+// Yeah, this is a God-method containing almost all game-logic... It's a hack.
 func (g *Game) TryFlip(p *Player, cardid int) {
 	// cease the funny stuff
 	if (!p.CanPlay && g.Type == GAME_TYPE_CLASSIC) || g.Cards[cardid].IsOpen {
@@ -239,46 +240,46 @@ func (g *Game) TryFlip(p *Player, cardid int) {
 	if p.openCard == NO_CARD {
 		p.openCard = cardid
 	} else {
-			// same card type? One point for the gentleman over there!
-			if g.Cards[p.openCard].Type == g.Cards[cardid].Type {
-				//SCOOORE!
-				p.Points++
-				g.cardCountLeft-=2
+		// same card type? One point for the gentleman over there!
+		if g.Cards[p.openCard].Type == g.Cards[cardid].Type {
+			//SCOOORE!
+			p.Points++
+			g.cardCountLeft-=2
 
-				if g.cardCountLeft == 0 {
-					//game over, broadcast player states, send out end message
-					g.BroadcastPlayerStates()
-					g.Broadcast(`{"msg": "end"}`)
-				}
-
-				//broadcast points - tell EVERYBODY
+			if g.cardCountLeft == 0 {
+				//game over, broadcast player states, send out end message
 				g.BroadcastPlayerStates()
-			} else {
-				// close those cards again! //TODO: check if the cards are not already closed?
-				g.Cards[cardid].IsOpen = false
-				g.Broadcast(g.Cards[cardid].GetJsonCard())
-				g.Cards[p.openCard].IsOpen = false
-				g.Broadcast(g.Cards[p.openCard].GetJsonCard())
+				g.Broadcast(`{"msg": "end"}`)
+			}
 
-				if g.Type == GAME_TYPE_CLASSIC {
-					// aww, no match. Next player please.
-					p.SetCanPlay(false,g)
+			//broadcast points - tell EVERYBODY
+			g.BroadcastPlayerStates()
+		} else {
+			// close those cards again! //TODO: check if the cards are not already closed?
+			g.Cards[cardid].IsOpen = false
+			g.Broadcast(g.Cards[cardid].GetJsonCard())
+			g.Cards[p.openCard].IsOpen = false
+			g.Broadcast(g.Cards[p.openCard].GetJsonCard())
 
-					// iterate over the list to find the next player and tell him to play
-					for e := g.Players.Front(); e != nil; e = e.Next() {
-						if e.Value.(*Player) == p {
-							var nextPlayer *Player
-							if e == g.Players.Back() {
-								nextPlayer = g.Players.Front().Value.(*Player)
-							} else {
-								nextPlayer = e.Next().Value.(*Player)
-							}
-							nextPlayer.SetCanPlay(true,g)
-							break
+			if g.Type == GAME_TYPE_CLASSIC {
+				// aww, no match. Next player please.
+				p.SetCanPlay(false,g)
+
+				// iterate over the list to find the next player and tell him to play
+				for e := g.Players.Front(); e != nil; e = e.Next() {
+					if e.Value.(*Player) == p {
+						var nextPlayer *Player
+						if e == g.Players.Back() {
+							nextPlayer = g.Players.Front().Value.(*Player)
+						} else {
+							nextPlayer = e.Next().Value.(*Player)
 						}
+						nextPlayer.SetCanPlay(true,g)
+						break
 					}
 				}
 			}
+		}
 
 		p.openCard = NO_CARD
 	}
