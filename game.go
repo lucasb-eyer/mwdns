@@ -115,6 +115,7 @@ func NewGame(cardCount int) *Game {
 	//g.Players = make(map[int]*Player)
 	g.Players.Init()
 	g.Cards = make(map[int]*Card)
+	g.cardCountLeft = cardCount
 
 	g.registerPlayer = make(chan *Player)
 	g.unregisterPlayer = make(chan *Player)
@@ -146,6 +147,7 @@ type Game struct {
 	Players     list.List
 	maxPlayerId int
 	Cards       map[int]*Card
+	cardCountLeft int //how many cards are still playable
 
 	Type int
 
@@ -171,7 +173,15 @@ func (g *Game) Broadcast(m string) {
 	}
 }
 
+func (g *Game) BroadcastPlayerStates() {
+	for e := g.Players.Front(); e != nil; e = e.Next() {
+		g.Broadcast(e.Value.(*Player).GetJsonPlayer())
+	}
+}
+
 //TODO: handle client message "wantChangeName"
+//TODO: send out server message "end" which indicates the end of the game
+// preceded or followed by all player states
 
 func (g *Game) Run() {
 	for {
@@ -233,10 +243,16 @@ func (g *Game) TryFlip(p *Player, cardid int) {
 			if g.Cards[p.openCard].Type == g.Cards[cardid].Type {
 				//SCOOORE!
 				p.Points++
-				//broadcast points - tell EVERYBODY
-				for e := g.Players.Front(); e != nil; e = e.Next() {
-					g.Broadcast(e.Value.(*Player).GetJsonPlayer())
+				g.cardCountLeft-=2
+
+				if g.cardCountLeft == 0 {
+					//game over, broadcast player states, send out end message
+					g.BroadcastPlayerStates()
+					g.Broadcast(`{"msg": "end"}`)
 				}
+
+				//broadcast points - tell EVERYBODY
+				g.BroadcastPlayerStates()
 			} else {
 				// close those cards again! //TODO: check if the cards are not already closed?
 				g.Cards[cardid].IsOpen = false
@@ -264,7 +280,6 @@ func (g *Game) TryFlip(p *Player, cardid int) {
 
 			p.openCard = NO_CARD
 		}
-		//g.Broadcast()
 	case GAME_TYPE_RUSH:
 		log.Fatal("Not implemented that game type yet")
 	default:

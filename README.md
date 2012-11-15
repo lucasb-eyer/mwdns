@@ -51,6 +51,13 @@ the first card, so that everyone has enough time to see the second card.
 }
 ```
 
+### endgamemsg
+```javascript
+{
+	"msg":			"end"
+}
+```
+
 Client to server
 ----------------
 
