@@ -165,9 +165,9 @@ func NewGame(cardCount, gameType int) *Game {
 			Id:   i,
 //			X:    rand.Intn(DEFAULT_W),
 //			Y:    rand.Intn(DEFAULT_H),
-			X:    (i % 7)*180,
-			Y:    (i / 7)*250,
-			Phi:  rand.Intn(20) - 10,
+			X:    (i % 7)*180 + rand.Intn(10) - 5,
+			Y:    (i / 7)*250 + rand.Intn(10) - 5,
+			Phi:  (float64)(rand.Intn(20) - 10),
 			Type: i / 2,
 			IsOpen: false}
 
