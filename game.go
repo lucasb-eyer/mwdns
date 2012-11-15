@@ -97,7 +97,7 @@ type Player struct {
 }
 
 func (p *Player) GetJsonPlayer() string {
-	return fmt.Sprintf(`{"msg": "player", "id": %v, "name": %v, "canPlay": %v, "points": %v}`,p.Id,p.Name,p.CanPlay,p.Points)
+	return fmt.Sprintf(`{"msg": "player", "id": %v, "name": "%v", "canPlay": %v, "points": %v}`,p.Id,p.Name,p.CanPlay,p.Points)
 }
 
 func (p *Player) SetCanPlay(v bool, g *Game) {
