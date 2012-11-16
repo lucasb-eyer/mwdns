@@ -12,25 +12,9 @@ Server to client
 }
 ```
 
-### card
+### cardMove
 x,y are the top left corner of the card.
 phi is the angle in degrees.
-
-If the type changes from something to -1 (i.e. it flips closed),
-the client side needs to show the closing animation only 1-2 seconds later.
-This is necessary for the case of the second card being opened and not matching
-the first card, so that everyone has enough time to see the second card.
-```javascript
-{
-	"msg": "card",
-	"id": 13,
-	"x": 124,
-	"y": 234,
-	"phi": 0.03,
-	"type": -1
-}
-```
-
 ```javascript
 {
 	"msg": "cardMove",
@@ -41,6 +25,12 @@ the first card, so that everyone has enough time to see the second card.
 }
 ```
 
+### cardFlip
+Type is the "picture" on the card ; you could also call it "class" if you prefer.
+If the type changes from something to -1 (i.e. the card flips closed),
+the client side needs to show the closing animation 1-2 seconds later.
+This is necessary for the case of the second card being opened and not matching
+the first card, so that everyone has enough time to see both card.
 ```javascript
 {
 	"msg": "cardFlip",
