@@ -295,12 +295,13 @@ func (g *Game) TryFlip(p *Player, cardid int) {
 	secondCard := g.Cards[cardid]
 	p.openCard = NO_CARD  // Whatever happens, this player won't have an open card anymore
 	if firstCard.Type != secondCard.Type {
-		// Too bad, close those cards again!
+		// Too bad
 		p.PreviousWasGood = false
-		firstCard.IsOpen = false
-		secondCard.IsOpen = false
 
 		if g.Type == GAME_TYPE_CLASSIC {
+			// close the cards again. (Only in classic)
+			firstCard.IsOpen = false
+			secondCard.IsOpen = false
 			// In the classic mode, we need to close both card for everyone.
 			g.Broadcast(firstCard.GetJsonCardFlip())
 			g.Broadcast(secondCard.GetJsonCardFlip())
