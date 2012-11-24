@@ -269,7 +269,7 @@ func (g *Game) Run() {
 // Yeah, this is a God-method containing almost all game-logic... It's a hack.
 func (g *Game) TryFlip(p *Player, cardid int) {
 	// cease the funny stuff
-	if g.Cards[cardid].IsOpen || !p.CanPlay {
+	if g.Cards[cardid].IsOpen || !p.CanPlay || p.openCard == cardid {
 		return
 	}
 
@@ -320,8 +320,9 @@ func (g *Game) TryFlip(p *Player, cardid int) {
 				}
 			}
 		} else if g.Type == GAME_TYPE_RUSH {
-			// In rush mode, we only need to tell the current player which card it is over.
-			p.send <- g.Cards[cardid].GetJsonCardFlipAlways()
+			// In rush mode, we only need to tell the current player to unflip the cards.
+			p.send <- firstCard.GetJsonCardFlip()
+			p.send <- secondCard.GetJsonCardFlip()
 		}
 
 	} else {
