@@ -269,94 +269,99 @@ func (g *Game) Run() {
 // Yeah, this is a God-method containing almost all game-logic... It's a hack.
 func (g *Game) TryFlip(p *Player, cardid int) {
 	// cease the funny stuff
-	if (!p.CanPlay && g.Type == GAME_TYPE_CLASSIC) || g.Cards[cardid].IsOpen {
+	if g.Cards[cardid].IsOpen || !p.CanPlay {
 		return
 	}
 
 	if g.Type == GAME_TYPE_CLASSIC {
+		// In classic mode, every player sees the cards one flips right away.
 		g.Cards[cardid].IsOpen = true
-		//g.Broadcast(g.Cards[cardid].GetJsonCard())
 		g.Broadcast(g.Cards[cardid].GetJsonCardFlip())
-	} else {
-		// In non-classic mode, we cheat by not opening the card but sending the card type to the single player only.
-		//p.send <- g.Cards[cardid].GetJsonCardAlways()
-		c := g.Cards[cardid]
-		p.send <- fmt.Sprintf(`{"msg": "cardFlip", "id": %v, "type": %v}`, c.Id, c.Type)
-		//p.send <- g.Cards[cardid].GetJsonCardFlipAlways()
+	} else if g.Type == GAME_TYPE_RUSH {
+		// In rush mode, only the player opening the card sees it, others don't.
+		// This is achieved by sending only that player the card type, but not
+		// marking it as opened in general.
+		p.send <- g.Cards[cardid].GetJsonCardFlipAlways()
 	}
 
+	// If this is the first card the player opens, that's it! But also keep track of it.
 	if p.openCard == NO_CARD {
 		p.openCard = cardid
-	} else {
-		// same card type? One point for the gentleman over there!
-		if g.Cards[p.openCard].Type == g.Cards[cardid].Type {
-			//SCOOORE!
-			p.Points++
-			g.cardCountLeft-=2
+		return
+	}
 
-			// In non-classic mode also broadcast the two opened cards to EVERYBODY, only now!
-			if g.Type != GAME_TYPE_CLASSIC {
-				g.Cards[cardid].IsOpen = true
-				g.Cards[p.openCard].IsOpen = true
-				//g.Broadcast(g.Cards[cardid].GetJsonCard())
-				//g.Broadcast(g.Cards[p.openCard].GetJsonCard())
-				g.Broadcast(g.Cards[cardid].GetJsonCardFlip())
-				g.Broadcast(g.Cards[p.openCard].GetJsonCardFlip())
-			}
+	// Second card opened...
+	firstCard := g.Cards[p.openCard]
+	secondCard := g.Cards[cardid]
+	p.openCard = NO_CARD  // Whatever happens, this player won't have an open card anymore
+	if firstCard.Type != secondCard.Type {
+		// Too bad, close those cards again!
+		p.PreviousWasGood = false
+		firstCard.IsOpen = false
+		secondCard.IsOpen = false
 
-			if g.cardCountLeft == 0 {
-				//game over, broadcast player states, send out end message
-				g.BroadcastPlayerStates()
-				g.Broadcast(fmt.Sprintf(`{"msg": "end", "winner": "%v"}`, p.Id))
-			} else {
-				// Check for combo
-				if p.PreviousWasGood {
-					log.Println("cccccombo")
-					p.Points++
-					g.Broadcast(`{"msg": "combo"}`)
-					for k, _ := range(g.Cards) {
-						if rand.Intn(5) == 0 {
-							g.MoveCard(cardPosition{Id:k, X: rand.Intn(DEFAULT_W), Y: rand.Intn(DEFAULT_H), Phi: 0.0})
-						}
+		if g.Type == GAME_TYPE_CLASSIC {
+			// In the classic mode, we need to close both card for everyone.
+			g.Broadcast(firstCard.GetJsonCardFlip())
+			g.Broadcast(secondCard.GetJsonCardFlip())
+
+			// And then switch to the next player.
+			p.SetCanPlay(false,g)
+			for e := g.Players.Front(); e != nil; e = e.Next() {
+				if e.Value.(*Player) == p {
+					var nextPlayer *Player
+					if e == g.Players.Back() {
+						nextPlayer = g.Players.Front().Value.(*Player)
+					} else {
+						nextPlayer = e.Next().Value.(*Player)
 					}
+					nextPlayer.SetCanPlay(true,g)
+					break
 				}
-
-				p.PreviousWasGood = true
 			}
+		} else if g.Type == GAME_TYPE_RUSH {
+			// In rush mode, we only need to tell the current player which card it is over.
+			p.send <- g.Cards[cardid].GetJsonCardFlipAlways()
+		}
 
-			//broadcast points - tell EVERYBODY
-			g.BroadcastPlayerStates()
-		} else {
-			p.PreviousWasGood=false
-			// close those cards again! //TODO: check if the cards are not already closed?
-			g.Cards[cardid].IsOpen = false
-			//g.Broadcast(g.Cards[cardid].GetJsonCard())
-			g.Broadcast(g.Cards[cardid].GetJsonCardFlip())
-			g.Cards[p.openCard].IsOpen = false
-			//g.Broadcast(g.Cards[p.openCard].GetJsonCard())
-			g.Broadcast(g.Cards[p.openCard].GetJsonCardFlip())
+	} else {
+		//SCOOORE!
+		p.Points++
+		g.cardCountLeft-=2
 
-			if g.Type == GAME_TYPE_CLASSIC {
-				// aww, no match. Next player please.
-				p.SetCanPlay(false,g)
+		// In rush mode, open the two cards for EVERYBODY now!
+		if g.Type == GAME_TYPE_RUSH {
+			firstCard.IsOpen = true
+			secondCard.IsOpen = true
+			g.Broadcast(firstCard.GetJsonCardFlip())
+			g.Broadcast(secondCard.GetJsonCardFlip())
 
-				// iterate over the list to find the next player and tell him to play
-				for e := g.Players.Front(); e != nil; e = e.Next() {
-					if e.Value.(*Player) == p {
-						var nextPlayer *Player
-						if e == g.Players.Back() {
-							nextPlayer = g.Players.Front().Value.(*Player)
-						} else {
-							nextPlayer = e.Next().Value.(*Player)
-						}
-						nextPlayer.SetCanPlay(true,g)
-						break
+			// Check for combo, i.e. successful opening twice.
+			if p.PreviousWasGood {
+				p.Points++
+				g.Broadcast(`{"msg": "combo"}`)
+
+				// Shuffle some random cards around randomly.
+				for k, _ := range(g.Cards) {
+					if rand.Intn(5) == 0 {
+						g.MoveCard(cardPosition{Id:k, X: rand.Intn(DEFAULT_W), Y: rand.Intn(DEFAULT_H), Phi: 0.0})
 					}
 				}
 			}
 		}
 
+		p.PreviousWasGood = true
 		p.openCard = NO_CARD
+
+		//broadcast points - tell EVERYBODY
+		g.BroadcastPlayerStates()
+
+		// gg?
+		if g.cardCountLeft == 0 {
+			// TODO: necessary?
+			// g.BroadcastPlayerStates()
+			g.Broadcast(fmt.Sprintf(`{"msg": "end", "winner": "%v"}`, p.Id))
+		}
 	}
 }
 
