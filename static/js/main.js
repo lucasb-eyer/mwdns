@@ -24,34 +24,21 @@ function connect() {
 	}
 }
 
-function createCards(cardCount) {
-	/*
-	for (var i=0;i<cardCount;i++)
-	{
-		var top = i*3+50;
-		var left = i*3+10;
-		$('#cardContainer').append('<div id="card_'+i+'"  class="flip_card card-boarder" style="top:'+top+'px; left:'+left+'px; " ></div>');
-		$("#card_"+i).html($("#cardBackContent").html());
-		addClickHandler(i);
-	}
-	*/
-}
-
 function handleMessage(msg){
 	var json = jQuery.parseJSON(msg);
-	if ( json.msg == "initBoard" ){
+	if ( json.msg == "initBoard" ) {
 		createCards(json.cardCount)
-	} else if ( json.msg == "cardMove" ){
+	} else if ( json.msg == "cardMove" ) {
 		//TODO: move respective card (json.id)
-	} else if ( json.msg == "cardFlip" ){
+	} else if ( json.msg == "cardFlip" ) {
 		//TODO: flip cards
-	} else if ( json.msg == "player" ){
+	} else if ( json.msg == "player" ) {
 		//TODO: what was this one again?
-	} else if ( json.msg == "end" ){
+	} else if ( json.msg == "end" ) {
 		//TODO: display final game screen (scores, winner, new game)
 	}
 }
 
 $(document).ready(function() {
-	connect() //connect websocket to the server
-}
+	initBoard()
+})
