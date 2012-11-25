@@ -4,12 +4,10 @@
 Crafty.c("Card", {
 	ready: true,
 	init: function() {
-		this.requires("2D,DOM,Color,Image,Multiway,Draggable");
+		this.requires("2D,DOM,Color,Sprite,Image,Multiway,Draggable,Tween");
 	},
 	makeCard: function(x,y) {
-		asteroid = cardSource.componentPrefix+1 //TODO: this is not flexible
-		this.addComponent(asteroid)
-		.color("#000")
+		this.color("#000")
 		.attr({x:x,y:y,w:200,h:200,z:1})
 		.css("border", "3px solid white") // card borders
 		.image(deckFaceImg, "repeat")
@@ -19,7 +17,12 @@ Crafty.c("Card", {
 			//is there something to do on each frame?
 		})
 		.bind('Click', function() {
+			// check if shift button is pressed -> not draggable anymore, rather rotate?
+			// check if ctrl button is pressed -> something else?
+
     	//TODO: on click: bring card to front (this.z = 2, every other card= 1
+    	//send card move message
+    	console.log("Click!")
 		})
 		return this
 	},

@@ -63,18 +63,9 @@ function createCards(cardCount) {
 	//create crafty game objects
 	for (var i=0; i<cardCount; i++)
 	{
-		console.log(cardSource.componentPrefix+1)
 		var card = Crafty.e("Card") //TODO
 								.makeCard(100,100);
 		cards.push(card)
-		
-		/*
-		var top = i*3+50;
-		var left = i*3+10;
-		$('#cardContainer').append('<div id="card_'+i+'"  class="flip_card card-boarder" style="top:'+top+'px; left:'+left+'px; " ></div>');
-		$("#card_"+i).html($("#cardBackContent").html());
-		addClickHandler(i);
-		*/
 	}
 }
 

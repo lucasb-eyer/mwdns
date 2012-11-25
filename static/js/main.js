@@ -25,14 +25,18 @@ function connect() {
 	}
 }
 
+var MOVEMENT_SPEED = 50
+
 function handleMessage(msg){
 	var json = jQuery.parseJSON(msg);
 	if ( json.msg == "initBoard" ) {
 		createCards(json.cardCount)
 	} else if ( json.msg == "cardMove" ) {
-		//TODO: move respective card (json.id)
+		//move respective card (json.id)
+		cards[json.id].tween({x: json.x, y:json.y}, MOVEMENT_SPEED)
 	} else if ( json.msg == "cardFlip" ) {
 		//TODO: flip cards
+		//cards[json.id].image(cardSource.getCardImg(json.id))
 	} else if ( json.msg == "player" ) {
 		//TODO: what was this one again?
 	} else if ( json.msg == "end" ) {
