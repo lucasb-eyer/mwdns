@@ -14,8 +14,8 @@ import (
 )
 
 var addr = flag.String("addr", ":8080", "http service address")
-var homeTempl = template.Must(template.ParseFiles("templates/start.html"))
-var gameTempl = template.Must(template.ParseFiles("templates/game.html"))
+var homeTempl = template.Must(template.ParseFiles("templates/startView.html"))
+var gameTempl = template.Must(template.ParseFiles("templates/gameView.html"))
 var activeGames = make(map[string]*Game)
 
 const (
