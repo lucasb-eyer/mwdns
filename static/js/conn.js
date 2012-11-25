@@ -1,3 +1,5 @@
+//THIS FILE IS UNUSED, left for easy functionality lookup
+
 var conn
 
 var zalando = new Array();
@@ -105,48 +107,14 @@ function handleMessage(msg){
 	}
 }
 
+/*
 function flipCardFront(card,json) {
 	card.html($("#cardContent").html())
 	$(card).find("img").attr("src",zalando[json.type])
 	$(card).find(".informativeText").html("<a style='text-decoration: none;  color: black;' href='http://www.zalando.de/"+zalandoLinks[json.type]+"'>"+zalandoNames[json.type]+"</a>")
-/*
-    	 			flippingCard.flippy({
-						content:$("#cardContent"),
-						direction:"LEFT",
-						duration:"350",
-						onStart:function(){
-							flippingCard.removeClass('card-boarder')
-							$("#cardContent img").attr('src',zalando[y]);
-							if (y <= x){
-								y = y + 1;
-							}
-						},
-						onFinish:function(){
-							flippingCard.addClass('card-boarder');
-						}
-					});
-*/
 }
 
 function flipCardBack(card,json) {
 	card.html($("#cardBackContent").html())
-/*
-			var cont = $("#cardBackContent")
-			var flippingCard = $('#card_'+json.id);
-    	 			flippingCard.flippy({
-						content:cont,
-						direction:"LEFT",
-						duration:"350",
-						onStart:function(){
-							flippingCard.removeClass('card-boarder')
-							$("#cardContent img").attr('src','1');
-						//if (y <= x){
-							//y = y + 1;
-						//}
-						},
-						onFinish:function(){
-							flippingCard.addClass('card-boarder');
-						}
-					});
-*/
 }
+*/
