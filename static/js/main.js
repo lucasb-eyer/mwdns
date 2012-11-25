@@ -33,7 +33,7 @@ function handleMessage(msg){
 		createCards(json.cardCount)
 	} else if ( json.msg == "cardMove" ) {
 		//move respective card (json.id)
-		cards[json.id].tween({x: json.x, y:json.y}, MOVEMENT_SPEED)
+		cards[json.id].tween({x: json.x, y:json.y, rotation: json.phi}, MOVEMENT_SPEED)
 	} else if ( json.msg == "cardFlip" ) {
 		//TODO: flip cards
 		//cards[json.id].image(cardSource.getCardImg(json.id))
