@@ -2,11 +2,12 @@
 Crafty.scene("loading", function () {
 	//load takes an array of assets and a callback when the preloading is complete
 	Crafty.load(assets, function () {
-			connect() //connect websocket to the server when we are ready to show the board
+			initAssets()
 
 			//when everything is loaded, run the main scene
 			//enterprise edition: it takes longer because it was expensive (also because I want to see how the loading screen looks)
-			window.setTimeout(function() {Crafty.scene("main");}, 3*1000)
+			//window.setTimeout(function() {Crafty.scene("main");}, 3*1000)
+			Crafty.scene("main");
 	});
 	
 	//black background with some loading text
@@ -17,5 +18,5 @@ Crafty.scene("loading", function () {
 });
 
 Crafty.scene("main", function () {
-	//Crafty.background("#F00");
+	connect() //connect websocket to the server when we are ready to show the board
 });

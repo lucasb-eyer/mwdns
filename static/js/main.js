@@ -17,6 +17,7 @@ function connect() {
 			console.log(evt) //DEBUG
 		}
 		conn.onmessage = function(evt) {
+			console.log("Msg:" + evt.data) //DEBUG
 			handleMessage(evt.data);
 		}
 	} else {
@@ -40,5 +41,5 @@ function handleMessage(msg){
 }
 
 $(document).ready(function() {
-	initBoard()
+	init()
 })
