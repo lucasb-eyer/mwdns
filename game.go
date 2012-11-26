@@ -119,19 +119,6 @@ type Card struct {
 	Type int
 }
 
-func (c *Card) GetJsonCard() string {
-	Type := NO_TYPE
-	if c.IsOpen {
-		Type = c.Type
-	}
-
-	return fmt.Sprintf(`{"msg": "card", "id": %v, "x": %v, "y": %v, "phi": %v, "type": %v}`, c.Id, c.X, c.Y, c.Phi, Type)
-}
-
-func (c *Card) GetJsonCardAlways() string {
-	return fmt.Sprintf(`{"msg": "card", "id": %v, "x": %v, "y": %v, "phi": %v, "type": %v}`, c.Id, c.X, c.Y, c.Phi, c.Type)
-}
-
 func (c *Card) GetJsonCardMove() string {
 	return fmt.Sprintf(`{"msg": "cardMove", "id": %v, "x": %v, "y": %v, "phi": %v}`, c.Id, c.X, c.Y, c.Phi)
 }
@@ -172,6 +159,7 @@ func NewGame(cardCount, gameType int) *Game {
 			Id:   i,
 			X:    rand.Intn(g.BoardSizeX),
 			Y:    rand.Intn(g.BoardSizeY),
+			//grid positioning: TODO card sizes
 			//X:    (i % 7)*180 + rand.Intn(10) - 5,
 			//Y:    (i / 7)*250 + rand.Intn(10) - 5,
 			Phi:  (float64)(rand.Intn(2*360)-360),
@@ -380,7 +368,6 @@ func (g *Game) MoveCard(cardp cardPosition) {
 	card.X = cardp.X
 	card.Y = cardp.Y
 	card.Phi = cardp.Phi
-	//g.Broadcast(card.GetJsonCard())
 	g.Broadcast(card.GetJsonCardMove())
 }
 
@@ -391,8 +378,8 @@ func (g *Game) Chat(pname, msg string) {
 // sends a board state to a player (ALL the cards)
 func (g *Game) SendBoardState(p *Player) {
 	for _, val := range g.Cards {
-		//p.send <- val.GetJsonCard()
 		p.send <- val.GetJsonCardMove()
+		p.send <- val.GetJsonCardFlip()
 	}
 }
 
