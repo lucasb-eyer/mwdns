@@ -64,7 +64,7 @@ function createCards(cardCount) {
 	for (var i=0; i<cardCount; i++)
 	{
 		var card = Crafty.e("Card") //TODO
-								.makeCard(100,100);
+								.makeCard(WIDTH/2,HEIGHT/2); //TODO: in the middle of the board, rather than the screen
 		cards.push(card)
 	}
 }

@@ -156,6 +156,11 @@ func NewGame(cardCount, gameType int) *Game {
 	g.Cards = make(map[int]*Card)
 	g.cardCountLeft = cardCount
 
+	// the size is padded client size, so the cards are always completely visible (eg +cardDim/2 at sides)
+	//TODO: to position the cards, the server would need to know the card size? (or we keep it fix)
+	g.BoardSizeY = 600 //TODO sane size
+	g.BoardSizeX = 1200
+
 	g.registerPlayer = make(chan *Player)
 	g.unregisterPlayer = make(chan *Player)
 	g.incomingPlayerMessages = make(chan string)
@@ -165,11 +170,11 @@ func NewGame(cardCount, gameType int) *Game {
 	for i := 0; i < cardCount; i++ {
 		c := Card{
 			Id:   i,
-//			X:    rand.Intn(DEFAULT_W),
-//			Y:    rand.Intn(DEFAULT_H),
-			X:    (i % 7)*180 + rand.Intn(10) - 5,
-			Y:    (i / 7)*250 + rand.Intn(10) - 5,
-			Phi:  (float64)(rand.Intn(20) - 10),
+			X:    rand.Intn(g.BoardSizeX),
+			Y:    rand.Intn(g.BoardSizeY),
+			//X:    (i % 7)*180 + rand.Intn(10) - 5,
+			//Y:    (i / 7)*250 + rand.Intn(10) - 5,
+			Phi:  (float64)(rand.Intn(2*360)-360),
 			Type: shuffling_aux[i] / 2,
 			IsOpen: false}
 
@@ -191,6 +196,9 @@ type Game struct {
 	maxPlayerId int
 	Cards       map[int]*Card
 	cardCountLeft int //how many cards are still playable
+
+	BoardSizeX	int
+	BoardSizeY	int
 
 	Type int
 
@@ -346,7 +354,7 @@ func (g *Game) TryFlip(p *Player, cardid int) {
 				// Shuffle some random cards around randomly.
 				for k, _ := range(g.Cards) {
 					if rand.Intn(5) == 0 {
-						g.MoveCard(cardPosition{Id:k, X: rand.Intn(DEFAULT_W), Y: rand.Intn(DEFAULT_H), Phi: 0.0})
+						g.MoveCard(cardPosition{Id:k, X: rand.Intn(g.BoardSizeX), Y: rand.Intn(g.BoardSizeY), Phi: 0.0})
 					}
 				}
 			}
@@ -389,5 +397,5 @@ func (g *Game) SendBoardState(p *Player) {
 }
 
 func (g *Game) SendInitBoard(p *Player) {
-	p.send <- fmt.Sprintf(`{"msg": "initBoard", "cardCount": %v}`,len(g.Cards))
+	p.send <- fmt.Sprintf(`{"msg": "initBoard", "cardCount": %v, "boardSizeX": %v, "boardSizeY": %v}`,len(g.Cards),g.BoardSizeX,g.BoardSizeY)
 }

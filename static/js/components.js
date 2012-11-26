@@ -3,6 +3,10 @@
 
 Crafty.c("Card", {
 	ready: true,
+	isBeingDragged: false,
+	isBeingRotated: false,
+	isBeingClicked: false,
+
 	init: function() {
 		this.requires("2D,DOM,Color,Sprite,Image,Multiway,Draggable,Tween");
 	},
@@ -16,16 +20,43 @@ Crafty.c("Card", {
 		.bind("EnterFrame", function() {
 			//is there something to do on each frame?
 		})
-		.bind('Click', function() {
-			// check if shift button is pressed -> not draggable anymore, rather rotate?
-			// check if ctrl button is pressed -> something else?
+		.bind('Dragging', function() {})
+		//TODO: a more intuitive clicking/rotation model
+		.bind('MouseDown', function() {
+			//TODO: check if card movement is actually possible, or tell the server and he "answers" with the correct position (card will move back)
+			// check if shift button is pressed -> not draggable anymore, drag that card around.
+			if (Crafty.keydown[Crafty.keys.SHIFT]) {
+				this.enableDrag().startDrag()
+				this.isBeingDragged = true
 
-    	//TODO: on click: bring card to front (this.z = 2, every other card= 1
-    	//send card move message
-    	console.log("Click!")
+			// check if ctrl button is pressed -> rotate card?
+			} else if (Crafty.keydown[Crafty.keys.CTRL]) {
+				this.isBeingRotated = true
+				console.log("Rotate!") //TODO
+			} else {
+				this.isBeingClicked = true
+			}
 		})
-		return this
-	},
+		.bind('MouseUp', function() {
+			if (this.isBeingDragged) {
+				this.isBeingDragged = false
+				this.disableDrag()
+			} else if (this.isBeingRotated) {
+				this.isBeingRotated = false
+			} else if (this.isBeingClicked) {
+    		console.log("A true click!")
+			}
+		})
+		.bind('MouseOut', function() {
+			this.isBeingClicked = false
+			if (this.isBeingRotated) {
+				this.isBeingRotated = false
+			}
+		})
+		.bind('Click', function() {
+		})
+		.disableDrag()
 
-	
+		return this
+	}
 })
