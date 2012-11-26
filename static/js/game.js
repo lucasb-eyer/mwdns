@@ -61,10 +61,11 @@ function createCards(cardCount) {
 	}
 
 	//create crafty game objects
-	for (var i=0; i<cardCount; i++)
+	//assumes card ids start with 0 and cover the whole range to count-1
+	for (var i=0; i<cardCount; i++) 
 	{
-		var card = Crafty.e("Card") //TODO
-								.makeCard(WIDTH/2,HEIGHT/2); //TODO: in the middle of the board, rather than the screen
+		var card = Crafty.e("Card")
+								.makeCard(WIDTH/2,HEIGHT/2,i); //TODO: in the middle of the board, rather than the screen
 		cards.push(card)
 	}
 }

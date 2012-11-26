@@ -10,9 +10,9 @@ Crafty.c("Card", {
 	init: function() {
 		this.requires("2D,DOM,Color,Sprite,Image,Multiway,Draggable,Tween");
 	},
-	makeCard: function(x,y) {
+	makeCard: function(x,y,id) {
 		this.color("#000")
-		.attr({x:x,y:y,w:200,h:200,z:1})
+		.attr({x:x,y:y,w:200,h:200,z:1,id:id})
 		.css("border", "3px solid white") // card borders
 		.image(deckFaceImg, "repeat")
 		.origin("center")
@@ -40,17 +40,28 @@ Crafty.c("Card", {
 		.bind('MouseUp', function() {
 			if (this.isBeingDragged) {
 				this.isBeingDragged = false
+				//TODO: not tested - encode json " as '
+				this._broadcastPosition()
 				this.disableDrag()
 			} else if (this.isBeingRotated) {
 				this.isBeingRotated = false
+				this._broadcastPosition()
 			} else if (this.isBeingClicked) {
-    		console.log("A true click!")
+				this.isBeingClicked = false
+				conn.send('{"wantFlip": "'+this.id+'"}');
+			}
+		})
+		.bind('MouseMove', function() {
+			if (this.isBeingRotated) {
+				//TODO: compute the new card rotation, depending on mouse movement
+				console.log("rotation changing!")
 			}
 		})
 		.bind('MouseOut', function() {
 			this.isBeingClicked = false
 			if (this.isBeingRotated) {
 				this.isBeingRotated = false
+				this._broadcastPosition()
 			}
 		})
 		.bind('Click', function() {
@@ -58,5 +69,15 @@ Crafty.c("Card", {
 		.disableDrag()
 
 		return this
+	},
+	// actually more something like broadcast rotation
+	_broadcastPosition: function() {
+		var contentStr = JSON.stringify({
+			id: this.id, 
+			x: Math.floor(this.x),
+			y: Math.floor(this.y), 
+			phi: this.rotation})
+		contentStr = contentStr.replace(/"/g,"'")
+		conn.send('{"moveCard": "'+contentStr+'"}');
 	}
 })

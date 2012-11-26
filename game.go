@@ -9,6 +9,7 @@ import (
 	"code.google.com/p/go.net/websocket"
 	"container/list"
 	"encoding/json"
+	"strings"
 )
 
 const (
@@ -41,6 +42,7 @@ func (p *Player) reader() {
 			log.Fatalln("JSON decode error:", err)
 		}
 
+		//TODO: unmarshal errors here crash the server, rather drop invalid messages: logging, but otherwise ignoring them
 		//process each single message, depending on the type key
 		for k, v := range metaMessage {
 			switch k {
@@ -56,8 +58,12 @@ func (p *Player) reader() {
 				log.Println("got chat message: ", v)
 				p.Game.Chat(fmt.Sprintf("%v", p.Id), v)
 			case "moveCard":
-				msgReader := bytes.NewReader([]byte(message))
-				dec := json.NewDecoder(msgReader)
+				//TODO: REALLY take care of malformed incoming messages... this sucks
+				//TODO: v looks wrong here? -> server crashes
+				content := strings.Replace(v,"'","\"",-1) //decode makeshift json encoding
+
+				contentReader := strings.NewReader(content)
+				dec := json.NewDecoder(contentReader)
 				var cardpos cardPosition
 				if err := dec.Decode(&cardpos); err != nil {
 					log.Fatalln("JSON decode error in moveCard:", err)
@@ -157,6 +163,7 @@ func NewGame(cardCount, gameType int) *Game {
 	for i := 0; i < cardCount; i++ {
 		c := Card{
 			Id:   i,
+			//in fact this could be formulated as a circle packing problem
 			X:    rand.Intn(g.BoardSizeX),
 			Y:    rand.Intn(g.BoardSizeY),
 			//grid positioning: TODO card sizes
