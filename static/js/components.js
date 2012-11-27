@@ -1,5 +1,8 @@
 // use .enableDrag/.disableDrag to stop the cards from moving
 // TODO: add listener to transmit movement to the server
+//
+
+var PADDING = 10
 
 Crafty.c("Card", {
 	ready: true,
@@ -8,13 +11,21 @@ Crafty.c("Card", {
 	isBeingClicked: false,
 
 	init: function() {
-		this.requires("2D,DOM,Color,Sprite,Image,Multiway,Draggable,Tween");
+		this.requires("2D,Canvas,Multiway,Draggable,Tween");
+		var draw = function(e) {
+			var ctx = e.ctx
+			ctx.fillStyle= "#FFF"
+			ctx.fillRect(e.pos._x, e.pos._y, e.pos._w, e.pos._h); 
+			ctx.fillStyle = ctx.createPattern(deckFaceImg, "repeat");
+			ctx.fillRect(e.pos._x+PADDING, e.pos._y+PADDING, e.pos._w-2*PADDING, e.pos._h-2*PADDING); 
+		}
+
+		this.bind("Draw",draw)
 	},
 	makeCard: function(x,y,id) {
-		this.color("#000")
-		.attr({x:x,y:y,w:200,h:200,z:1,id:id})
-		.css("border", "3px solid white") // card borders
-		.image(deckFaceImg, "repeat")
+		this.attr({x:x,y:y,w:200,h:200,z:1,id:id})
+		//.css("border", "3px solid white") // card borders
+		//.image(deckFaceImg, "repeat")
 		.origin("center")
 		.multiway(0.5)
 		.bind("EnterFrame", function() {
@@ -63,8 +74,6 @@ Crafty.c("Card", {
 				this.isBeingRotated = false
 				this._broadcastPosition()
 			}
-		})
-		.bind('Click', function() {
 		})
 		.disableDrag()
 

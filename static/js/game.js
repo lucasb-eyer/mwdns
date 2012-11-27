@@ -18,7 +18,7 @@ function init() {
 
 	//start crafty
 	Crafty.init(WIDTH, HEIGHT)
-	//Crafty.canvas.init(); //to use a canvas instead of dom elements (slower)
+	Crafty.canvas.init(); //to use a canvas instead of dom elements (slower)
 
 	Crafty.scene("loading")
 }
@@ -44,7 +44,10 @@ function TileMapArmor() {
 var cardSource
 var deckFaceImg
 function initAssets() {
-	deckFaceImg = "/static/img/patterns/subtle/vichy.png"
+	var ctx = Crafty.canvas.context
+	deckFaceImg = new Image()
+	deckFaceImg.src = "/static/img/patterns/subtle/vichy.png"
+
 	cardSource = new TileMapArmor()
 	if (cardSource.isTileMap) {
 		Crafty.sprite(cardSource.cardSize, cardSource.path, cardSource.map);

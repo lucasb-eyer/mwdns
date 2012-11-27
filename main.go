@@ -61,10 +61,11 @@ func gameHandler(w http.ResponseWriter, req *http.Request) {
 		log.Println("New game of type ", gameType, " with ", nCards, " cards created: ", gameId)
 		go g.Run()
 
-		http.Redirect(w, req, fmt.Sprintf("game?g=%v", gameId), 303)
+		http.Redirect(w, req, fmt.Sprintf("/game?g=%v", gameId), 303)
 	} else {
-		// TODO: game already exists.
-		log.Println("Game ", gameId, "requested")
+		//game already exists.
+		//TODO: why is this printed so often? (31 times...)
+		log.Println("Game", gameId, "requested")
 		gameTempl.Execute(w, req.Host)
 	}
 }
