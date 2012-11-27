@@ -2,7 +2,8 @@
 // TODO: add listener to transmit movement to the server
 //
 
-var PADDING = 10
+var CARD_PADDING = 10
+var CARD_TURNBACK_TIMEOUT = 1000 //ms
 
 Crafty.c("Card", {
 	ready: true,
@@ -10,22 +11,62 @@ Crafty.c("Card", {
 	isBeingRotated: false,
 	isBeingClicked: false,
 
+	type: -1, //backside = -1, otherwise side is the image id to display
+
+	waitingForFlipback: false, //TODO: in fact, this might better be realized with a counter... but these are obscure cases
+	// this solution does not prevent early flipping back
+	doFlipCard: function(type) { 
+	//this actually DOES flip the card, without timeouts
+		if (this.waitingForFlipback || type != -1) {
+			this.waitingForFlipback = false
+			this.type = type
+			this.trigger("Change") // redraw self
+		}
+	},
+	flipCard: function(type) {
+	// considers a healthy timeout, if the card is flipped back
+		// this code is quite ugly
+		if (type == -1) {
+			this.waitingForFlipback = true
+			this.timeout(function(){this.doFlipCard(type)}, CARD_TURNBACK_TIMEOUT)
+		} else {
+			this.doFlipCard(type)
+		}
+	},
 	init: function() {
 		this.requires("2D,Canvas,Multiway,Draggable,Tween");
 		var draw = function(e) {
+			var x = e.pos._x
+				, y = e.pos._y
+				, w = e.pos._w
+				, h = e.pos._h
+
 			var ctx = e.ctx
+			ctx.strokeStyle = "#000"
+			ctx.lineWidth = 0.05
 			ctx.fillStyle= "#FFF"
-			ctx.fillRect(e.pos._x, e.pos._y, e.pos._w, e.pos._h); 
-			ctx.fillStyle = ctx.createPattern(deckFaceImg, "repeat");
-			ctx.fillRect(e.pos._x+PADDING, e.pos._y+PADDING, e.pos._w-2*PADDING, e.pos._h-2*PADDING); 
+			ctx.fillRect(x,y,w,h);
+			ctx.strokeRect(x,y,w,h);
+
+			var inx = e.pos._x+CARD_PADDING
+				, iny = e.pos._y+CARD_PADDING
+				, inw = e.pos._w-2*CARD_PADDING
+				, inh = e.pos._h-2*CARD_PADDING
+			if (this.type == -1) {
+				ctx.fillStyle = ctx.createPattern(deckFaceImg, "repeat");
+				ctx.fillRect(inx,iny,inw,inh); 
+			} else {
+				//FILL with a color
+				//ctx.fillStyle = "#F00"
+				//ctx.fillRect(inx,iny,inw,inh); 
+				cardSource.drawImg(this.type, ctx, inx,iny,inw,inh)
+			}
 		}
 
 		this.bind("Draw",draw)
 	},
 	makeCard: function(x,y,id) {
 		this.attr({x:x,y:y,w:200,h:200,z:1,id:id})
-		//.css("border", "3px solid white") // card borders
-		//.image(deckFaceImg, "repeat")
 		.origin("center")
 		.multiway(0.5)
 		.bind("EnterFrame", function() {

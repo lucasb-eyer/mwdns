@@ -36,10 +36,9 @@ function handleMessage(msg){
 		//move respective card (json.id)
 		cards[json.id].tween({x: json.x, y:json.y, rotation: json.phi}, MOVEMENT_SPEED)
 	} else if ( json.msg == "cardFlip" ) {
-		//TODO: flip cards
-		//cards[json.id].image(cardSource.getCardImg(json.id))
+			cards[json.id].flipCard(json.type)
 	} else if ( json.msg == "player" ) {
-		//TODO: what was this one again?
+		//TODO
 	} else if ( json.msg == "end" ) {
 		//TODO: display final game screen (scores, winner, new game)
 	}

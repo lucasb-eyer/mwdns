@@ -24,20 +24,39 @@ function init() {
 }
 
 function TileMapArmor() {
-	this.map = {}
-	this.isTileMap = true
 	this.name = "Armor"
-	this.componentPrefix = "armor"
 
+	this.isTileMap = true
+	//only relevant for tileMaps
+	this.imgCountX = 5
+	this.imgCountY = 5
+	this.tileSize = 50
 	this.fileName = "flare_armor.png"
 	this.path = getAssetPath(this.fileName)
+	//TODO: handle lists of single images?
 
 	this.count = 24
-	this.tileSize = 64
 
-	for (var i = 1; i < 25; i++) {
-		this.map[this.componentPrefix+(i-1)] = [i%5,Math.floor(i/5)]
+	this.load = function() {
+		if (this.isTileMap) {
+			this.sourceImage = new Image()
+			this.sourceImage.src = this.path	
+
+			this.images = []
+			this.tilePosMap = {}
+			for (var i = 1; i < 25; i++) {
+				this.tilePosMap[(i-1)] = [i%this.imgCountX,Math.floor(i/this.imgCountY)]
+			}
+		}
 	}
+
+	this.drawImg = function(id, ctx,x,y,w,h) {
+		if (this.isTileMap) {
+			var pos = this.tilePosMap[id]
+			ctx.drawImage(this.sourceImage, pos[0]*this.tileSize, pos[1]*this.tileSize, this.tileSize, this.tileSize, x,y,w,h)
+		}
+	}
+	this.load()
 }
 
 //TODO: rather a map with available image sources (TileMap objects)
