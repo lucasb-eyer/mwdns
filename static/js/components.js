@@ -11,7 +11,8 @@ Crafty.c("Card", {
 	isBeingDragged: false,
 	isBeingRotated: false,
 	isBeingClicked: false,
-	preDragPosition: [0,0],
+	preDragPos: [0,0],
+	preRotAngle: 0,
 
 	type: -1, //backside = -1, otherwise side is the image id to display
 
@@ -82,12 +83,11 @@ Crafty.c("Card", {
 			//TODO: check if card movement is actually possible, or tell the server and he "answers" with the correct position (card will move back)
 			// isBeingClicked has changed meaning - it is now more like "isMouseButtonPressed"
 			this.isBeingClicked = true
+			this.preDragPos = [e.x, e.y]
 			// check if ctrl button is pressed -> rotate card?
 			if (Crafty.keydown[Crafty.keys.CTRL]) {
 				this.isBeingRotated = true
-				console.log("Rotate!") //TODO
-			} else {
-				this.preDragPosition = [e.x, e.y]
+				this.preRotAngle = this.rotation
 			}
 		})
 		.bind('MouseUp', function() {
@@ -111,10 +111,18 @@ Crafty.c("Card", {
 			      dy = p1[1]-p2[1];
 			  return Math.sqrt(dx*dx+dy*dy);
 			}
+			angle_between = function(p1, p2) {
+			  var dx = p1[0]-p2[0],
+			      dy = p1[1]-p2[1];
+			  return Math.atan2(dy, dx) * 57.2957795
+			}
 			if (this.isBeingRotated) {
-				//TODO: compute the new card rotation, depending on mouse movement
-				console.log("rotation changing!")
-			} else if (this.isBeingClicked && !this.isBeingDragged && dist(this.preDragPosition, [e.x, e.y]) > DRAG_INERTIA) {
+				// Rotates the card around its center when moving the mouse around the center.
+				centerOfCard = [this.x+this.w/2, this.y+this.h/2]
+				startAngle = angle_between(centerOfCard, this.preDragPos)
+				currentAngle = angle_between(centerOfCard, [e.x, e.y])
+				this.rotation = this.preRotAngle + currentAngle - startAngle
+			} else if (this.isBeingClicked && !this.isBeingDragged && dist(this.preDragPos, [e.x, e.y]) > DRAG_INERTIA) {
 				// If the user is holding a mousebutton down while moving the mouse, he is dragging.
 				this.enableDrag().startDrag()
 				this.isBeingDragged = true
