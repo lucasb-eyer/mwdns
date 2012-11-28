@@ -7,6 +7,12 @@ function sgn() {
   }
 }
 
+function dist(p1, p2) {
+  var dx = p1[0]-p2[0],
+      dy = p1[1]-p2[1];
+  return Math.sqrt(dx*dx+dy*dy);
+}
+
 function randomRange(min, max)  {
   var range = (max-min) + 1;
   var rand = Math.floor( (Math.random()*range)%range );

@@ -4,12 +4,14 @@
 
 var CARD_PADDING = 10
 var CARD_TURNBACK_TIMEOUT = 1000 //ms
+var DRAG_INERTIA = 5 // pixel distance
 
 Crafty.c("Card", {
 	ready: true,
 	isBeingDragged: false,
 	isBeingRotated: false,
 	isBeingClicked: false,
+	preDragPosition: [0,0],
 
 	type: -1, //backside = -1, otherwise side is the image id to display
 
@@ -74,19 +76,18 @@ Crafty.c("Card", {
 		})
 		.bind('Dragging', function() {})
 		//TODO: a more intuitive clicking/rotation model
-		.bind('MouseDown', function() {
+		// Is this it? Dragging and clicking are simply left-click.
+		// If the mouse moves more than DRAG_INERTIA while being clicked, it becomes dragging.
+		.bind('MouseDown', function(e) {
 			//TODO: check if card movement is actually possible, or tell the server and he "answers" with the correct position (card will move back)
-			// check if shift button is pressed -> not draggable anymore, drag that card around.
-			if (Crafty.keydown[Crafty.keys.SHIFT]) {
-				this.enableDrag().startDrag()
-				this.isBeingDragged = true
-
+			// isBeingClicked has changed meaning - it is now more like "isMouseButtonPressed"
+			this.isBeingClicked = true
 			// check if ctrl button is pressed -> rotate card?
-			} else if (Crafty.keydown[Crafty.keys.CTRL]) {
+			if (Crafty.keydown[Crafty.keys.CTRL]) {
 				this.isBeingRotated = true
 				console.log("Rotate!") //TODO
 			} else {
-				this.isBeingClicked = true
+				this.preDragPosition = [e.x, e.y]
 			}
 		})
 		.bind('MouseUp', function() {
@@ -99,17 +100,28 @@ Crafty.c("Card", {
 				this.isBeingRotated = false
 				this._broadcastPosition()
 			} else if (this.isBeingClicked) {
-				this.isBeingClicked = false
 				conn.send('{"wantFlip": "'+this.id+'"}');
 			}
+			this.isBeingClicked = false
 		})
-		.bind('MouseMove', function() {
+		.bind('MouseMove', function(e) {
+			// TODO: I wanted to put this into helpers.js, but it was undefined here! What's your plan with helpers.js?
+			dist = function(p1, p2) {
+			  var dx = p1[0]-p2[0],
+			      dy = p1[1]-p2[1];
+			  return Math.sqrt(dx*dx+dy*dy);
+			}
 			if (this.isBeingRotated) {
 				//TODO: compute the new card rotation, depending on mouse movement
 				console.log("rotation changing!")
+			} else if (this.isBeingClicked && !this.isBeingDragged && dist(this.preDragPosition, [e.x, e.y]) > DRAG_INERTIA) {
+				// If the user is holding a mousebutton down while moving the mouse, he is dragging.
+				this.enableDrag().startDrag()
+				this.isBeingDragged = true
 			}
 		})
 		.bind('MouseOut', function() {
+			// TODO: shouldn't this be the same as MouseUp? Just 'lose' the card when leaving the window.
 			this.isBeingClicked = false
 			if (this.isBeingRotated) {
 				this.isBeingRotated = false
