@@ -10,6 +10,7 @@ import (
 	"container/list"
 	"encoding/json"
 	"strings"
+	"io"
 )
 
 const (
@@ -27,10 +28,10 @@ func (p *Player) reader() {
 	for {
 		var message string
 		err := websocket.Message.Receive(p.ws, &message)
-		if err == EOF {
+		if err == io.EOF {
 			log.Println("Client closed the connection.")
 			break
-		else if err != nil {
+		} else if err != nil {
 			log.Println("Got a socket read error: ", err)
 			break
 		}
