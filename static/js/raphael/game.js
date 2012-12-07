@@ -1,7 +1,7 @@
 var HEIGTH, WIDTH;
 
 var DRAG_INERTIA = 15 // pixel distance
-	, bla=2
+	, ROTATION_SPEED = 25
 
 var paper;
 
@@ -9,33 +9,50 @@ var viewX = 0
 var viewY = 0
 var viewZoom = 1
 
+function updateView() {
+	paper.setViewBox(viewX,viewY,WIDTH*zoom,HEIGHT*zoom,false)
+}
+
+function onZoomView(delta) {
+	zoom = Math.max(0.1,zoom-0.1*delta)
+	updateView()
+}
+
+function onRotateCard(card,delta) {
+	card.transform("...R"+delta*ROTATION_SPEED)
+	console.log("rotation!")
+}
 
 function startDragView () {
-    this.startX = viewX
-    this.startY = viewY
+	this.startX = viewX
+	this.startY = viewY
 }
 function moveDragView (dx, dy) {
 	viewX = this.startX-dx
 	viewY = this.startY-dy
-	paper.setViewBox(viewX,viewY,WIDTH*zoom,HEIGHT*zoom,false)
+	updateView()
 }
 function endDragView () {
 }
 
 function startDragCard() {
-    this.startX = this.attr("x")
-    this.startY = this.attr("y")
+	this.startX = this.attr("x")
+	this.startY = this.attr("y")
 }
 function moveDragCard(dx, dy) {
-		if (Math.sqrt(dx*dx+dy*dy) < DRAG_INERTIA && !this.dragging) {
-			//do nothing, clicking?
-		} else {
-			this.dragging=true
-		}
+	if (Math.sqrt(dx*dx+dy*dy) < DRAG_INERTIA && !this.dragging) {
+		//do nothing, clicking?
+	} else if (!this.dragging) {
+		this.dragging=true
+		var card = this
+		$(this.node).bind('mousewheel', function(event, delta) {
+			onRotateCard(card, delta);
+    });
+	}
 
-		if (this.dragging) {
-    	this.attr({x: this.startX + dx, y: this.startY + dy});
-		}
+	if (this.dragging) {
+		this.attr({x: this.startX + dx*zoom, y: this.startY + dy*zoom});
+	}
 }
 function endDragCard() {
 	if (this.dragging) {
@@ -46,6 +63,7 @@ function endDragCard() {
 	}
 
 	this.dragging = false
+	$(this.node).unbind('mousewheel');
 
 	/*
 	var contentStr = JSON.stringify({
@@ -71,17 +89,15 @@ function init() {
 	board.attr("fill", "#0f0");
 	board.attr("stroke", "#fff");
 	board.drag(moveDragView,startDragView,endDragView)
+	$(board.node).bind('mousewheel', function(event, delta) {
+		onZoomView(delta)
+    });
 
+	card = paper.rect(50,50,100,100); //center point, dimensions
+	card.attr("cardId", "1");
+	card.attr("fill", "#f00");
+	card.attr("stroke", "#000");
 
-	rect = paper.rect(50,50,100,100); //center point, dimensions
-	rect.attr("cardId", "1");
-	rect.attr("fill", "#f00");
-	rect.attr("stroke", "#000");
-
-	rect.dragging = false
-
-
-	rect.drag(moveDragCard,startDragCard,endDragCard)
-
-	paper.setViewBox(50,50,WIDTH*zoom,HEIGHT*zoom,false)
+	card.dragging = false
+	card.drag(moveDragCard,startDragCard,endDragCard)
 }
