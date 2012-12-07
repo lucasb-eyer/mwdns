@@ -9,7 +9,7 @@ Crafty.scene("loading", function () {
 			//window.setTimeout(function() {Crafty.scene("main");}, 3*1000)
 			Crafty.scene("main");
 	});
-	
+
 	//black background with some loading text
 	//Crafty.background("#FFF");
 	Crafty.e("2D, DOM, Text").attr({ w: 200, h: 40, x: WIDTH/2-100, y: HEIGHT/2-20})

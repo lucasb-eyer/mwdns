@@ -16,7 +16,7 @@ $(document).ready(function() {
 				if (index > 9){
 				 return false;
 				}
-	
+
 				zalandoLinks[index] = $(object).attr('href');
 			});
 
@@ -24,7 +24,7 @@ $(document).ready(function() {
 				if (index > 9){
 				 return false;
 				}
-	
+
 				zalando[index] = $(object).attr('longdesc');
 				zalandoNames[index] = $(object).attr('title');
 			});
@@ -82,13 +82,12 @@ function handleMessage(msg){
 
 		}
 	} else if ( json.msg == "cardMove" ){
-		$('#card_'+json.id).css('-webkit-transform','rotate('+json.phi+'deg)'); 
-		$('#card_'+json.id).css('-moz-transform','rotate('+json.phi+'deg)'); 
+		$('#card_'+json.id).css('-webkit-transform','rotate('+json.phi+'deg)');
+		$('#card_'+json.id).css('-moz-transform','rotate('+json.phi+'deg)');
 		$('#card_'+json.id).animate({
 			 left: json.x,
 			 top: json.y,
-			 
-	
+
 		}, 1000, function() {});
 
 	} else if ( json.msg == "cardFlip" ){

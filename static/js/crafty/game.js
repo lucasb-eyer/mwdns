@@ -1,10 +1,19 @@
 //nice tutorial: http://craftyjs.com/tutorial/bananabomber/create-a-game
 var WIDTH  = 500
 	, HEIGHT = 500
+	, MOVEMENT_SPEED = 30 //actually is movement time
 
 var assetPrefix = "/static/img/assets/"
 var assets = ["flare_armor.png"]
 assets = assets.map(getAssetPath)
+
+function animateMoveCard(id,x,y,phi) {
+	cards[id].tween({x: x, y:y, rotation: phi}, MOVEMENT_SPEED)
+}
+
+function flipCard(id,type) {
+	cards[id].flipCard(type)
+}
 
 function getAssetPath(asset) {
 	return assetPrefix+asset
@@ -40,7 +49,7 @@ function TileMapArmor() {
 	this.load = function() {
 		if (this.isTileMap) {
 			this.sourceImage = new Image()
-			this.sourceImage.src = this.path	
+			this.sourceImage.src = this.path
 
 			this.images = []
 			this.tilePosMap = {}
@@ -97,7 +106,7 @@ function createCards(cardCount) {
 	//assumes card ids start with 0 and cover the whole range to count-1
 	var x = WIDTH/2 - CARD_WIDTH/2
 	  , y = HEIGHT/2 - CARD_HEIGHT/2
-	for (var i=0; i<cardCount; i++) 
+	for (var i=0; i<cardCount; i++)
 	{
 		var card = Crafty.e("Card")
 								.makeCard(x,y,i); //TODO: in the middle of the board, rather than the screen
