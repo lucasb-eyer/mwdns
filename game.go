@@ -27,7 +27,10 @@ func (p *Player) reader() {
 	for {
 		var message string
 		err := websocket.Message.Receive(p.ws, &message)
-		if err != nil {
+		if err == EOF {
+			log.Println("Client closed the connection.")
+			break
+		else if err != nil {
 			log.Println("Got a socket read error: ", err)
 			break
 		}

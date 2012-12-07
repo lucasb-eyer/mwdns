@@ -75,6 +75,17 @@ function initAssets() {
 	}
 }
 
+function createBoard(w,h) {
+	//TODO: for some reason, this breaks EVERYTHING WHYY CRAFTY WHY
+	//Crafty.viewport.zoom(1.1, w/2, h/2, 1000) //just center, no zooming here
+
+	// this is supposed to center the board, DOES NOT
+	Crafty.viewport.x = (WIDTH-w) / 2 //view size - board size
+	Crafty.viewport.y = (HEIGHT-h) / 2
+
+	//Crafty.viewport.mouselook //this one is nice, enables moving around on the board
+}
+
 var cards = []
 function createCards(cardCount) {
 	if (cardCount > cardSource.count*2) {
@@ -84,10 +95,12 @@ function createCards(cardCount) {
 
 	//create crafty game objects
 	//assumes card ids start with 0 and cover the whole range to count-1
+	var x = WIDTH/2 - CARD_WIDTH/2
+	  , y = HEIGHT/2 - CARD_HEIGHT/2
 	for (var i=0; i<cardCount; i++) 
 	{
 		var card = Crafty.e("Card")
-								.makeCard(WIDTH/2,HEIGHT/2,i); //TODO: in the middle of the board, rather than the screen
+								.makeCard(x,y,i); //TODO: in the middle of the board, rather than the screen
 		cards.push(card)
 	}
 }

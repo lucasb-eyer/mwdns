@@ -4,7 +4,9 @@
 
 var CARD_PADDING = 10
 var CARD_TURNBACK_TIMEOUT = 1000 //ms
-var DRAG_INERTIA = 5 // pixel distance
+var DRAG_INERTIA = 15 // pixel distance
+var CARD_WIDTH = 200
+var CARD_HEIGHT = 200
 
 Crafty.c("Card", {
 	ready: true,
@@ -69,7 +71,7 @@ Crafty.c("Card", {
 		this.bind("Draw",draw)
 	},
 	makeCard: function(x,y,id) {
-		this.attr({x:x,y:y,w:200,h:200,z:1,id:id})
+		this.attr({x:x,y:y,w:CARD_WIDTH,h:CARD_HEIGHT,z:1,id:id})
 		.origin("center")
 		.multiway(0.5)
 		.bind("EnterFrame", function() {
@@ -93,7 +95,6 @@ Crafty.c("Card", {
 		.bind('MouseUp', function() {
 			if (this.isBeingDragged) {
 				this.isBeingDragged = false
-				//TODO: not tested - encode json " as '
 				this._broadcastPosition()
 				this.disableDrag()
 			} else if (this.isBeingRotated) {

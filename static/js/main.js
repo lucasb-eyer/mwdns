@@ -30,6 +30,7 @@ var MOVEMENT_SPEED = 30 //actually is movement time
 function handleMessage(msg){
 	var json = jQuery.parseJSON(msg);
 	if ( json.msg == "initBoard" ) {
+		createBoard(json.boardSizeX, json.boardSizeY)
 		createCards(json.cardCount)
 	} else if ( json.msg == "cardMove" ) {
 		//TODO: change duration, based on movement speed and movement distance
