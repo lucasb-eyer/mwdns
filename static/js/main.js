@@ -25,8 +25,6 @@ function connect() {
 	}
 }
 
-var MOVEMENT_SPEED = 30 //actually is movement time
-
 function handleMessage(msg){
 	var json = jQuery.parseJSON(msg);
 	if ( json.msg == "initBoard" ) {
@@ -35,9 +33,9 @@ function handleMessage(msg){
 	} else if ( json.msg == "cardMove" ) {
 		//TODO: change duration, based on movement speed and movement distance
 		//move respective card (json.id)
-		cards[json.id].tween({x: json.x, y:json.y, rotation: json.phi}, MOVEMENT_SPEED)
+		//cards[json.id].tween({x: json.x, y:json.y, rotation: json.phi}, MOVEMENT_SPEED)
 	} else if ( json.msg == "cardFlip" ) {
-			cards[json.id].flipCard(json.type)
+			//cards[json.id].flipCard(json.type)
 	} else if ( json.msg == "player" ) {
 		//TODO
 	} else if ( json.msg == "end" ) {
@@ -47,4 +45,5 @@ function handleMessage(msg){
 
 $(document).ready(function() {
 	init()
+	connect()
 })

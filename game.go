@@ -155,8 +155,8 @@ func NewGame(cardCount, gameType int) *Game {
 
 	// the size is padded client size, so the cards are always completely visible (eg +cardDim/2 at sides)
 	//TODO: to position the cards, the server would need to know the card size? (or we keep it fix)
-	g.BoardSizeY = 600 //TODO sane size
-	g.BoardSizeX = 1200
+	g.BoardSizeY = 1000 //TODO sane size
+	g.BoardSizeX = 1000
 
 	g.registerPlayer = make(chan *Player)
 	g.unregisterPlayer = make(chan *Player)

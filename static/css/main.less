@@ -6,6 +6,14 @@ body {
 	background-image: @background;
 	background-repeat: repeat;
 	text-align: center;
+
+	//disable selecting the background
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
 }
 
 #content {
@@ -32,13 +40,14 @@ body {
 }
 
 .gameCard {
-	width: 10%;
-	height: 10%;
-	background-color: red;
+	position: absolute;
+	top: 0;
+	left: 0;
+	display: block;
+	background-color: white;
 	border: 1px solid black;
 	img {
 		width: 100%;
 		height: 100%;
-
 	}
 }

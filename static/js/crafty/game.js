@@ -105,3 +105,11 @@ function createCards(cardCount) {
 	}
 }
 
+function createBoard(width,height) {
+
+}
+
+function createCards(cardCount) {
+
+}
+
