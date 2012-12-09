@@ -9,21 +9,44 @@ function onMoveDragBoard() {
 function onStopDragBoard() {
 }
 
-function onStartDragCard() {
-	//TODO: set z-index higher so it is on top
+function onStartDrag(obj,e) {
+	obj.isBeingClicked = true
+	obj.preDragPos = [e.pageX, e.pageY]
+	obj.node.css("z-index",9000)
+	console.log(obj.preDragPos)
 }
-function onMoveDragCard() {
+
+function onMoveDrag (obj,e) {
+	// TODO: I wanted to put obj into helpers.js, but it was undefined here! What's your plan with helpers.js?
+	if (obj.isBeingClicked && !obj.isBeingDragged && dist(obj.preDragPos, [e.pageX, e.pageY]) > DRAG_INERTIA) {
+		// If the user is holding a mousebutton down while moving the mouse, he is dragging.
+		obj.isBeingDragged = true
+	}
+
+	if (obj.isBeingDragged) {
+		obj.x = e.pageX
+		obj.y = e.pageY
+		obj.node.css("top",obj.y)
+		obj.node.css("left",obj.x)
+	}
 }
-function onStopDragCard() {
-	//TODO: tell the server about the new position, correct if out of the board?
-	// server decides what is too far... and sets stuff back on need
+
+function onStopDrag(obj,e) {
+	if (obj.isBeingDragged) {
+		obj.isBeingDragged = false
+		//obj._broadcastPosition()
+	} else if (obj.isBeingClicked) {
+		conn.send('{"wantFlip": "'+obj.cardId+'"}');
+	}
+	obj.isBeingClicked = false
+	obj.node.css("z-index",obj.cardId)
 
 	/*
 	var contentStr = JSON.stringify({
-		id: this.attr("cardId"),
-		x: Math.floor(this.attr("x")),
-		y: Math.floor(this.attr("y")),
-		phi: this.rotation})
+		id: obj.attr("cardId"),
+		x: Math.floor(obj.attr("x")),
+		y: Math.floor(obj.attr("y")),
+		phi: obj.rotation})
 	contentStr = contentStr.replace(/"/g,"'")
 	conn.send('{"moveCard": "'+contentStr+'"}');
 	*/
@@ -42,7 +65,7 @@ function Board(w,h) {
 		this.node = $('<div id="gameBoard"></div>')
 		this.node.css("width",this.width)
 		this.node.css("height",this.height)
-		this.node.draggable({start: onStartDragBoard, drag: onMoveDragBoard, stop: onStopDragBoard})
+		//this.node.draggable({start: onStartDragBoard, drag: onMoveDragBoard, stop: onStopDragBoard})
 	}
 }
 
@@ -60,6 +83,9 @@ function Card(cardId,type,x,y,w,h) {
 	this.width = w
 	this.height = h
 
+	this.isBeingClicked = false
+	this.isBeingDragged = false
+
 	this.create = function() {
 		this.node = $('<div id="card_'+this.cardId+'" class="gameCard"><img></img></div>')
 
@@ -69,21 +95,26 @@ function Card(cardId,type,x,y,w,h) {
 
 		this.node.css("width", this.width)
 		this.node.css("height", this.height)
-		//this.node.css("margin-top", -this.height/2)
-		//this.node.css("margin-left", -this.width/2)
-		this.node.draggable({distance: DRAG_INERTIA, start: onStartDragCard, drag: onMoveDragCard, stop: onStopDragCard})
+		this.node.css("margin-top", (-this.width/2)+"px")
+		this.node.css("margin-left", (-this.height/2)+"px")
+
+		//this.node.draggable({	distance: DRAG_INERTIA, start: onStartDragCard, drag: onMoveDragCard, stop: onStopDragCard,
+													//containment: "#gameBoard"})
 		//										 zIndex: this.cardId, preventCollision: false }) //this does not allow for overlapping
 
+		var obj = this
+		this.node.bind("mousedown", function(e){onStartDrag(obj,e)});
+		//TODO: add general on mousemove listener for whole body, or change z-index of dragged object
+		this.node.bind("mousemove", function(e){onMoveDrag(obj,e)});
+		this.node.bind("mouseup", function(e){onStopDrag(obj,e)});
+
 		var cardId = this.cardId
-		this.node.click(function() { console.log("r! CLICK! Id:"+cardId) }) //TODO
 	}
 }
 
 function createCards(cardCount) {
-	//var defaultCardX = gameBoard.width/2
-	//var defaultCardY = gameBoard.height/2
-	var defaultCardX = 0
-	var defaultCardY = 0
+	var defaultCardX = gameBoard.width/2
+	var defaultCardY = gameBoard.height/2
 
 	for (var i = 0; i < cardCount; i++) {
 		card = new Card(i,-1,defaultCardX,defaultCardY,100,100)
