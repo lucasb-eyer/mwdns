@@ -92,3 +92,10 @@ function randomHappyColor() {
 
   return s;
 }
+
+var scaleKeys = ["-moz-transform", "-webkit-transform", "-o-transform", "transform"]
+function setScale(jqueryNode, scale) {
+	for (var i in scaleKeys) {
+		jqueryNode.css(scaleKeys[i],"scale("+scale+","+scale+")")
+	}
+}
