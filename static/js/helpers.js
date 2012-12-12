@@ -94,8 +94,10 @@ function randomHappyColor() {
 }
 
 var scaleKeys = ["-moz-transform", "-webkit-transform", "-o-transform", "transform"]
+var transformOriginKeys = ["-moz-transform-origin", "-webkit-transform-origin", "-o-transform-origin", "transform-origin"]
 function setScale(jqueryNode, scale) {
 	for (var i in scaleKeys) {
 		jqueryNode.css(scaleKeys[i],"scale("+scale+","+scale+")")
+		jqueryNode.css(transformOriginKeys[i],"top left")
 	}
 }

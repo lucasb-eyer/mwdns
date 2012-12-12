@@ -12,16 +12,17 @@ Camera.prototype.move = function(x,y) {
 
 Camera.prototype.updateObjects = function() {
 	//TODO: update the positions of all elements depending on the new camera position/zoom
-	//TODO: this usage of zoomFactor implies, that zoom 2 is a zoom IN, 0.5 would be a zoom OUT (stuff gets smaller)
+	//this usage of zoomFactor implies, that zoom 2 is a zoom IN, 0.5 would be a zoom OUT (stuff gets smaller)
 
 	// this translates screen distance to world distance
 	// the coordinates of the screen upper left corner in the world
-	var cornerX = this.x - (VIEW_WIDTH/(2*this.zoomFactor))
-	var cornerY = this.y - (VIEW_HEIGHT/(2*this.zoomFactor))
+	//var cornerX = this.x - (VIEW_WIDTH/(2*this.zoomFactor))
+	//var cornerY = this.y - (VIEW_HEIGHT/(2*this.zoomFactor))
 
 	if (gameBoard) {
-		gameBoard.node.css("top", -cornerY)
-		gameBoard.node.css("left", -cornerX)
+		var boardPos = this.worldToScreen(0,0) //assumes the board is alwas on 0,0 (left upper corner)
+		gameBoard.node.css("left", 	boardPos[0])
+		gameBoard.node.css("top", 	boardPos[1])
 		setScale(gameBoard.node, this.zoomFactor)
 	}
 
@@ -54,7 +55,7 @@ Camera.prototype.zoomStep = function(zoomStep) { //how many steps in or out
 	//TODO: mind the zoom factor, zoomStep changes etc
 }
 
-//TODO: the following 3 methods are untested
+// the position of the upper left corner in world coordinates
 Camera.prototype.getWorldScreenCorner = function() {
 	var wX = this.x - (VIEW_WIDTH/(2*this.zoomFactor)) //top left corner
 	var wY = this.y - (VIEW_HEIGHT/(2*this.zoomFactor))
@@ -71,7 +72,7 @@ Camera.prototype.screenToWorld = function(x,y) {
 
 Camera.prototype.worldToScreen = function(x,y) {
 	cornerPos = this.getWorldScreenCorner()
-	var sX = (x - cornerPos[0]) * this.zoomFactor //TODO: untested?
+	var sX = (x - cornerPos[0]) * this.zoomFactor
 	var sY = (y - cornerPos[1]) * this.zoomFactor
 
 	return [sX,sY]
