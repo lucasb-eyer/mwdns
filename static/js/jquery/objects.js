@@ -19,9 +19,11 @@ Camera.prototype.updateObjects = function() {
 	var cornerX = this.x - (VIEW_WIDTH/(2*this.zoomFactor))
 	var cornerY = this.y - (VIEW_HEIGHT/(2*this.zoomFactor))
 
-	gameBoard.node.css("top", -cornerY)
-	gameBoard.node.css("left", -cornerX)
-	setScale(gameBoard.node, this.zoomFactor)
+	if (gameBoard) {
+		gameBoard.node.css("top", -cornerY)
+		gameBoard.node.css("left", -cornerX)
+		setScale(gameBoard.node, this.zoomFactor)
+	}
 
 	// this is plain wrong
 	//gameBoard.css("width", gameBoard.width*this.zoomFactor)
@@ -60,16 +62,16 @@ Camera.prototype.getWorldScreenCorner = function() {
 }
 
 Camera.prototype.screenToWorld = function(x,y) {
-	cornerPos = this.getScreenCorner()
-	var wX = cornerPos[0] + x*this.zoomFactor
-	var wY = cornerPos[1] + y*this.zoomFactor
+	cornerPos = this.getWorldScreenCorner()
+	var wX = cornerPos[0] + x/this.zoomFactor
+	var wY = cornerPos[1] + y/this.zoomFactor
 
 	return [wX,wY]
 }
 
 Camera.prototype.worldToScreen = function(x,y) {
-	cornerPos = this.getScreenCorner()
-	var sX = (x - cornerPos[0]) * this.zoomFactor
+	cornerPos = this.getWorldScreenCorner()
+	var sX = (x - cornerPos[0]) * this.zoomFactor //TODO: untested?
 	var sY = (y - cornerPos[1]) * this.zoomFactor
 
 	return [sX,sY]
@@ -98,11 +100,12 @@ Card = function(cardId,type,x,y,w,h) {
 
 	this.isBeingClicked = false
 	this.isBeingDragged = false
+
+	//has to be created in here instead of the create method... I wonder why TODO
+	this.node = $('<div id="card_'+this.cardId+'" class="gameCard"><img></img></div>')
 }
 
 Card.prototype.create = function() {
-	this.node = $('<div id="card_'+this.cardId+'" class="gameCard"><img></img></div>')
-
 	this.node.css("top", this.y)
 	this.node.css("left", this.x)
 	this.node.css("z-index", this.cardId)
@@ -117,25 +120,29 @@ Card.prototype.create = function() {
 												//containment: "#gameBoard"})
 	//										 zIndex: this.cardId, preventCollision: false }) //this does not allow for overlapping
 
-	this.node.bind("mousedown", this.onStartDrag);
+	// the "proxy" part is necessary, as otherwise the this in the methods does not address the object -.- wat?
+	this.node.bind("mousedown", $.proxy(this.onMouseDown,this));
 	//TODO: add general on mousemove listener for whole body, or change z-index of dragged object
-	this.node.bind("mousemove", this.onMoveDrag);
-	this.node.bind("mouseup", this.onStopDrag);
-	this.node.bind("mouseleave", this.onMoveOut);
+	this.node.bind("mousemove", $.proxy(this.onMouseMove,this));
+	this.node.bind("mouseup", $.proxy(this.onMouseUp,this));
 }
 
 ////EVENTS
-Card.prototype.onStartDrag = function(e) {
+Card.prototype.onMouseDown = function(e) {
 	this.isBeingClicked = true
 	this.preDragPos = [e.pageX, e.pageY]
+	this.preDragCenterDelta = camera.screenToWorld(e.pageX, e.pageY)
+	// where the mouse is clicked, relative to the card center
+	this.preDragCenterDelta[0]=this.x-this.preDragCenterDelta[0] //TODO: this part needs reworking
+	this.preDragCenterDelta[1]=this.y-this.preDragCenterDelta[1]
+
 	this.node.css("z-index",9000)
-	console.log(this.preDragPos)
 }
 
 //TODO: replace this by a function sensing the global mouse movement for smooth dragging
 //on move, the currently dragged card(s) are moved along without minding if the mouse pointer leaves them for a fraction of a second
 //the current solution breaks quite happily
-Card.prototype.onMoveDrag = function(e) {
+Card.prototype.onMouseMove = function(e) {
 	// TODO: I wanted to put this into helpers.js, but it was undefined here! What's your plan with helpers.js?
 	if (this.isBeingClicked && !this.isBeingDragged && dist(this.preDragPos, [e.pageX, e.pageY]) > DRAG_INERTIA) {
 		// If the user is holding a mousebutton down while moving the mouse, he is dragging.
@@ -143,27 +150,16 @@ Card.prototype.onMoveDrag = function(e) {
 	}
 
 	if (this.isBeingDragged) {
-		this.x = e.pageX
-		this.y = e.pageY
+		var curPos = camera.screenToWorld(e.pageX, e.pageY)
+		this.x = curPos[0] + this.preDragCenterDelta[0] //mind the dx to the initial dx to the center
+		this.y = curPos[1] + this.preDragCenterDelta[1]
+
 		this.node.css("top",this.y)
 		this.node.css("left",this.x)
 	}
 }
 
-Card.prototype.onMoveOut = function(e) {
-	if (this.isBeingDragged) {
-		// follow the mouse in a rapid fashion - no moving out while dragged.
-		this.x = e.pageX
-		this.y = e.pageY
-		this.node.css("top",this.y)
-		this.node.css("left",this.x)
-		//this._broadcastPosition()
-	} else {
-		this.isBeingClicked = false;
-	}
-}
-
-Card.prototype.onStopDrag = function(e) {
+Card.prototype.onMouseUp = function(e) {
 	if (this.isBeingDragged) {
 		this.isBeingDragged = false
 		//this._broadcastPosition()

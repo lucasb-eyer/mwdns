@@ -1,4 +1,9 @@
 var DRAG_INERTIA = 10 // pixel distance until dragging is initiated
 
-var MOVEMENT_SPEED = 30 //actually is movement time
+var MOVEMENT_SPEED = 30
+
+// the dimensions of the card, can differ depending on prefered style
+var DEFAULT_CARD_W = 100
+var DEFAULT_CARD_H = 100
+
 
