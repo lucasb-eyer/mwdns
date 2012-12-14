@@ -35,7 +35,7 @@ function handleMessage(msg){
 		//move respective card (json.id)
 		//cards[json.id].tween({x: json.x, y:json.y, rotation: json.phi}, MOVEMENT_SPEED)
 	} else if ( json.msg == "cardFlip" ) {
-			//cards[json.id].flipCard(json.type)
+		gameCards[json.id].flipCard(json.type)
 	} else if ( json.msg == "player" ) {
 		//TODO
 	} else if ( json.msg == "end" ) {

@@ -102,12 +102,53 @@ Card = function(cardId,type,x,y,w,h) {
 	this.isBeingClicked = false
 	this.isBeingDragged = false
 
-	//has to be created in here instead of the create method... I wonder why TODO
-	this.node = $('<div id="card_'+this.cardId+'" class="gameCard"><img></img></div>')
+	//TODO: in fact, this might better be realized with a counter... but these are obscure cases
+	this.isWaitingForFlipback = false
+}
+
+Card.prototype.showBack = function() {
+	this.type = -1
+	this.node.empty()
+	this.node.append(deckFaceTemplate.clone())
+}
+
+Card.prototype.showFront = function(type) {
+	this.type = type
+	this.node.empty()
+	//here more elaborate cards might be constructed
+	this.node.append(cardSource.getElement(type).clone())
+}
+
+//TODO: animations may come in here
+Card.prototype.doFlipCard = function(type) {
+	this.type = type
+	// only mind the waiting if flipping back to -1
+	if (this.waitingForFlipback || type != -1) {
+		// either draw the deckFace
+		if (type == -1) {
+			this.showBack()
+		// or the actual frontside of the card
+		} else {
+			this.showFront(type)
+  	}
+	}
+}
+
+// considers a healthy timeout, if the card is flipped back
+// this code is quite ugly
+Card.prototype.flipCard = function(type) {
+	if (type == -1) {
+		this.waitingForFlipback = true
+		setTimeout($.proxy(function(){this.doFlipCard(type)},this), CARD_TURNBACK_TIMEOUT)
+	} else {
+		this.doFlipCard(type)
+	}
 }
 
 Card.prototype.create = function() {
-	this.node.css("top", this.y)
+	//TODO: get the html from a template instead of typing it here?
+	this.node = $('<div id="card_'+this.cardId+'" class="gameCardSquare"></div>')
+	this.node.css("top", this.y) //TODO: px?
 	this.node.css("left", this.x)
 	this.node.css("z-index", this.cardId)
 
@@ -126,6 +167,7 @@ Card.prototype.create = function() {
 	//TODO: add general on mousemove listener for whole body, or change z-index of dragged object
 	this.node.bind("mousemove", $.proxy(this.onMouseMove,this));
 	this.node.bind("mouseup", $.proxy(this.onMouseUp,this));
+	this.showBack() //flip to the back side without wait or animations
 }
 
 ////EVENTS

@@ -9,6 +9,8 @@ function init() {
 	gameCards = []
 
 	refreshWindowSize()
+	initAssets()
+
 	//resize handler
 	$(window).resize(function(){
 		refreshWindowSize()
@@ -18,8 +20,6 @@ function init() {
 	$(document).mousemove(function(event){
   	//console.log(event.pageX + ", " + event.pageY);
 	});
-
-	initAssets()
 }
 
 //listen for window size changes, adjust the VIEW_WIDTH, VIEW_HEIGHT global parameters, refresh the camera view
