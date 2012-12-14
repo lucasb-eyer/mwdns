@@ -16,7 +16,8 @@ function initAssets() {
 	deckFaceImg.src = "/static/img/patterns/subtle/vichy.png" //maybe some preloading happens here, which would be rad... and useless
 
 	deckFaceTemplate = $('<div>').addClass("deckFace").css("background-image","url("+deckFaceImg.src+")");
-	cardSource = new ImageSourceColorRandom(DEFAULT_CARD_W, DEFAULT_CARD_H, 10)
+	//cardSource = new ImageSourceColorRandom(DEFAULT_CARD_W, DEFAULT_CARD_H, 10)
+	cardSource = new ImageSourceTileMapArmor()
 }
 
 ImageSourceColorRandom = function(width,height, typeCount) {
@@ -39,7 +40,7 @@ ImageSourceColorRandom.prototype.getElement = function(type) {
 	return this.images[parseInt(type)].clone()
 }
 
-function TileMapArmor() {
+function ImageSourceTileMapArmor() {
 	this.name = "Armor"
 
 	//only relevant for tileMaps
@@ -55,7 +56,7 @@ function TileMapArmor() {
 	this.init()
 }
 
-TileMapArmor.prototype.init = function() {
+ImageSourceTileMapArmor.prototype.init = function() {
 	var cvs = document.createElement("canvas")
 	cvs.width = this.tileSize
 	cvs.height = this.tileSize
@@ -74,11 +75,12 @@ TileMapArmor.prototype.init = function() {
 			tilePos[0]*this.tileSize, tilePos[1]*this.tileSize,
 			this.tileSize, this.tileSize, 0,0,this.tileSize,this.tileSize)
 		var img = new Image()
-		ctx.drawImage(img,0,0)
-		this.image.push(img)
+		img.src = cvs.toDataURL("image/png")
+		//ctx.getImageData(0,0,cvs.width,cvs.height)
+		this.images.push(img)
 	}
 }
 
-TileMapArmor.prototype.getElement = function(type) {
-	return this.images[parseInt(type)].clone()
+ImageSourceTileMapArmor.prototype.getElement = function(type) {
+	return $(this.images[parseInt(type)]).clone()
 }
