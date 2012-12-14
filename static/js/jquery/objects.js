@@ -138,6 +138,7 @@ Card.prototype.onMouseDown = function(e) {
 	this.preDragCenterDelta[1]=this.y-this.preDragCenterDelta[1]
 
 	this.node.css("z-index",9000)
+	return false
 }
 
 //TODO: replace this by a function sensing the global mouse movement for smooth dragging
@@ -158,6 +159,7 @@ Card.prototype.onMouseMove = function(e) {
 		this.node.css("top",this.y)
 		this.node.css("left",this.x)
 	}
+	return false
 }
 
 Card.prototype.onMouseUp = function(e) {
@@ -179,4 +181,5 @@ Card.prototype.onMouseUp = function(e) {
 	contentStr = contentStr.replace(/"/g,"'")
 	conn.send('{"moveCard": "'+contentStr+'"}');
 	*/
+	return false
 }

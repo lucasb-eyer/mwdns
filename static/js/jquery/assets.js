@@ -6,8 +6,8 @@ function getAssetPath(file) {
 var assets = ["flare_armor.png"]
 assets = assets.map(getAssetPath)
 
-var cardSource
-var deckFaceImg
+var cardSource // where to get card faces
+var deckFaceImg // what pattern to put on the backside of cards
 
 function initAssets() {
 	deckFaceImg = new Image()
