@@ -1,7 +1,8 @@
 Camera = function(x,y,zoom) {
 	this.x = x //center of the camera view
 	this.y = y
-	this.zoomFactor = zoom
+	this.zoomFactor = 1
+	this.zoomLevel = 0
 }
 
 Camera.prototype.move = function(x,y) {
@@ -51,8 +52,12 @@ Camera.prototype.zoom = function(zoomFactor) {
 
 //TODO: use
 // corresponds to zooming in/out by discrete steps (maybe from mousewheel movement deltas)
-Camera.prototype.zoomStep = function(zoomStep) { //how many steps in or out
-	//TODO: mind the zoom factor, zoomStep changes etc
+Camera.prototype.zoomStep = function(zoomDelta) { //how many steps in or out
+	//TODO: mind the zoom or assume that it is not manipulated?
+	this.zoomLevel += zoomDelta
+	//TODO: clamp min zoom, max zoom
+	this.zoomFactor = Math.pow(ZOOM_STEP,this.zoomLevel) //TODO: vary the 
+	this.updateObjects()
 }
 
 // the position of the upper left corner in world coordinates

@@ -35,8 +35,12 @@ function createBoard(width,height) {
 
 	camera.move(gameBoard.width/2, gameBoard.height/2) //center on the middle of the game board
 
-	//TODO: set the zoom factor so the whole game board is visible + margin
-	//compute min zoom, max zoom
+	//TODO: set the initial(furthest out) zoom factor/level so the whole game board is visible + margin
+	$('body').mousewheel(function(event, delta, deltaX, deltaY) {
+		//delta is either one or -1
+		camera.zoomStep(delta)
+		return false;
+	})
 }
 
 function createCards(cardCount) {
