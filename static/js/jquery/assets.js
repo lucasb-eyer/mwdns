@@ -30,10 +30,8 @@ ImageSourceColorRandom.prototype.init = function() {
 	this.images = []
  	for (var i = 0; i < this.typeCount; i++) {
 		var img = $('<img>').css("background-color",randomHappyColor())
-		console.log(img)
 		this.images.push(img)
 	}
-	console.log(this.images)
 }
 
 ImageSourceColorRandom.prototype.getElement = function(type) {

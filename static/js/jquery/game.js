@@ -7,7 +7,6 @@ var VIEW_WIDTH, VIEW_HEIGHT;
 function init() {
 	camera = new Camera(0,0,1)
 	gameCards = []
-
 	refreshWindowSize()
 	initAssets()
 
