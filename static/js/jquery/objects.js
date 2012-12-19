@@ -1,3 +1,6 @@
+// Keeps track of the currently highest z-index of the cards.
+var g_max_card_z = 1;
+
 Camera = function(x,y,zoom) {
 	this.x = x //center of the camera view
 	this.y = y
@@ -155,7 +158,7 @@ Card.prototype.create = function() {
 	this.node = $('<div id="card_'+this.cardId+'" class="gameCardSquare"></div>')
 	this.node.css("top", this.y) //TODO: px?
 	this.node.css("left", this.x)
-	this.node.css("z-index", this.cardId)
+	this.node.css("z-index", ++g_max_card_z)
 
 	this.node.css("width", this.width)
 	this.node.css("height", this.height)
@@ -184,7 +187,7 @@ Card.prototype.onMouseDown = function(e) {
 	this.preDragCenterDelta[0]=this.x-this.preDragCenterDelta[0] //TODO: this part needs reworking
 	this.preDragCenterDelta[1]=this.y-this.preDragCenterDelta[1]
 
-	this.node.css("z-index",9000)
+	this.node.css("z-index", ++g_max_card_z)
 	return false
 }
 
@@ -217,7 +220,6 @@ Card.prototype.onMouseUp = function(e) {
 		conn.send('{"wantFlip": "'+this.cardId+'"}');
 	}
 	this.isBeingClicked = false
-	this.node.css("z-index",this.cardId)
 
 	/*
 	var contentStr = JSON.stringify({
