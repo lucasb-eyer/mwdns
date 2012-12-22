@@ -16,7 +16,7 @@ function initAssets() {
 	deckFaceImg.src = "/static/img/patterns/subtle/vichy.png" //maybe some preloading happens here, which would be rad... and useless
 
 	deckFaceTemplate = $('<div>').addClass("deckFace").css("background-image","url("+deckFaceImg.src+")");
-	//cardSource = new ImageSourceColorRandom(DEFAULT_CARD_W, DEFAULT_CARD_H, 10)
+	cardSource = new ImageSourceColorRandom(DEFAULT_CARD_W, DEFAULT_CARD_H, 10)
 	cardSource = new ImageSourceTileMapArmor()
 }
 
@@ -57,28 +57,31 @@ function ImageSourceTileMapArmor() {
 }
 
 ImageSourceTileMapArmor.prototype.init = function() {
-	var cvs = document.createElement("canvas")
-	cvs.width = this.tileSize
-	cvs.height = this.tileSize
-	var ctx = cvs.getContext("2d")
+	this.cvs = document.createElement("canvas")
+	this.cvs.width = this.tileSize
+	this.cvs.height = this.tileSize
+	this.ctx = this.cvs.getContext("2d")
 	//TODO: error checking and happy things
 
 	this.sourceImage = new Image()
 	this.sourceImage.src = this.path
 
 	this.images = []
-	for (var i = 1; i < 25; i++) {
-		var tilePos = [i%this.imgCountX,Math.floor(i/this.imgCountY)]
 
-		//TODO: draw each tilemap image on an own img
-		ctx.drawImage(this.sourceImage,
-			tilePos[0]*this.tileSize, tilePos[1]*this.tileSize,
-			this.tileSize, this.tileSize, 0,0,this.tileSize,this.tileSize)
-		var img = new Image()
-		img.src = cvs.toDataURL("image/png")
-		//ctx.getImageData(0,0,cvs.width,cvs.height)
-		this.images.push(img)
-	}
+	// proxy so this = this object
+	$(this.sourceImage).load($.proxy(function() {
+		for (var i = 1; i < 25; i++) {
+			var tilePos = [i%this.imgCountX,Math.floor(i/this.imgCountY)]
+
+			//TODO: draw each tilemap image on an own img
+			this.ctx.drawImage(this.sourceImage,
+				tilePos[0]*this.tileSize, tilePos[1]*this.tileSize,
+				this.tileSize, this.tileSize, 0,0,this.tileSize,this.tileSize)
+			var img = new Image()
+			img.src = this.cvs.toDataURL("image/png")
+			this.images.push(img)
+		}
+	}, this))
 }
 
 ImageSourceTileMapArmor.prototype.getElement = function(type) {
