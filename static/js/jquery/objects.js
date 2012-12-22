@@ -99,13 +99,14 @@ Board.prototype.create = function() {
 	//this.node.draggable({start: onStartDragBoard, drag: onMoveDragBoard, stop: onStopDragBoard})
 }
 
-Card = function(cardId,type,x,y,w,h) {
+Card = function(cardId,type,x,y,w,h,phi) {
 	this.cardId = cardId
 	this.type = type
 	this.x = x //TODO: x and y are not kept current at the moment
 	this.y = y
-	this.width = w
-	this.height = h
+	this.phi = phi || DEFAULT_CARD_PHI
+	this.width = w || DEFAULT_CARD_W
+	this.height = h || DEFAULT_CARD_H
 
 	this.isBeingClicked = false
 	this.isBeingDragged = false
@@ -155,6 +156,7 @@ Card.prototype.flipCard = function(type) {
 
 Card.prototype.create = function() {
 	//TODO: get the html from a template instead of typing it here?
+	//TODO: Implement card rotation
 	this.node = $('<div id="card_'+this.cardId+'" class="gameCardSquare"></div>')
 	this.node.css("top", this.y) //TODO: px?
 	this.node.css("left", this.x)
@@ -176,6 +178,20 @@ Card.prototype.create = function() {
 	this.node.bind("mousemove", $.proxy(this.onMouseMove,this));
 	this.node.bind("mouseup", $.proxy(this.onMouseUp,this));
 	this.showBack() //flip to the back side without wait or animations
+}
+
+Card.prototype.moveTo = function(x,y,phi) {
+	//TODO: change duration, based on movement speed and movement distance
+	//TODO: add support for phi
+	// Whenever a card moves, it goes to the front.
+	this.node.css("z-index", ++g_max_card_z)
+	this.node.animate({
+		left: x,
+		top: y,
+	})
+	this.x = x
+	this.y = y
+	this.phi = phi
 }
 
 ////EVENTS
@@ -215,20 +231,25 @@ Card.prototype.onMouseMove = function(e) {
 Card.prototype.onMouseUp = function(e) {
 	if (this.isBeingDragged) {
 		this.isBeingDragged = false
-		//this._broadcastPosition()
+		this._broadcastPosition()
 	} else if (this.isBeingClicked) {
 		conn.send('{"wantFlip": "'+this.cardId+'"}');
 	}
 	this.isBeingClicked = false
 
-	/*
-	var contentStr = JSON.stringify({
-		id: this.attr("cardId"),
-		x: Math.floor(this.attr("x")),
-		y: Math.floor(this.attr("y")),
-		phi: this.rotation})
-	contentStr = contentStr.replace(/"/g,"'")
-	conn.send('{"moveCard": "'+contentStr+'"}');
-	*/
 	return false
+}
+
+Card.prototype._broadcastPosition = function() {
+	var contentStr = JSON.stringify({
+		id: this.cardId,
+		x: Math.floor(this.x),
+		y: Math.floor(this.y),
+		phi: this.phi
+	})
+	// We make this dance of stringifying the value and then jsonifying it back
+	// on the server because the server's json lib sucks ass.
+	// It needs a map of string->string as main message.
+	contentStr = contentStr.replace(/"/g,"'")
+	conn.send('{"moveCard": "'+contentStr+'"}')
 }

@@ -31,9 +31,7 @@ function handleMessage(msg){
 		createBoard(json.boardSizeX, json.boardSizeY)
 		createCards(json.cardCount)
 	} else if ( json.msg == "cardMove" ) {
-		//TODO: change duration, based on movement speed and movement distance
-		//move respective card (json.id)
-		//cards[json.id].tween({x: json.x, y:json.y, rotation: json.phi}, MOVEMENT_SPEED)
+		gameCards[json.id].moveTo(json.x, json.y, json.phi)
 	} else if ( json.msg == "cardFlip" ) {
 		gameCards[json.id].flipCard(json.type)
 	} else if ( json.msg == "player" ) {

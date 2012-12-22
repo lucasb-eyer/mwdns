@@ -13,11 +13,11 @@ function init() {
 	//resize handler
 	$(window).resize(function(){
 		refreshWindowSize()
-  });
+	});
 
 	//TODO: use the page wide mouse position for dragging
 	$(document).mousemove(function(event){
-  	//console.log(event.pageX + ", " + event.pageY);
+	//console.log(event.pageX + ", " + event.pageY);
 	});
 }
 
@@ -44,14 +44,14 @@ function createBoard(width,height) {
 }
 
 function createCards(cardCount) {
+	// Sets the default initial position to be the center.
 	var defaultCardX = gameBoard.width/2 - DEFAULT_CARD_W/2
 	var defaultCardY = gameBoard.height/2 - DEFAULT_CARD_H/2
 
 	for (var i = 0; i < cardCount; i++) {
-		card = new Card(i,-1,defaultCardX,defaultCardY,DEFAULT_CARD_W,DEFAULT_CARD_H)
+		card = new Card(i,-1,defaultCardX,defaultCardY)
 		card.create()
-		//TODO: set default initial position(center?)
- 		gameBoard.node.append(card.node)
+		gameBoard.node.append(card.node)
 
 		gameCards.push(card)
 	}
