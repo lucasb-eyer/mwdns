@@ -22,6 +22,7 @@ const (
 	IDCHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 	IDLEN = 6
 	DEFAULT_CARD_COUNT = 20
+	DEFAULT_GAME_TYPE = GAME_TYPE_CLASSIC
 
 	DEFAULT_W = 1300 - 150 // minus card w because pos is top left
 	DEFAULT_H = 800 - 220  // idem
@@ -52,7 +53,8 @@ func gameHandler(w http.ResponseWriter, req *http.Request) {
 
 		gameType, err := strconv.Atoi(req.URL.Query().Get("t"))
 		if err != nil || (gameType != GAME_TYPE_CLASSIC && gameType != GAME_TYPE_RUSH) {
-			log.Println("Invalid game type, defaulting to ")
+			log.Println("Invalid game type, defaulting to ", DEFAULT_GAME_TYPE)
+			gameType = DEFAULT_GAME_TYPE
 		}
 
 		gameId = rndString(IDLEN)
