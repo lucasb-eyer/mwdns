@@ -50,21 +50,38 @@ the first card, so that everyone has enough time to see both card.
 }
 ```
 
-### playermsg
+### points
 ```javascript
 {
-	"msg":			"player"
-	"id":				13,
-	"name":			"Bob",
-	"canPlay":	true,
-	"points": 	9001
+	"msg": "points",
+	"pid": 13,
+	"points": 9001
+}
+```
+
+### newplayer
+```javascript
+{
+	"msg": "newplayer"
+	"pid": 13,
+	"name": "Bob",
+	"itsyou": false
+}
+```
+
+### canplay
+```javascript
+{
+	"msg": "canplay",
+	"pid": 13,
+	"canPlay": false
 }
 ```
 
 ### endgamemsg
 ```javascript
 {
-	"msg":			"end"
+	"msg": "end"
 }
 ```
 

@@ -196,6 +196,11 @@ Card.prototype.moveTo = function(x,y,phi) {
 
 ////EVENTS
 Card.prototype.onMouseDown = function(e) {
+	// No interaction when it's not your turn!
+	if ( !g_players[g_mypid].canplay ) {
+		return false
+	}
+
 	this.isBeingClicked = true
 	this.preDragPos = [e.pageX, e.pageY]
 	this.preDragCenterDelta = camera.screenToWorld(e.pageX, e.pageY)
@@ -252,4 +257,25 @@ Card.prototype._broadcastPosition = function() {
 	// It needs a map of string->string as main message.
 	contentStr = contentStr.replace(/"/g,"'")
 	conn.send('{"moveCard": "'+contentStr+'"}')
+}
+
+Player = function(pid, name, color, canplay) {
+	this.pid = pid
+	this.name = name
+	this.color = color || randomHappyColor()
+	this.canplay = canplay || false
+	this.points = 0
+
+	// TODO: Maybe call changeCanPlay from here to achieve the same gui effect?
+}
+
+Player.prototype.changeCanPlay = function(canplay) {
+	this.canplay = canplay
+	// TODO: Update some gui which indicates whether he can play or not.
+}
+
+Player.prototype.updatePoints = function(newpoints) {
+	delta = newpoints - this.points
+	this.points = newpoints
+	// TODO: Show the delta.
 }

@@ -109,15 +109,18 @@ type Player struct {
 	send chan string
 }
 
-func (p *Player) GetJsonPlayer() string {
-	return fmt.Sprintf(`{"msg": "player", "id": %v, "name": "%v", "canPlay": %v, "points": %v}`,p.Id,p.Name,p.CanPlay,p.Points)
+func (p *Player) GetJsonCanPlay() string {
+	return fmt.Sprintf(`{"msg": "canplay", "pid": %v, "canplay": %v}`, p.Id, p.CanPlay)
 }
 
 func (p *Player) SetCanPlay(v bool, g *Game) {
 	p.CanPlay = v
-	//notify the respective player with a message
-	//everybody else too
-	g.Broadcast(p.GetJsonPlayer())
+	//notify the respective player with a message and everybody else too
+	g.Broadcast(p.GetJsonCanPlay())
+}
+
+func (p *Player) GetJsonNew(itshim bool) string {
+	return fmt.Sprintf(`{"msg": "newplayer", "pid": %v, "name": "%v", "canplay": %v, "itsyou": %v}`, p.Id, p.Name, p.CanPlay, itshim)
 }
 
 type Card struct {
@@ -223,12 +226,6 @@ func (g *Game) Broadcast(m string) {
 	}
 }
 
-func (g *Game) BroadcastPlayerStates() {
-	for e := g.Players.Front(); e != nil; e = e.Next() {
-		g.Broadcast(e.Value.(*Player).GetJsonPlayer())
-	}
-}
-
 //TODO: handle client message "wantChangeName"
 
 func (g *Game) Run() {
@@ -242,23 +239,28 @@ func (g *Game) Run() {
 			p.openCard = NO_CARD
 			p.Game = g
 
+			// Note that we set CanPlay directly to avoid sending messages
+			// about a not-yet existing player to the client.
 			switch g.Type {
 			case GAME_TYPE_CLASSIC:
 				// the first player? you can play then.
 				if g.Players.Len() == 0 {
-					p.SetCanPlay(true,g)
+					p.CanPlay = true
 				} else {
-					p.SetCanPlay(false,g)
+					p.CanPlay = false
 				}
 			case GAME_TYPE_RUSH:
-				p.SetCanPlay(true,g)
+				p.CanPlay = true
 			default:
 				log.Fatalln("Unknown game type in game.Run:", g.Type)
 			}
+			// Send the new player to all other players (i.e. before adding him to the players list)
+			g.Broadcast(p.GetJsonNew(false))
 			g.Players.PushBack(p)
 			g.maxPlayerId++
 
 			g.SendInitBoard(p)
+			g.SendPlayers(p) // Now send him all existing players (including himself)
 			g.SendBoardState(p)
 		case p := <-g.unregisterPlayer:
 			//TODO: check if it actually is in the list etc PROPER ERROR HANDLING
@@ -363,12 +365,11 @@ func (g *Game) TryFlip(p *Player, cardid int) {
 		p.openCard = NO_CARD
 
 		//broadcast points - tell EVERYBODY
-		g.BroadcastPlayerStates()
+		g.Broadcast(fmt.Sprintf(`{"msg": "points", "pid": %v, "points": %v}`, p.Id, p.Points))
 
 		// gg?
 		if g.cardCountLeft == 0 {
-			// TODO: necessary?
-			// g.BroadcastPlayerStates()
+			// TODO: necessary to broadcast more?
 			g.Broadcast(fmt.Sprintf(`{"msg": "end", "winner": "%v"}`, p.Id))
 		}
 	}
@@ -396,4 +397,12 @@ func (g *Game) SendBoardState(p *Player) {
 
 func (g *Game) SendInitBoard(p *Player) {
 	p.send <- fmt.Sprintf(`{"msg": "initBoard", "cardCount": %v, "boardSizeX": %v, "boardSizeY": %v}`,len(g.Cards),g.BoardSizeX,g.BoardSizeY)
+}
+
+func (g *Game) SendPlayers(towhom *Player) {
+	// Sends a newplayer message to "towhom" for every player in the game except for himself.
+	for e := g.Players.Front(); e != nil; e = e.Next() {
+		p := e.Value.(*Player)
+		towhom.send <- p.GetJsonNew(p == towhom)
+	}
 }

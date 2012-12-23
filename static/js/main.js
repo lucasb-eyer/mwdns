@@ -34,8 +34,16 @@ function handleMessage(msg){
 		gameCards[json.id].moveTo(json.x, json.y, json.phi)
 	} else if ( json.msg == "cardFlip" ) {
 		gameCards[json.id].flipCard(json.type)
-	} else if ( json.msg == "player" ) {
-		//TODO
+	} else if ( json.msg == "newplayer" ) {
+		// TODO: The server should give the player a color too!
+		g_players[json.pid] = new Player(json.pid, json.name, undefined, json.canplay)
+		if ( json.itsyou ) {
+			g_mypid = json.pid
+		}
+	} else if ( json.msg == "canplay" ) {
+		g_players[json.pid].changeCanPlay(json.canplay)
+	} else if ( json.msg == "points" ) {
+		g_players[json.pid].updatePoints(json.points)
 	} else if ( json.msg == "end" ) {
 		//TODO: display final game screen (scores, winner, new game)
 	}
