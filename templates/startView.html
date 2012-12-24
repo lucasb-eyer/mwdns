@@ -1,22 +1,69 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang=en>
 <head>
-	<meta charset="utf-8" />
+	<meta charset=utf-8 />
 	<title>Pairs-Ga.me</title>
-	<script type="text/javascript" src="/static/js/dep/jquery-1.8.3.min.js"></script>
-	<link rel="stylesheet" href="/static/css/dep/bootstrap.min.css" />
-	<script src="/static/js/dep/bootstrap.min.js"></script>
 
-	<link rel="stylesheet/less" href="/static/css/main.less" />
-	<script type="text/javascript" src="/static/js/dep/less-1.3.1.min.js"></script>
+	<script type=text/javascript src=/static/js/dep/jquery-1.8.3.min.js></script>
+
+	<link rel=stylesheet href=/static/css/bootstrap.min.css />
+	<script src=/static/js/dep/bootstrap.min.js></script>
+
+	<link rel=stylesheet/less href=/static/css/main.less />
+	<script type=text/javascript src=/static/js/dep/less-1.3.1.min.js></script>
+
+	<style>
+		/* place the game settings button next to the game start buttons.
+		 * The negative right-margin is the magic here, it depends on the button's content (width)!
+		 */
+		#toggle-settings {
+			float: left;
+			margin-top: 7px;
+			margin-left: 25px;
+			margin-right: -70px;
+		}
+
+		#settings {
+			display: none;
+			margin: 15px;
+		}
+	</style>
 </head>
 <body>
-	<div id="content">
+	<div id=content>
 		<h1>Pairs-Ga.me <br><small>the memory workout</small></h1>
-		<div class="btn-group">
-			<a href="/game?t=0" class="span3 btn btn-large btn-success">CLASSIC</a>
-			<a href="/game?t=1" class="span3 btn btn-large btn-danger">RUSH</a>
-		</div>
+		<button class=btn id=toggle-settings><i class=icon-wrench></i></button>
+		<form action=/game method=get>
+			<div class=btn-group>
+				<button type=submit class="span3 btn btn-large btn-success" name=t value=0>CLASSIC</button>
+				<button type=submit class="span3 btn btn-large btn-danger" name=t value=1>RUSH</button>
+			</div>
+			<div class=well id=settings>
+				<div class=input-append>
+					<input type=text class=span2 id=n name=n placeholder="Number of pairs">
+					<button type=button class="btn ncards">5</button>
+					<button type=button class="btn ncards btn-primary">10</button>
+					<button type=button class="btn ncards">15</button>
+					<button type=button class="btn ncards">20</button>
+				</div>
+			</div>
+		</form>
 	</div>
+
+	<script type=text/javascript>
+		// Make the button reflecting the current number of cards blue
+		$('.ncards').on('click', function() {
+			$('#n').val($(this).text())
+			$('#n').trigger('change')
+		})
+		$('#n').on('keyup change', function() {
+			var n = $('#n').val() || "10"
+			$('.ncards').each(function(i, e) { $(e).toggleClass('btn-primary', $(e).text() == n) })
+		})
+
+		$('#toggle-settings').on('click', function() {
+			$('#settings').fadeToggle()
+		})
+	</script>
 </body>
 </html>

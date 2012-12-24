@@ -21,7 +21,7 @@ var activeGames = make(map[string]*Game)
 const (
 	IDCHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 	IDLEN = 6
-	DEFAULT_CARD_COUNT = 20
+	DEFAULT_PAIR_COUNT = 10
 	DEFAULT_GAME_TYPE = GAME_TYPE_CLASSIC
 
 	DEFAULT_W = 1300 - 150 // minus card w because pos is top left
@@ -47,9 +47,10 @@ func gameHandler(w http.ResponseWriter, req *http.Request) {
 		// create a new game if no gameid is given
 		nCards, err := strconv.Atoi(req.URL.Query().Get("n"))
 		if err != nil {
-			log.Println("Invalid number of cards, defaulting to ", DEFAULT_CARD_COUNT)
-			nCards = DEFAULT_CARD_COUNT
+			log.Println("Invalid number of pairs, defaulting to ", DEFAULT_PAIR_COUNT)
+			nCards = DEFAULT_PAIR_COUNT
 		}
+		nCards *= 2
 
 		gameType, err := strconv.Atoi(req.URL.Query().Get("t"))
 		if err != nil || (gameType != GAME_TYPE_CLASSIC && gameType != GAME_TYPE_RUSH) {
