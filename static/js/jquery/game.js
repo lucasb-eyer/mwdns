@@ -20,7 +20,7 @@ function init() {
 
 	// Use the page wide mouse position for dragging
 	$(document).on("mousemove", function(e){
-		if(g_currentlyDraggedCard) {
+		if(g_currentlyDraggedCard != undefined) { //wat -> this var can be 0, which would leave it sad and motionless
 			gameCards[g_currentlyDraggedCard].onMouseMove(e)
 		}
 	});
