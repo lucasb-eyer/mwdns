@@ -219,6 +219,11 @@ Card.prototype.moveTo = function(x,y,phi) {
 
 ////EVENTS
 Card.prototype.onMouseDown = function(e) {
+	// Only use leftclicks for dragging cards around.
+	if ( e.which != 1 ) {
+		return true
+	}
+
 	// No interaction when it's not your turn!
 	if ( !g_players[g_mypid].canplay ) {
 		return false
@@ -258,6 +263,11 @@ Card.prototype.onMouseMove = function(e) {
 }
 
 Card.prototype.onMouseUp = function(e) {
+	// Same here, only leftclick interaction with cards.
+	if (e.which != 1) {
+		return true
+	}
+
 	if (this.isBeingDragged) {
 		this.isBeingDragged = false
 		this._broadcastPosition()
