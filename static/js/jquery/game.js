@@ -16,14 +16,35 @@ function init() {
 	//resize handler
 	$(window).resize(function(){
 		refreshWindowSize()
-	});
+	})
 
-	// Use the page wide mouse position for dragging
-	$(document).on("mousemove", function(e){
+	// We init the document-wide event handlers here to avoid confusion/hiding.
+
+	$(document).on("mousemove", function(e) {
+		// Use the page wide mouse position for dragging
 		if(g_currentlyDraggedCard) {
 			gameCards[g_currentlyDraggedCard].onMouseMove(e)
 		}
-	});
+		// And also for panning
+		if(camera.isPanning()) {
+			camera.updatePan(e.pageX, e.pageY)
+		}
+	})
+
+	$(document).on("mousedown", function(e) {
+		// Pan the view using the right mouse button
+		if(e.which == 3) {
+			camera.startPanning(e.pageX, e.pageY)
+			return false
+		}
+	})
+
+	$(document).on("mouseup", function(e) {
+		// Stop panning the view when releasing the right mouse button
+		if(e.which == 3) {
+			camera.stopPanning(e.pageX, e.pageY)
+		}
+	})
 
 	// Scrolling for zooming should work everywhere.
 	$(document).on("mousewheel", function(e, delta, deltaX, deltaY) {

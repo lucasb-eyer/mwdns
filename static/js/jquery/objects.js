@@ -6,6 +6,7 @@ Camera = function(x,y,zoom) {
 	this.y = y
 	this.zoomFactor = 1
 	this.zoomLevel = 0
+	this.panning = false
 }
 
 Camera.prototype.move = function(x,y) {
@@ -84,6 +85,30 @@ Camera.prototype.worldToScreen = function(x,y) {
 	var sY = (y - cornerPos[1]) * this.zoomFactor
 
 	return [sX,sY]
+}
+
+Camera.prototype.startPanning = function(x,y) {
+	this.panning = true
+	this.panX = x
+	this.panY = y
+}
+
+Camera.prototype.stopPanning = function(x,y) {
+	this.panning = false
+	this.panX = undefined
+	this.panY = undefined
+}
+
+Camera.prototype.isPanning = function() {
+	return this.panning
+}
+
+Camera.prototype.updatePan = function(x,y) {
+	dx = x - this.panX
+	dy = y - this.panY
+	this.move(this.x - dx/this.zoomFactor, this.y - dy/this.zoomFactor)
+	this.panX = x
+	this.panY = y
 }
 
 // positioned on (0,0)
