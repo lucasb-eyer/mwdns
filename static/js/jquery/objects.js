@@ -174,8 +174,6 @@ Card.prototype.create = function() {
 
 	// the "proxy" part is necessary, as otherwise the this in the methods does not address the object -.- wat?
 	this.node.bind("mousedown", $.proxy(this.onMouseDown,this));
-	//TODO: add general on mousemove listener for whole body, or change z-index of dragged object
-	this.node.bind("mousemove", $.proxy(this.onMouseMove,this));
 	this.node.bind("mouseup", $.proxy(this.onMouseUp,this));
 	this.showBack() //flip to the back side without wait or animations
 }
@@ -201,6 +199,7 @@ Card.prototype.onMouseDown = function(e) {
 		return false
 	}
 
+	g_currentlyDraggedCard = this.cardId
 	this.isBeingClicked = true
 	this.preDragPos = [e.pageX, e.pageY]
 	this.preDragCenterDelta = camera.screenToWorld(e.pageX, e.pageY)
@@ -241,6 +240,7 @@ Card.prototype.onMouseUp = function(e) {
 		conn.send('{"wantFlip": "'+this.cardId+'"}');
 	}
 	this.isBeingClicked = false
+	g_currentlyDraggedCard = undefined
 
 	return false
 }

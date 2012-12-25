@@ -1,6 +1,7 @@
 var camera;
 var gameBoard, gameCards;
 var g_players, g_mypid;
+var g_currentlyDraggedCard;
 
 var VIEW_WIDTH, VIEW_HEIGHT;
 
@@ -17,9 +18,11 @@ function init() {
 		refreshWindowSize()
 	});
 
-	//TODO: use the page wide mouse position for dragging
-	$(document).mousemove(function(event){
-	//console.log(event.pageX + ", " + event.pageY);
+	// Use the page wide mouse position for dragging
+	$(document).on("mousemove", function(e){
+		if(g_currentlyDraggedCard) {
+			gameCards[g_currentlyDraggedCard].onMouseMove(e)
+		}
 	});
 
 	// Scrolling for zooming should work everywhere.
