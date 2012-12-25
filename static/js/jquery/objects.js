@@ -139,7 +139,7 @@ Card.prototype.doFlipCard = function(type) {
 		// or the actual frontside of the card
 		} else {
 			this.showFront(type)
-  	}
+		}
 	}
 }
 
