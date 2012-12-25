@@ -21,6 +21,13 @@ function init() {
 	$(document).mousemove(function(event){
 	//console.log(event.pageX + ", " + event.pageY);
 	});
+
+	// Scrolling for zooming should work everywhere.
+	$(document).on("mousewheel", function(e, delta, deltaX, deltaY) {
+		//delta is either 1 or -1
+		camera.zoomStep(delta)
+		return false
+	})
 }
 
 //listen for window size changes, adjust the VIEW_WIDTH, VIEW_HEIGHT global parameters, refresh the camera view
@@ -35,14 +42,8 @@ function createBoard(width,height) {
 	gameBoard.create()
 	$('body').append(gameBoard.node)
 
-	camera.move(gameBoard.width/2, gameBoard.height/2) //center on the middle of the game board
-
 	//TODO: set the initial(furthest out) zoom factor/level so the whole game board is visible + margin
-	$('body').mousewheel(function(event, delta, deltaX, deltaY) {
-		//delta is either one or -1
-		camera.zoomStep(delta)
-		return false;
-	})
+	camera.move(gameBoard.width/2, gameBoard.height/2) //center on the middle of the game board
 }
 
 function createCards(cardCount) {
