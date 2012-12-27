@@ -5,8 +5,12 @@ var g_currentlyDraggedCard;
 
 var VIEW_WIDTH, VIEW_HEIGHT;
 
+var CAMERA_KEYBOARD_SPEED = 500 // pixels per second
+var CAMERA_KEYBOARD_UPDATE_INTERVAL = 10 // milliseconds
+
 // prepare for any incoming messages
 function init() {
+	var keytable = {}
 	camera = new Camera(0,0,1)
 	gameCards = []
 	g_players = []
@@ -52,6 +56,43 @@ function init() {
 		camera.zoomStep(delta)
 		return false
 	})
+
+	$(document).on("keyup", function(e) {
+		if(e.keyCode == 37 || e.keyCode == 65) {
+			window.clearInterval(keytable.left)
+			keytable.left = undefined
+		} else if(e.keyCode == 39 || e.keyCode == 68) {
+			window.clearInterval(keytable.right)
+			keytable.right = undefined
+		} else if(e.keyCode == 38 || e.keyCode == 87) {
+			window.clearInterval(keytable.up)
+			keytable.up = undefined
+		} else if(e.keyCode == 40 || e.keyCode == 83) {
+			window.clearInterval(keytable.down)
+			keytable.down = undefined
+		}
+	})
+
+	$(document).on("keydown", function(e) {
+		console.log(e)
+		if((e.keyCode == 37 || e.keyCode == 65) && !keytable.left) {
+			keytable.left = window.setInterval(function() {
+				camera.moveBy(-CAMERA_KEYBOARD_SPEED*CAMERA_KEYBOARD_UPDATE_INTERVAL/1000.0, 0)
+			}, CAMERA_KEYBOARD_UPDATE_INTERVAL)
+		} else if((e.keyCode == 39 || e.keyCode == 68) && !keytable.right) {
+			keytable.right = window.setInterval(function() {
+				camera.moveBy(CAMERA_KEYBOARD_SPEED*CAMERA_KEYBOARD_UPDATE_INTERVAL/1000.0, 0)
+			}, CAMERA_KEYBOARD_UPDATE_INTERVAL)
+		} else if((e.keyCode == 38 || e.keyCode == 87) && !keytable.up) {
+			keytable.up = window.setInterval(function() {
+				camera.moveBy(0, -CAMERA_KEYBOARD_SPEED*CAMERA_KEYBOARD_UPDATE_INTERVAL/1000.0)
+			}, CAMERA_KEYBOARD_UPDATE_INTERVAL)
+		} else if((e.keyCode == 40 || e.keyCode == 83) && !keytable.down) {
+			keytable.down = window.setInterval(function() {
+				camera.moveBy(0, CAMERA_KEYBOARD_SPEED*CAMERA_KEYBOARD_UPDATE_INTERVAL/1000.0)
+			}, CAMERA_KEYBOARD_UPDATE_INTERVAL)
+		}
+	})
 }
 
 //listen for window size changes, adjust the VIEW_WIDTH, VIEW_HEIGHT global parameters, refresh the camera view
@@ -67,7 +108,7 @@ function createBoard(width,height) {
 	$('body').append(gameBoard.node)
 
 	//TODO: set the initial(furthest out) zoom factor/level so the whole game board is visible + margin
-	camera.move(gameBoard.width/2, gameBoard.height/2) //center on the middle of the game board
+	camera.moveTo(gameBoard.width/2, gameBoard.height/2) //center on the middle of the game board
 }
 
 function createCards(cardCount) {

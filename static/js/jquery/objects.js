@@ -9,10 +9,14 @@ Camera = function(x,y,zoom) {
 	this.panning = false
 }
 
-Camera.prototype.move = function(x,y) {
+Camera.prototype.moveTo = function(x,y) {
 	this.x = x
 	this.y = y
 	this.updateObjects()
+}
+
+Camera.prototype.moveBy = function(x,y) {
+	this.moveTo(this.x + x/this.zoomFactor, this.y + y/this.zoomFactor)
 }
 
 Camera.prototype.updateObjects = function() {
@@ -104,9 +108,7 @@ Camera.prototype.isPanning = function() {
 }
 
 Camera.prototype.updatePan = function(x,y) {
-	dx = x - this.panX
-	dy = y - this.panY
-	this.move(this.x - dx/this.zoomFactor, this.y - dy/this.zoomFactor)
+	this.moveBy(this.panX - x, this.panY - y)
 	this.panX = x
 	this.panY = y
 }
