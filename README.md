@@ -9,8 +9,10 @@ Server to client
 {
 	"msg": "initBoard"
 	"cardCount": 13
-	"boardSizeX": 100
-	"boardSizeY": 100
+	"boardSizeX": 1000
+	"boardSizeY": 1000
+	"cardSizeX": 300
+	"cardSizeY": 300
 }
 ```
 

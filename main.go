@@ -19,10 +19,10 @@ var gameTempl = template.Must(template.ParseFiles("templates/gameView.html"))
 var activeGames = make(map[string]*Game)
 
 const (
-	IDCHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-	IDLEN = 6
+	IDCHARS            = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	IDLEN              = 6
 	DEFAULT_PAIR_COUNT = 10
-	DEFAULT_GAME_TYPE = GAME_TYPE_CLASSIC
+	DEFAULT_GAME_TYPE  = GAME_TYPE_CLASSIC
 
 	DEFAULT_W = 1300 - 150 // minus card w because pos is top left
 	DEFAULT_H = 800 - 220  // idem

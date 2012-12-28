@@ -64,7 +64,7 @@ Camera.prototype.zoomStep = function(zoomDelta) { //how many steps in or out
 	//TODO: mind the zoom or assume that it is not manipulated?
 	this.zoomLevel += zoomDelta
 	//TODO: clamp min zoom, max zoom
-	this.zoomFactor = Math.pow(ZOOM_STEP,this.zoomLevel) //TODO: vary the 
+	this.zoomFactor = Math.pow(ZOOM_STEP,this.zoomLevel) //TODO: vary the initial zoom?
 	this.updateObjects()
 }
 
@@ -132,8 +132,8 @@ Card = function(cardId,type,x,y,w,h,phi) {
 	this.x = x //TODO: x and y are not kept current at the moment
 	this.y = y
 	this.phi = phi || DEFAULT_CARD_PHI
-	this.width = w || DEFAULT_CARD_W
-	this.height = h || DEFAULT_CARD_H
+	this.width = w || cardWidth
+	this.height = h || cardHeight
 
 	this.isBeingClicked = false
 	this.isBeingDragged = false

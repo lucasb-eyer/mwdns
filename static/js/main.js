@@ -28,7 +28,7 @@ function connect() {
 function handleMessage(msg){
 	var json = jQuery.parseJSON(msg);
 	if ( json.msg == "initBoard" ) {
-		createBoard(json.boardSizeX, json.boardSizeY)
+		createBoard(json.boardSizeX, json.boardSizeY, json.cardSizeX, json.cardSizeY)
 		createCards(json.cardCount)
 	} else if ( json.msg == "cardMove" ) {
 		gameCards[json.id].moveTo(json.x, json.y, json.phi)

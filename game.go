@@ -1,16 +1,17 @@
 package main
 
 import (
-	"fmt"
-	"log"
-	"strconv"
 	"bytes"
-	"math/rand"
 	"code.google.com/p/go.net/websocket"
 	"container/list"
 	"encoding/json"
-	"strings"
+	"fmt"
 	"io"
+	"log"
+	"math"
+	"math/rand"
+	"strconv"
+	"strings"
 )
 
 const (
@@ -62,9 +63,9 @@ func (p *Player) reader() {
 				log.Println("got chat message: ", v)
 				p.Game.Chat(fmt.Sprintf("%v", p.Id), v)
 			case "moveCard":
-				//TODO: REALLY take care of malformed incoming messages... this sucks
+				//TODO: REALLY take care of malformed incoming messages... this sucks (server crashes)
 				//TODO: v looks wrong here? -> server crashes
-				content := strings.Replace(v,"'","\"",-1) //decode makeshift json encoding
+				content := strings.Replace(v, "'", "\"", -1) //decode makeshift json encoding
 
 				contentReader := strings.NewReader(content)
 				dec := json.NewDecoder(contentReader)
@@ -98,7 +99,7 @@ type Player struct {
 	Points  int
 	Game    *Game
 
-	Name		string
+	Name     string
 	openCard int // -1 if no card is opened yet, a card id if a card was already opened
 
 	// For the combo
@@ -124,12 +125,12 @@ func (p *Player) GetJsonNew(itshim bool) string {
 }
 
 type Card struct {
-	Id   int
-	X    int
-	Y    int
-	Phi  float64
+	Id     int
+	X      int
+	Y      int
+	Phi    float64
 	IsOpen bool
-	Type int
+	Type   int
 }
 
 func (c *Card) GetJsonCardMove() string {
@@ -160,6 +161,8 @@ func NewGame(cardCount, gameType int) *Game {
 	//TODO: to position the cards, the server would need to know the card size? (or we keep it fix)
 	g.BoardSizeY = 1000 //TODO sane size
 	g.BoardSizeX = 1000
+	g.CardSizeX = 150 //TODO: the game should know the card sizes
+	g.CardSizeY = 150
 
 	g.registerPlayer = make(chan *Player)
 	g.unregisterPlayer = make(chan *Player)
@@ -169,15 +172,15 @@ func NewGame(cardCount, gameType int) *Game {
 
 	for i := 0; i < cardCount; i++ {
 		c := Card{
-			Id:   i,
+			Id: i,
 			//in fact this could be formulated as a circle packing problem
-			X:    rand.Intn(g.BoardSizeX),
-			Y:    rand.Intn(g.BoardSizeY),
+			X: rand.Intn(g.BoardSizeX - g.CardSizeX), //TODO: some kind of padding?
+			Y: rand.Intn(g.BoardSizeY - g.CardSizeY),
 			//grid positioning: TODO card sizes
 			//X:    (i % 7)*180 + rand.Intn(10) - 5,
 			//Y:    (i / 7)*250 + rand.Intn(10) - 5,
-			Phi:  (float64)(rand.Intn(2*360)-360),
-			Type: shuffling_aux[i] / 2,
+			Phi:    (float64)(rand.Intn(2*360) - 360),
+			Type:   shuffling_aux[i] / 2,
 			IsOpen: false}
 
 		g.Cards[i] = &c
@@ -194,13 +197,15 @@ const (
 )
 
 type Game struct {
-	Players     list.List
-	maxPlayerId int
-	Cards       map[int]*Card
+	Players       list.List
+	maxPlayerId   int
+	Cards         map[int]*Card
 	cardCountLeft int //how many cards are still playable
 
-	BoardSizeX	int
-	BoardSizeY	int
+	BoardSizeX int
+	BoardSizeY int
+	CardSizeX  int
+	CardSizeY  int
 
 	Type int
 
@@ -302,7 +307,7 @@ func (g *Game) TryFlip(p *Player, cardid int) {
 	// Second card opened...
 	firstCard := g.Cards[p.openCard]
 	secondCard := g.Cards[cardid]
-	p.openCard = NO_CARD  // Whatever happens, this player won't have an open card anymore
+	p.openCard = NO_CARD // Whatever happens, this player won't have an open card anymore
 	if firstCard.Type != secondCard.Type {
 		// Too bad
 		p.PreviousWasGood = false
@@ -316,7 +321,7 @@ func (g *Game) TryFlip(p *Player, cardid int) {
 			g.Broadcast(secondCard.GetJsonCardFlip())
 
 			// And then switch to the next player.
-			p.SetCanPlay(false,g)
+			p.SetCanPlay(false, g)
 			for e := g.Players.Front(); e != nil; e = e.Next() {
 				if e.Value.(*Player) == p {
 					var nextPlayer *Player
@@ -325,7 +330,7 @@ func (g *Game) TryFlip(p *Player, cardid int) {
 					} else {
 						nextPlayer = e.Next().Value.(*Player)
 					}
-					nextPlayer.SetCanPlay(true,g)
+					nextPlayer.SetCanPlay(true, g)
 					break
 				}
 			}
@@ -338,7 +343,7 @@ func (g *Game) TryFlip(p *Player, cardid int) {
 	} else {
 		//SCOOORE!
 		p.Points++
-		g.cardCountLeft-=2
+		g.cardCountLeft -= 2
 
 		// In rush mode, open the two cards for EVERYBODY now!
 		if g.Type == GAME_TYPE_RUSH {
@@ -353,9 +358,9 @@ func (g *Game) TryFlip(p *Player, cardid int) {
 				g.Broadcast(`{"msg": "combo"}`)
 
 				// Shuffle some random cards around randomly.
-				for k, _ := range(g.Cards) {
+				for k, _ := range g.Cards {
 					if rand.Intn(5) == 0 {
-						g.MoveCard(cardPosition{Id:k, X: rand.Intn(g.BoardSizeX), Y: rand.Intn(g.BoardSizeY), Phi: 0.0})
+						g.MoveCard(cardPosition{Id: k, X: rand.Intn(g.BoardSizeX - g.CardSizeX), Y: rand.Intn(g.BoardSizeY - g.CardSizeY), Phi: 0.0})
 					}
 				}
 			}
@@ -377,8 +382,11 @@ func (g *Game) TryFlip(p *Player, cardid int) {
 
 func (g *Game) MoveCard(cardp cardPosition) {
 	card := g.Cards[cardp.Id]
-	card.X = cardp.X
-	card.Y = cardp.Y
+	//TODO: is this necessary? trololoyes
+	// limit the card position to an area on/around the board -> clamp with padding
+	//TODO: g.BoardSizeX-g.CardSizeX should be a derived value...
+	card.X = (int)(math.Min(math.Max((float64)(-g.BoardSizeX/4), (float64)(cardp.X)), (float64)((g.BoardSizeX-g.CardSizeX)+g.BoardSizeX/4)))
+	card.Y = (int)(math.Min(math.Max((float64)(-g.BoardSizeY/4), (float64)(cardp.Y)), (float64)((g.BoardSizeY-g.CardSizeY)+g.BoardSizeY/4)))
 	card.Phi = cardp.Phi
 	g.Broadcast(card.GetJsonCardMove())
 }
@@ -396,7 +404,7 @@ func (g *Game) SendBoardState(p *Player) {
 }
 
 func (g *Game) SendInitBoard(p *Player) {
-	p.send <- fmt.Sprintf(`{"msg": "initBoard", "cardCount": %v, "boardSizeX": %v, "boardSizeY": %v}`,len(g.Cards),g.BoardSizeX,g.BoardSizeY)
+	p.send <- fmt.Sprintf(`{"msg": "initBoard", "cardCount": %v, "boardSizeX": %v, "boardSizeY": %v, "cardSizeX": %v, "cardSizeY": %v}`, len(g.Cards), g.BoardSizeX, g.BoardSizeY, g.CardSizeX, g.CardSizeY)
 }
 
 func (g *Game) SendPlayers(towhom *Player) {

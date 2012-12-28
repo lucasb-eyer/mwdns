@@ -102,8 +102,11 @@ function refreshWindowSize() {
 	camera.updateObjects();
 }
 
-function createBoard(width,height) {
+var cardWidth, cardHeight;
+function createBoard(width,height,card_width,card_height) {
 	gameBoard = new Board(width,height)
+	cardWidth = card_width
+	cardHeight = card_height
 	gameBoard.create()
 	$('body').append(gameBoard.node)
 
@@ -113,8 +116,8 @@ function createBoard(width,height) {
 
 function createCards(cardCount) {
 	// Sets the default initial position to be the center.
-	var defaultCardX = gameBoard.width/2 - DEFAULT_CARD_W/2
-	var defaultCardY = gameBoard.height/2 - DEFAULT_CARD_H/2
+	var defaultCardX = gameBoard.width/2 - cardWidth/2
+	var defaultCardY = gameBoard.height/2 - cardHeight/2
 
 	for (var i = 0; i < cardCount; i++) {
 		card = new Card(i,-1,defaultCardX,defaultCardY)

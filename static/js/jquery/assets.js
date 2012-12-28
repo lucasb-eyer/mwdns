@@ -17,7 +17,7 @@ function initAssets() {
 
 	deckFaceTemplate = $('<div>').addClass("deckFace").css("background-image","url("+deckFaceImg.src+")");
 	cardSource = new ImageSourceColorRandom(DEFAULT_CARD_W, DEFAULT_CARD_H, 10)
-	cardSource = new ImageSourceTileMapArmor()
+	//cardSource = new ImageSourceTileMapArmor()
 }
 
 ImageSourceColorRandom = function(width,height, typeCount) {
@@ -81,6 +81,8 @@ ImageSourceTileMapArmor.prototype.init = function() {
 			img.src = this.cvs.toDataURL("image/png")
 			this.images.push(img)
 		}
+
+		//TODO: redraw already visible cards (kind of hacky, prevents white boring cards (if they are already flipped open when the images are not yet loaded)
 	}, this))
 }
 
