@@ -1,4 +1,4 @@
-var DRAG_INERTIA = 10 // pixel distance until dragging is initiated
+var DRAG_INERTIA = 20 // pixel distance until dragging is initiated
 var ZOOM_STEP = 1.1
 
 var MOVEMENT_SPEED = 30
