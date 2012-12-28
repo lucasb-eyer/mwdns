@@ -50,20 +50,37 @@ function randomBrightColor() {
   return s;
 }
 
-//HSV to RGB! SCIENCE! thx wikipedia
 function randomHappyColor() {
-  H = Math.random() * 360;
+  var H = Math.random() * 360;
+  var S = 0.8+Math.random()*0.2;
+  var V = 0.6+Math.random()*0.3;
 
-  S = 0.8+Math.random()*0.2;
-  V = 0.6+Math.random()*0.3;
+  return convertHSVtoRGB(H,S,V);
+}
 
-  C = V*S;
-  Hp = H/60;
-  X = C*(1-Math.abs((Hp%2)-1));
+// delivers an array of rgb strings, equivalent to colors from all 360° of the [H]SV spectrum
+function randomDistinctiveHappyColors(count) {
+  results = []
+  for (var i = 0; i < count; i++) {
+    var H = i*360.0/count;
+    var S = 0.8+Math.random()*0.2;
+    var V = 0.6+Math.random()*0.3;
 
-  m = V-C;
+    results.push(convertHSVtoRGB(H,S,V));
+  }
+  return results;
+}
 
-  rgb = [0,0,0]
+//HSV to RGB! SCIENCE! thx wikipedia
+// returns a string representation for convenience
+function convertHSVtoRGB(H,S,V) {
+  var C = V*S;
+  var Hp = H/60;
+  var X = C*(1-Math.abs((Hp%2)-1));
+
+  var m = V-C;
+
+  var rgb = [0,0,0]
 
   if (0 <= Hp && Hp < 1) {
     rgb[0] = C;
@@ -96,8 +113,8 @@ function randomHappyColor() {
 var scaleKeys = ["-moz-transform", "-webkit-transform", "-o-transform", "transform"]
 var transformOriginKeys = ["-moz-transform-origin", "-webkit-transform-origin", "-o-transform-origin", "transform-origin"]
 function setScale(jqueryNode, scale) {
-	for (var i in scaleKeys) {
-		jqueryNode.css(scaleKeys[i],"scale("+scale+","+scale+")")
-		jqueryNode.css(transformOriginKeys[i],"top left")
-	}
+  for (var i in scaleKeys) {
+    jqueryNode.css(scaleKeys[i],"scale("+scale+","+scale+")")
+    jqueryNode.css(transformOriginKeys[i],"top left")
+  }
 }

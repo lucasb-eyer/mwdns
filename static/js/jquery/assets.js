@@ -29,8 +29,10 @@ ImageSourceColorRandom = function(width,height, typeCount) {
 
 ImageSourceColorRandom.prototype.init = function() {
 	this.images = []
+	this.colors = randomDistinctiveHappyColors(this.typeCount);
+
  	for (var i = 0; i < this.typeCount; i++) {
-		var img = $('<img>').css("background-color",randomHappyColor())
+		var img = $('<img>').css("background-color",this.colors[i])
 		this.images.push(img)
 	}
 }
