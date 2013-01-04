@@ -34,23 +34,6 @@ Camera.prototype.updateObjects = function() {
 		gameBoard.node.css("top", 	boardPos[1])
 		setScale(gameBoard.node, this.zoomFactor)
 	}
-
-	// this is plain wrong
-	//gameBoard.css("width", gameBoard.width*this.zoomFactor)
-	//gameBoard.css("height", gameBoard.height*this.zoomFactor)
-
-	/*
-	for (var i in gameCards) {
-		var card = gameCards[i]
-		//setScale(card.node, this.zoomFactor)
-
-		// this is plain wrong
-		//card.css("top", -cornerY + card.x*this.zoomFactor)
-		//card.css("left", -cornerX + card.y*this.zoomFactor)
-		//card.css("width", card.width*this.zoomFactor)
-		//card.css("height", card.height*this.zoomFactor)
-	}
-	*/
 }
 
 Camera.prototype.zoom = function(zoomFactor) {
@@ -210,10 +193,11 @@ Card.prototype.moveTo = function(x,y,phi) {
 	//TODO: add support for phi
 	// Whenever a card moves, it goes to the front.
 	this.node.css("z-index", ++g_max_card_z)
-	this.node.animate({
+	this.node.transit({rotate: phi,
 		left: x,
-		top: y,
-	})
+		top: y
+		})
+
 	this.x = x
 	this.y = y
 	this.phi = phi

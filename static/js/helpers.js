@@ -110,11 +110,20 @@ function convertHSVtoRGB(H,S,V) {
   return s;
 }
 
-var scaleKeys = ["-moz-transform", "-webkit-transform", "-o-transform", "transform"]
+var transformKeys = ["-moz-transform", "-webkit-transform", "-o-transform", "transform"]
 var transformOriginKeys = ["-moz-transform-origin", "-webkit-transform-origin", "-o-transform-origin", "transform-origin"]
 function setScale(jqueryNode, scale) {
-  for (var i in scaleKeys) {
-    jqueryNode.css(scaleKeys[i],"scale("+scale+","+scale+")")
+  for (var i in transformKeys) {
+    jqueryNode.css(transformKeys[i],"scale("+scale+","+scale+")")
     jqueryNode.css(transformOriginKeys[i],"top left")
+  }
+}
+
+//TODO: applying the scale and rotation functions to the same element, will certainly lead to strange effects - mind the different origins
+//the game board is scaled -> when needed this is the part to be changed
+function setRotation(jqueryNode, deg) {
+  for (var i in transformKeys) {
+    jqueryNode.css(transformKeys[i],"rotate("+deg+"deg)")
+    jqueryNode.css(transformOriginKeys[i],"center")
   }
 }
