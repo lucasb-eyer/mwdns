@@ -33,7 +33,7 @@ function handleMessage(msg){
 	} else if ( json.msg == "cardMove" ) {
 		gameCards[json.id].moveTo(json.x, json.y, json.phi)
 	} else if ( json.msg == "cardFlip" ) {
-		gameCards[json.id].flipCard(json.type)
+		gameCards[json.id].flipCard(json.type, json.scoredBy)
 	} else if ( json.msg == "newplayer" ) {
 		// TODO: The server should give the player a color too!
 		g_players[json.pid] = new Player(json.pid, json.name, undefined, json.canplay)

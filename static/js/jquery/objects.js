@@ -20,14 +20,9 @@ Camera.prototype.moveBy = function(x,y) {
 }
 
 Camera.prototype.updateObjects = function() {
-	//TODO: update the positions of all elements depending on the new camera position/zoom
+	//update the positions of all elements depending on the new camera position/zoom
+	//only the gameBoard is shifted about and rescaled
 	//this usage of zoomFactor implies, that zoom 2 is a zoom IN, 0.5 would be a zoom OUT (stuff gets smaller)
-
-	// this translates screen distance to world distance
-	// the coordinates of the screen upper left corner in the world
-	//var cornerX = this.x - (VIEW_WIDTH/(2*this.zoomFactor))
-	//var cornerY = this.y - (VIEW_HEIGHT/(2*this.zoomFactor))
-
 	if (gameBoard) {
 		var boardPos = this.worldToScreen(0,0) //assumes the board is alwas on 0,0 (left upper corner)
 		gameBoard.node.css("left", 	boardPos[0])
@@ -41,12 +36,11 @@ Camera.prototype.zoom = function(zoomFactor) {
 	this.updateObjects()
 }
 
-//TODO: use
 // corresponds to zooming in/out by discrete steps (maybe from mousewheel movement deltas)
 Camera.prototype.zoomStep = function(zoomDelta) { //how many steps in or out
-	//TODO: mind the zoom or assume that it is not manipulated?
+	//TODO: mind the zoom or assume that it is not manipulated anywhere else?
 	this.zoomLevel += zoomDelta
-	//TODO: clamp min zoom, max zoom
+	//clamp min zoom, max zoom
 	this.zoomFactor = Math.pow(ZOOM_STEP,this.zoomLevel) //TODO: vary the initial zoom?
 	this.updateObjects()
 }
@@ -118,6 +112,9 @@ Card = function(cardId,type,x,y,w,h,phi) {
 	this.width = w || cardWidth
 	this.height = h || cardHeight
 
+	//TODO: get from server, remember
+	this.scoredBy = -1 //which player has opened this particular pair of cards
+
 	this.isBeingClicked = false
 	this.isBeingDragged = false
 
@@ -131,15 +128,25 @@ Card.prototype.showBack = function() {
 	this.node.append(deckFaceTemplate.clone())
 }
 
-Card.prototype.showFront = function(type) {
+Card.prototype.showFront = function(type,scoredBy) {
 	this.type = type
+	this.scoredBy = scoredBy
 	this.node.empty()
 	//here more elaborate cards might be constructed
 	this.node.append(cardSource.getElement(type).clone())
+
+	//TODO: assign a background-color according to the scoredBy player id
+	if (this.scoredBy == NO_PLAYER) {
+		this.node.css("background-color","white") //TODO: take info from assets instead of hard coded default
+	} else {
+		//TODO: handle missing player ids?
+		var color = g_players[this.scoredBy].color
+		this.node.css("background-color", color)
+	}
 }
 
 //TODO: animations may come in here
-Card.prototype.doFlipCard = function(type) {
+Card.prototype.doFlipCard = function(type,scoredBy) {
 	this.type = type
 	// only mind the waiting if flipping back to -1
 	if (this.waitingForFlipback || type != -1) {
@@ -148,39 +155,32 @@ Card.prototype.doFlipCard = function(type) {
 			this.showBack()
 		// or the actual frontside of the card
 		} else {
-			this.showFront(type)
+			this.showFront(type,scoredBy)
 		}
 	}
 }
 
 // considers a healthy timeout, if the card is flipped back
 // this code is quite ugly
-Card.prototype.flipCard = function(type) {
+Card.prototype.flipCard = function(type,scoredBy) {
 	if (type == -1) {
 		this.waitingForFlipback = true
-		setTimeout($.proxy(function(){this.doFlipCard(type)},this), CARD_TURNBACK_TIMEOUT)
+		setTimeout($.proxy(function(){this.doFlipCard(type,scoredBy)},this), CARD_TURNBACK_TIMEOUT)
 	} else {
-		this.doFlipCard(type)
+		this.doFlipCard(type,scoredBy)
 	}
 }
 
 Card.prototype.create = function() {
 	//TODO: get the html from a template instead of typing it here?
-	//TODO: Implement card rotation
 	this.node = $('<div id="card_'+this.cardId+'" class="gameCardSquare"></div>')
 	this.node.css("top", this.y) //TODO: px?
 	this.node.css("left", this.x)
+	this.node.css("rotate",this.phi)
 	this.node.css("z-index", ++g_max_card_z)
 
 	this.node.css("width", this.width)
 	this.node.css("height", this.height)
-	//TODO: this part is to center the card origin
-	//this.node.css("margin-top", (-this.width/2)+"px") //element centering business
-	//this.node.css("margin-left", (-this.height/2)+"px")
-
-	//this.node.draggable({	distance: DRAG_INERTIA, start: onStartDragCard, drag: onMoveDragCard, stop: onStopDragCard,
-												//containment: "#gameBoard"})
-	//										 zIndex: this.cardId, preventCollision: false }) //this does not allow for overlapping
 
 	// the "proxy" part is necessary, as otherwise the this in the methods does not address the object -.- wat?
 	this.node.bind("mousedown", $.proxy(this.onMouseDown,this));
@@ -190,7 +190,6 @@ Card.prototype.create = function() {
 
 Card.prototype.moveTo = function(x,y,phi) {
 	//TODO: change duration, based on movement speed and movement distance
-	//TODO: add support for phi
 	// Whenever a card moves, it goes to the front.
 	this.node.css("z-index", ++g_max_card_z)
 	this.node.transit({rotate: phi,

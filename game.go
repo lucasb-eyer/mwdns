@@ -16,6 +16,7 @@ import (
 
 const (
 	NO_TYPE = -1
+	NO_PLAYER = -1
 )
 
 type cardPosition struct {
@@ -131,6 +132,8 @@ type Card struct {
 	Phi    float64
 	IsOpen bool
 	Type   int
+
+	ScoredBy int //the playerid, denoting to whom the points go
 }
 
 func (c *Card) GetJsonCardMove() string {
@@ -143,11 +146,11 @@ func (c *Card) GetJsonCardFlip() string {
 		Type = c.Type
 	}
 
-	return fmt.Sprintf(`{"msg": "cardFlip", "id": %v, "type": %v}`, c.Id, Type)
+	return fmt.Sprintf(`{"msg": "cardFlip", "id": %v, "type": %v, "scoredBy": %v}`, c.Id, Type, c.ScoredBy)
 }
 
 func (c *Card) GetJsonCardFlipAlways() string {
-	return fmt.Sprintf(`{"msg": "cardFlip", "id": %v, "type": %v}`, c.Id, c.Type)
+	return fmt.Sprintf(`{"msg": "cardFlip", "id": %v, "type": %v, "scoredBy": %v}`, c.Id, c.Type, c.ScoredBy)
 }
 
 func NewGame(cardCount, gameType int) *Game {
@@ -181,7 +184,8 @@ func NewGame(cardCount, gameType int) *Game {
 			//Y:    (i / 7)*250 + rand.Intn(10) - 5,
 			Phi:    (float64)(rand.Intn(2*360) - 360),
 			Type:   shuffling_aux[i] / 2,
-			IsOpen: false}
+			IsOpen: false,
+			ScoredBy: NO_PLAYER}
 
 		g.Cards[i] = &c
 	}
@@ -345,6 +349,10 @@ func (g *Game) TryFlip(p *Player, cardid int) {
 		p.Points++
 		g.cardCountLeft -= 2
 
+		// make the card remember who scored
+		firstCard.ScoredBy = p.Id
+		secondCard.ScoredBy = p.Id
+
 		// In rush mode, open the two cards for EVERYBODY now!
 		if g.Type == GAME_TYPE_RUSH {
 			firstCard.IsOpen = true
@@ -364,6 +372,10 @@ func (g *Game) TryFlip(p *Player, cardid int) {
 					}
 				}
 			}
+		} else {
+			//we need to broadcast the card owner anyway
+			g.Broadcast(firstCard.GetJsonCardFlip())
+			g.Broadcast(secondCard.GetJsonCardFlip())
 		}
 
 		p.PreviousWasGood = true
@@ -408,7 +420,7 @@ func (g *Game) SendInitBoard(p *Player) {
 }
 
 func (g *Game) SendPlayers(towhom *Player) {
-	// Sends a newplayer message to "towhom" for every player in the game except for himself.
+	// Sends a newplayer message to "towhom" for every player in the game
 	for e := g.Players.Front(); e != nil; e = e.Next() {
 		p := e.Value.(*Player)
 		towhom.send <- p.GetJsonNew(p == towhom)

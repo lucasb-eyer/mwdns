@@ -9,3 +9,6 @@ var DEFAULT_CARD_H = 100
 var DEFAULT_CARD_PHI = 0
 
 var CARD_TURNBACK_TIMEOUT = 800
+
+//const
+var NO_PLAYER = -1
