@@ -25,8 +25,8 @@ Camera.prototype.updateObjects = function() {
 	//this usage of zoomFactor implies, that zoom 2 is a zoom IN, 0.5 would be a zoom OUT (stuff gets smaller)
 	if (gameBoard) {
 		var boardPos = this.worldToScreen(0,0) //assumes the board is alwas on 0,0 (left upper corner)
-		gameBoard.node.css("left", 	boardPos[0])
-		gameBoard.node.css("top", 	boardPos[1])
+		gameBoard.node.css("left", boardPos[0])
+		gameBoard.node.css("top", boardPos[1])
 		setScale(gameBoard.node, this.zoomFactor)
 	}
 }
@@ -103,10 +103,27 @@ Board.prototype.create = function() {
 	//this.node.draggable({start: onStartDragBoard, drag: onMoveDragBoard, stop: onStopDragBoard})
 }
 
+Board.prototype.rel2abs = function(x, y, cardw, cardh) {
+	// Convert x,y from relative (0-1) to absolute (0-boardsize) coordinates
+	// but also respect the card sizes so as not to go out of the game board.
+	var radius = Math.sqrt(cardw*cardw + cardh*cardh)
+	absx = x * (this.width-radius) + radius/2
+	absy = y * (this.height-radius) + radius/2
+	return [absx, absy]
+}
+
+Board.prototype.abs2rel = function(x, y, cardw, cardh) {
+	// Opposite of rel2abs, duh.
+	var radius = Math.sqrt(cardw*cardw + cardh*cardh)
+	relx = (x-radius/2) / (this.width-radius)
+	rely = (y-radius/2) / (this.height-radius)
+	return [relx, rely]
+}
+
 Card = function(cardId,type,x,y,w,h,phi) {
 	this.cardId = cardId
 	this.type = type
-	this.x = x //TODO: x and y are not kept current at the moment
+	this.x = x // The center of the card, in (absolute) pixel
 	this.y = y
 	this.phi = phi || DEFAULT_CARD_PHI
 	this.width = w || cardWidth
@@ -172,13 +189,13 @@ Card.prototype.flipCard = function(type,scoredBy) {
 Card.prototype.create = function() {
 	//TODO: get the html from a template instead of typing it here?
 	this.node = $('<div id="card_'+this.cardId+'" class="gameCardSquare"></div>')
-	this.node.css("top", this.y) //TODO: px?
-	this.node.css("left", this.x)
+	this.node.css("top", (this.y - this.height/2) + "px")
+	this.node.css("left", (this.x - this.widht/2) + "px")
 	this.node.css("rotate",this.phi)
 	this.node.css("z-index", ++g_max_card_z)
 
-	this.node.css("width", this.width)
-	this.node.css("height", this.height)
+	this.node.css("width", this.width + "px")
+	this.node.css("height", this.height + "px")
 
 	// the "proxy" part is necessary, as otherwise the this in the methods does not address the object -.- wat?
 	this.node.bind("mousedown", $.proxy(this.onMouseDown,this));
@@ -187,17 +204,22 @@ Card.prototype.create = function() {
 }
 
 Card.prototype.moveTo = function(x,y,phi) {
+	// Convert x,y from relative (0-1) to absolute (0-boardsize) coordinates
+	// but also respect the card sizes so as not to go out of the game board.
+	absxy = gameBoard.rel2abs(x, y, this.width, this.height)
+
+	this.x = absxy[0]
+	this.y = absxy[1]
+	this.phi = phi
+
 	//TODO: change duration, based on movement speed and movement distance
 	// Whenever a card moves, it goes to the front.
 	this.node.css("z-index", ++g_max_card_z)
-	this.node.transit({rotate: phi,
-		left: x,
-		top: y
-		})
-
-	this.x = x
-	this.y = y
-	this.phi = phi
+	this.node.transit({
+		rotate: phi,
+		left: this.x-this.width/2,
+		top: this.y-this.height/2
+	})
 }
 
 ////EVENTS
@@ -239,8 +261,8 @@ Card.prototype.onMouseMove = function(e) {
 		this.x = curPos[0] + this.preDragCenterDelta[0] //mind the dx to the initial dx to the center
 		this.y = curPos[1] + this.preDragCenterDelta[1]
 
-		this.node.css("top",this.y)
-		this.node.css("left",this.x)
+		this.node.css("top",this.y-this.height/2)
+		this.node.css("left",this.x-this.width/2)
 	}
 	return false
 }
@@ -264,10 +286,13 @@ Card.prototype.onMouseUp = function(e) {
 }
 
 Card.prototype._broadcastPosition = function() {
+	// Don't forget to conver the coordinates to relative ones for the message.
+	relxy = gameBoard.abs2rel(this.x, this.y, this.width, this.height)
+
 	var contentStr = JSON.stringify({
 		id: this.cardId,
-		x: Math.floor(this.x),
-		y: Math.floor(this.y),
+		x: relxy[0],
+		y: relxy[1],
 		phi: this.phi
 	})
 	// We make this dance of stringifying the value and then jsonifying it back

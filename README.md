@@ -1,3 +1,10 @@
+Positions and coordinates
+=========================
+Coordinate-system is the javascript one, (0,0) being top left, x increasing towards the right, y increasing towards the bottom.
+
+Client-side (js), all positions are stored in pixels.
+In the messages aswell as on the server (go), all positions are relative in % of game board size, i.e. between 0.0 and 1.0 if on the board.
+
 Message types
 =============
 The messages sent through the websockets during a game.
@@ -9,22 +16,18 @@ Server to client
 {
 	"msg": "initBoard"
 	"cardCount": 13
-	"boardSizeX": 1000
-	"boardSizeY": 1000
-	"cardSizeX": 300
-	"cardSizeY": 300
 }
 ```
 
 ### cardMove
-x,y are the top left corner of the card.
+x,y are the center of the card as a relative (%) position on the board.
 phi is the angle in degrees.
 ```javascript
 {
 	"msg": "cardMove",
 	"id": 13,
-	"x": 124,
-	"y": 234,
+	"x": 0.13,
+	"y": 0.52,
 	"phi": 0.03,
 }
 ```
@@ -121,8 +124,8 @@ The client should wait to get a "flipped" message, or nothing ever.
 {
 	"moveCard": {
 		"id": 13,
-		"x": 123,
-		"y": 25,
+		"x": 0.25,
+		"y": 0.043,
 		"phi": 120
 	}
 }

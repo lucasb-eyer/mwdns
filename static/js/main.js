@@ -28,7 +28,9 @@ function connect() {
 function handleMessage(msg){
 	var json = jQuery.parseJSON(msg);
 	if ( json.msg == "initBoard" ) {
-		createBoard(json.boardSizeX, json.boardSizeY, json.cardSizeX, json.cardSizeY)
+		// TODO: Board-size dependent on the client's window size?
+		// TODO: Card-size dependent on the assets?
+		createBoard(DEFAULT_BOARD_W, DEFAULT_BOARD_H, DEFAULT_CARD_W, DEFAULT_CARD_H)
 		createCards(json.cardCount)
 	} else if ( json.msg == "cardMove" ) {
 		gameCards[json.id].moveTo(json.x, json.y, json.phi)

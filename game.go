@@ -21,8 +21,8 @@ const (
 
 type cardPosition struct {
 	Id  int
-	X   int
-	Y   int
+	X   float64
+	Y   float64
 	Phi float64
 }
 
@@ -127,8 +127,8 @@ func (p *Player) GetJsonNew(itshim bool) string {
 
 type Card struct {
 	Id     int
-	X      int
-	Y      int
+	X      float64
+	Y      float64
 	Phi    float64
 	IsOpen bool
 	Type   int
@@ -162,10 +162,6 @@ func NewGame(cardCount, gameType int) *Game {
 
 	// the size is padded client size, so the cards are always completely visible (eg +cardDim/2 at sides)
 	//TODO: to position the cards, the server would need to know the card size? (or we keep it fix)
-	g.BoardSizeY = 1000 //TODO sane size
-	g.BoardSizeX = 1000
-	g.CardSizeX = 150 //TODO: the game should know the card sizes
-	g.CardSizeY = 150
 
 	g.registerPlayer = make(chan *Player)
 	g.unregisterPlayer = make(chan *Player)
@@ -173,15 +169,15 @@ func NewGame(cardCount, gameType int) *Game {
 
 	shuffling_aux := rand.Perm(cardCount)
 
+	// We'll use a grid-layout for now.
+	// in fact this could be formulated as a circle packing problem.
+	ncardsx := (int)(math.Ceil(math.Sqrt((float64)(cardCount))))
+	ncardsy := (int)(math.Floor(math.Sqrt((float64)(cardCount))))
 	for i := 0; i < cardCount; i++ {
 		c := Card{
 			Id: i,
-			//in fact this could be formulated as a circle packing problem
-			X: rand.Intn(g.BoardSizeX - g.CardSizeX), //TODO: some kind of padding?
-			Y: rand.Intn(g.BoardSizeY - g.CardSizeY),
-			//grid positioning: TODO card sizes
-			//X:    (i % 7)*180 + rand.Intn(10) - 5,
-			//Y:    (i / 7)*250 + rand.Intn(10) - 5,
+			X:      (float64)(i % ncardsx)/(float64)(ncardsx-1),
+			Y:      (float64)(i / ncardsx)/(float64)(ncardsy-1),
 			Phi:    (float64)(rand.Intn(2*360) - 360),
 			Type:   shuffling_aux[i] / 2,
 			IsOpen: false,
@@ -205,11 +201,6 @@ type Game struct {
 	maxPlayerId   int
 	Cards         map[int]*Card
 	cardCountLeft int //how many cards are still playable
-
-	BoardSizeX int
-	BoardSizeY int
-	CardSizeX  int
-	CardSizeY  int
 
 	Type int
 
@@ -368,7 +359,7 @@ func (g *Game) TryFlip(p *Player, cardid int) {
 				// Shuffle some random cards around randomly.
 				for k, _ := range g.Cards {
 					if rand.Intn(5) == 0 {
-						g.MoveCard(cardPosition{Id: k, X: rand.Intn(g.BoardSizeX - g.CardSizeX), Y: rand.Intn(g.BoardSizeY - g.CardSizeY), Phi: 0.0})
+						g.MoveCard(cardPosition{Id: k, X: rand.Float64(), Y: rand.Float64(), Phi: (float64)(rand.Intn(2*360) - 360)})
 					}
 				}
 			}
@@ -397,8 +388,8 @@ func (g *Game) MoveCard(cardp cardPosition) {
 	//TODO: is this necessary? trololoyes
 	// limit the card position to an area on/around the board -> clamp with padding
 	//TODO: g.BoardSizeX-g.CardSizeX should be a derived value...
-	card.X = (int)(math.Min(math.Max((float64)(-g.BoardSizeX/4), (float64)(cardp.X)), (float64)((g.BoardSizeX-g.CardSizeX)+g.BoardSizeX/4)))
-	card.Y = (int)(math.Min(math.Max((float64)(-g.BoardSizeY/4), (float64)(cardp.Y)), (float64)((g.BoardSizeY-g.CardSizeY)+g.BoardSizeY/4)))
+	card.X = math.Min(math.Max(0.0, cardp.X), 1.0)
+	card.Y = math.Min(math.Max(0.0, cardp.Y), 1.0)
 	card.Phi = cardp.Phi
 	g.Broadcast(card.GetJsonCardMove())
 }
@@ -416,7 +407,7 @@ func (g *Game) SendBoardState(p *Player) {
 }
 
 func (g *Game) SendInitBoard(p *Player) {
-	p.send <- fmt.Sprintf(`{"msg": "initBoard", "cardCount": %v, "boardSizeX": %v, "boardSizeY": %v, "cardSizeX": %v, "cardSizeY": %v}`, len(g.Cards), g.BoardSizeX, g.BoardSizeY, g.CardSizeX, g.CardSizeY)
+	p.send <- fmt.Sprintf(`{"msg": "initBoard", "cardCount": %v}`, len(g.Cards))
 }
 
 func (g *Game) SendPlayers(towhom *Player) {

@@ -8,6 +8,9 @@ var DEFAULT_CARD_W = 100 //should be disregarded, except for default asset style
 var DEFAULT_CARD_H = 100
 var DEFAULT_CARD_PHI = 0
 
+var DEFAULT_BOARD_W = 1000
+var DEFAULT_BOARD_H = 1000
+
 var CARD_TURNBACK_TIMEOUT = 800
 
 //const
