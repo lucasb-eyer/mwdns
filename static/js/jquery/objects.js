@@ -113,7 +113,7 @@ Card = function(cardId,type,x,y,w,h,phi) {
 	this.height = h || cardHeight
 
 	//TODO: get from server, remember
-	this.scoredBy = -1 //which player has opened this particular pair of cards
+	this.scoredBy = NO_PLAYER //which player has opened this particular pair of cards
 
 	this.isBeingClicked = false
 	this.isBeingDragged = false
@@ -135,13 +135,11 @@ Card.prototype.showFront = function(type,scoredBy) {
 	//here more elaborate cards might be constructed
 	this.node.append(cardSource.getElement(type).clone())
 
-	//TODO: assign a background-color according to the scoredBy player id
-	if (this.scoredBy == NO_PLAYER) {
-		this.node.css("background-color","white") //TODO: take info from assets instead of hard coded default
-	} else {
-		//TODO: handle missing player ids?
+	if (g_players.hasOwnProperty(this.scoredBy)) {
 		var color = g_players[this.scoredBy].color
 		this.node.css("background-color", color)
+	} else {
+		this.node.css("background-color","white") //TODO: take info from assets instead of hard coded default
 	}
 }
 
