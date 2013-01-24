@@ -30,6 +30,7 @@ function handleMessage(msg){
 	if ( json.msg == "initBoard" ) {
 		// TODO: Board-size dependent on the client's window size?
 		// TODO: Card-size dependent on the assets?
+		// TODO: the board size can be computed to fit the card grid
 		createBoard(DEFAULT_BOARD_W, DEFAULT_BOARD_H, DEFAULT_CARD_W, DEFAULT_CARD_H)
 		createCards(json.cardCount)
 	} else if ( json.msg == "cardMove" ) {
@@ -46,6 +47,10 @@ function handleMessage(msg){
 			conn.send('{"wantChangeColor": "'+g_players[json.pid].color+'"}');
 			conn.send('{"wantChangeName": "'+g_players[json.pid].name+'"}');
 		}
+	} else if ( json.msg == "playerinfo" ) {
+		//trust that the server already has cleared up any possible messes
+		g_players[json.pid].color = json.color;
+		g_players[json.pid].name = json.name;
 	} else if ( json.msg == "canplay" ) {
 		g_players[json.pid].changeCanPlay(json.canplay)
 	} else if ( json.msg == "points" ) {

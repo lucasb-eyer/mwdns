@@ -196,7 +196,7 @@ func NewGame(cardCount, gameType int) *Game {
 			Id:       i,
 			X:        (float64)(i%ncardsx) / (float64)(ncardsx-1),
 			Y:        (float64)(i/ncardsx) / (float64)(ncardsy-1),
-			Phi:      (float64)(rand.Intn(2*360) - 360),
+			Phi:      0, //(float64)(rand.Intn(2*360) - 360), //no rotation for now
 			Type:     shuffling_aux[i] / 2,
 			IsOpen:   false,
 			ScoredBy: NO_PLAYER}
