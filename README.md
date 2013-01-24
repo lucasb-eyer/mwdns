@@ -72,8 +72,17 @@ If the card happened to be already scored the scoring player id is saved in "sco
 {
 	"msg": "newplayer"
 	"pid": 13,
-	"name": "Bob",
 	"itsyou": false
+}
+```
+
+### playerinfo
+```javascript
+{
+	"msg": "playerinfo",
+	"pid": 13,
+	"name": "Bob"
+	"color": "#F00"
 }
 ```
 
@@ -116,6 +125,13 @@ The client should wait to get a "flipped" message, or nothing ever.
 ```javascript
 {
 	"wantChangeName": "Bob"
+}
+```
+
+### wantChangeColor
+```javascript
+{
+	"wantChangeColor": "#F00"
 }
 ```
 

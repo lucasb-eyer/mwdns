@@ -10,12 +10,13 @@ import (
 	"log"
 	"math"
 	"math/rand"
+	"regexp"
 	"strconv"
 	"strings"
 )
 
 const (
-	NO_TYPE = -1
+	NO_TYPE   = -1
 	NO_PLAYER = -1
 )
 
@@ -75,6 +76,18 @@ func (p *Player) reader() {
 					log.Fatalln("JSON decode error in moveCard:", err)
 				}
 				p.Game.MoveCard(cardpos)
+			case "wantChangeName":
+				//TODO: check if this is a name, escape for the sake of all that is paranoid
+				p.Name = v
+				p.Game.Broadcast(p.GetJsonPlayerInfo())
+			case "wantChangeColor":
+				//TODO: check if this is a valid color
+				if matched, err := regexp.MatchString("^#[0-9A-Fa-f]{3,6}$", v); err != nil || !matched {
+					log.Fatal("Invalid color ", v)
+				} else {
+					p.Color = v
+					p.Game.Broadcast(p.GetJsonPlayerInfo())
+				}
 			default:
 				log.Println("Unknown message type: '", k, "' value: ", v)
 			}
@@ -101,6 +114,7 @@ type Player struct {
 	Game    *Game
 
 	Name     string
+	Color    string
 	openCard int // -1 if no card is opened yet, a card id if a card was already opened
 
 	// For the combo
@@ -122,7 +136,11 @@ func (p *Player) SetCanPlay(v bool, g *Game) {
 }
 
 func (p *Player) GetJsonNew(itshim bool) string {
-	return fmt.Sprintf(`{"msg": "newplayer", "pid": %v, "name": "%v", "canplay": %v, "itsyou": %v}`, p.Id, p.Name, p.CanPlay, itshim)
+	return fmt.Sprintf(`{"msg": "newplayer", "pid": %v, "canplay": %v, "itsyou": %v}`, p.Id, p.CanPlay, itshim)
+}
+
+func (p *Player) GetJsonPlayerInfo() string {
+	return fmt.Sprintf(`{"msg": "playerinfo", "pid": %v, "name": "%v", "color": "%v"}`, p.Id, p.Name, p.Color)
 }
 
 type Card struct {
@@ -175,12 +193,12 @@ func NewGame(cardCount, gameType int) *Game {
 	ncardsy := (int)(math.Floor(math.Sqrt((float64)(cardCount))))
 	for i := 0; i < cardCount; i++ {
 		c := Card{
-			Id: i,
-			X:      (float64)(i % ncardsx)/(float64)(ncardsx-1),
-			Y:      (float64)(i / ncardsx)/(float64)(ncardsy-1),
-			Phi:    (float64)(rand.Intn(2*360) - 360),
-			Type:   shuffling_aux[i] / 2,
-			IsOpen: false,
+			Id:       i,
+			X:        (float64)(i%ncardsx) / (float64)(ncardsx-1),
+			Y:        (float64)(i/ncardsx) / (float64)(ncardsy-1),
+			Phi:      (float64)(rand.Intn(2*360) - 360),
+			Type:     shuffling_aux[i] / 2,
+			IsOpen:   false,
 			ScoredBy: NO_PLAYER}
 
 		g.Cards[i] = &c
@@ -227,6 +245,7 @@ func (g *Game) Broadcast(m string) {
 }
 
 //TODO: handle client message "wantChangeName"
+//TODO: handle client message "wantChangeColor"
 
 func (g *Game) Run() {
 	for {
@@ -236,6 +255,7 @@ func (g *Game) Run() {
 			//send current board state to player
 			p.Id = g.maxPlayerId
 			p.Name = "Anon" //TODO: set the name?
+			p.Color = "#FFF"
 			p.openCard = NO_CARD
 			p.Game = g
 
@@ -415,5 +435,10 @@ func (g *Game) SendPlayers(towhom *Player) {
 	for e := g.Players.Front(); e != nil; e = e.Next() {
 		p := e.Value.(*Player)
 		towhom.send <- p.GetJsonNew(p == towhom)
+		// if about another player: send the established color and name
+		//TODO: strange things can happen here if people log in simultaneously
+		if p != towhom {
+			towhom.send <- p.GetJsonPlayerInfo()
+		}
 	}
 }

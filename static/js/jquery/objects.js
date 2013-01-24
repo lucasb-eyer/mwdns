@@ -304,7 +304,7 @@ Card.prototype._broadcastPosition = function() {
 
 Player = function(pid, name, color, canplay) {
 	this.pid = pid
-	this.name = name
+	this.name = name || "Bob"
 	this.color = color || randomHappyColor()
 	this.canplay = canplay || false
 	this.points = 0

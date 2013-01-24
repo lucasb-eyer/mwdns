@@ -38,9 +38,13 @@ function handleMessage(msg){
 		gameCards[json.id].flipCard(json.type, json.scoredBy)
 	} else if ( json.msg == "newplayer" ) {
 		// TODO: The server should give the player a color too!
-		g_players[json.pid] = new Player(json.pid, json.name, undefined, json.canplay)
+		g_players[json.pid] = new Player(json.pid, undefined, undefined, json.canplay)
 		if ( json.itsyou ) {
 			g_mypid = json.pid
+
+			// broadcast your chosen/generated color/name
+			conn.send('{"wantChangeColor": "'+g_players[json.pid].color+'"}');
+			conn.send('{"wantChangeName": "'+g_players[json.pid].name+'"}');
 		}
 	} else if ( json.msg == "canplay" ) {
 		g_players[json.pid].changeCanPlay(json.canplay)
