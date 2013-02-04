@@ -11,6 +11,7 @@
 	<script src="/static/js/dep/bootstrap.js"></script>
 
 	<link rel="stylesheet/less" href="/static/css/main.less" />
+	<link rel="stylesheet/less" href="/static/css/gui.less" />
 	<script type="text/javascript" src="/static/js/dep/less-1.3.1.min.js"></script>
 
 	<script type="text/javascript" src="/static/js/helpers.js"></script>
@@ -21,5 +22,39 @@
 	<script type="text/javascript" src="/static/js/main.js"></script>
 </head>
 <body>
+	<div id="playerGui">
+		<div id="chat">
+			<ul id="messages">
+				<li><span class="messageWho">Bob:</span><span class="messageWhat">Hello</span></li>
+				<li><span class="messageWho">Alice:</span><span class="messageWhat">Hi</span></li>
+				<li><span class="messageWho">Bob:</span><span class="messageWhat">Hello</span></li>
+				<li><span class="messageWho">Bob:</span><span class="messageWhat">Hello</span></li>
+				<li><span class="messageWho">Bob:</span><span class="messageWhat">Hello</span></li>
+				<li><span class="messageWho">Alice:</span><span class="messageWhat">Hi</span></li>
+				<li><span class="messageWho">Alice:</span><span class="messageWhat">Hi</span></li>
+				<li><span class="messageWho">Alice:</span><span class="messageWhat">Hi</span></li>
+			</ul>
+			<!-- TODO: intercept key events that go into the textInput -->
+			<form onSubmit="return false;" id="chatControl">
+				<input id="chatControlSend" type="submit" value="Say:">
+				<input id="chatControlText" type="text" name="what">
+			</form>
+		</div>
+		<div id="players">
+			<table>
+				<tr><th>Player</th><th>Color</th><th>Score</th></tr>
+				<tr>
+					<td>Bob</td>
+					<td></td>
+					<td>540</td>
+				</tr>
+				<tr>
+					<td>Alice</td>
+					<td></td>
+					<td>220</td>
+				</tr>
+			</table>
+		</div>
+	</div>
 </body>
 </html>
