@@ -69,6 +69,14 @@ func gameHandler(w http.ResponseWriter, req *http.Request) {
 		//game already exists.
 		//TODO: why is this printed so often? (31 times...)
 		log.Println("Game", gameId, "requested")
+
+		//redirect to the start page if the game does not exist
+		_, ok := activeGames[gameId]
+		if !ok {
+			log.Println("Game not found: ", gameId)
+			http.Redirect(w, req, "/", 303) //silent reditect to home screen, TODO: show message that game does not exist
+			return
+		}
 		gameTempl.Execute(w, req.Host)
 	}
 }
@@ -81,7 +89,6 @@ func wsHandler(ws *websocket.Conn) {
 		return
 	}
 
-	//TODO: check if game exists in global map
 	game, ok := activeGames[gameId]
 	if !ok {
 		log.Println("Game not found (for websocket request): ", ws)
