@@ -7,7 +7,7 @@
 	background-color: white;
 
 	#chat {
-	  width: 70%;
+		width: 70%;
 		height: 100%;
 		float:left;
 
@@ -28,7 +28,7 @@
 
 		#chatControl {
 			//height: 100px;
-		  width: 100%;
+			width: 100%;
 			height: 30px;
 			text-align: left;
 
@@ -41,14 +41,29 @@
 		}
 	}
 
-	#players {
+	#scoreboard {
 		background-color: #EEE;
-	  width: 28%;
+		width: 28%;
 		height: 100%;
 		float:right;
 		table {
 			margin: 10px auto;
 			border-spacing: 5px;
+
+			.col {
+				display: inline-block;
+				width: 10px;
+				height: 10px;
+				margin-right: 5px;
+				background-color: white;
+			}
+			.name {
+				text-align: left;
+			}
+			.points {
+				text-align: right;
+			}
 		}
 	}
 }
+

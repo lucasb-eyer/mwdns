@@ -1,5 +1,6 @@
 var camera;
 var gameBoard, gameCards;
+var g_scoreboard;
 var g_players, g_mypid;
 var g_currentlyDraggedCard;
 
@@ -21,6 +22,8 @@ function init() {
 	$(window).resize(function(){
 		refreshWindowSize()
 	})
+
+	g_scoreboard = new Scoreboard('#scoreboard');
 
 	// We init the document-wide event handlers here to avoid confusion/hiding.
 

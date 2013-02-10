@@ -310,15 +310,27 @@ Player = function(pid, name, color, canplay) {
 	this.points = 0
 
 	// TODO: Maybe call changeCanPlay from here to achieve the same gui effect?
+
+	// Add myself to the scoreboard.
+	g_scoreboard.addPlayer(this.pid, this.name, this.color, this.points)
 }
 
 Player.prototype.changeCanPlay = function(canplay) {
+	g_scoreboard.updateCanPlay(this.pid, canplay)
 	this.canplay = canplay
-	// TODO: Update some gui which indicates whether he can play or not.
 }
 
 Player.prototype.updatePoints = function(newpoints) {
-	delta = newpoints - this.points
+	g_scoreboard.updateScore(this.pid, newpoints, newpoints - this.points)
 	this.points = newpoints
-	// TODO: Show the delta.
+}
+
+Player.prototype.changeName = function(newname) {
+	g_scoreboard.updateName(this.pid, newname)
+	this.name = newname
+}
+
+Player.prototype.changeColor = function(newcol) {
+	g_scoreboard.updateColor(this.pid, newcol)
+	this.color = newcol
 }

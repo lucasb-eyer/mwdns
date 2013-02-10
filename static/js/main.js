@@ -49,8 +49,8 @@ function handleMessage(msg){
 		}
 	} else if ( json.msg == "playerinfo" ) {
 		//trust that the server already has cleared up any possible messes
-		g_players[json.pid].color = json.color;
-		g_players[json.pid].name = json.name;
+		g_players[json.pid].changeName(json.name);
+		g_players[json.pid].changeColor(json.color);
 	} else if ( json.msg == "canplay" ) {
 		g_players[json.pid].changeCanPlay(json.canplay)
 	} else if ( json.msg == "points" ) {
