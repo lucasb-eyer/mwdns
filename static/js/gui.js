@@ -5,7 +5,13 @@ Scoreboard = function(selector) {
 
 Scoreboard.prototype.addPlayer = function(pid, name, color, score) {
 	// TODO: This should probably be in some template file somewhere else.
-	this.node.find('table').append('<tr id=player' + pid + '><td class=name><div class=col></div>' + name + '</td><td class=points>' + score + '</td></tr>')
+	template = "<tr id=player" + pid + ">"
+	         + "  <td class=name>"
+	         + "    <div class=color></div><span>" + name + "</span>"
+	         + "  </td>"
+	         + "  <td class=points>" + score + "</td>"
+	         + "</tr>";
+	this.node.find('table').append(template)
 	this.pid_rows[pid] = this.node.find('#player' + pid)
 }
 
@@ -14,7 +20,7 @@ Scoreboard.prototype.updateName = function(pid, name) {
 }
 
 Scoreboard.prototype.updateColor = function(pid, color) {
-	this.pid_rows[pid].find('.col').css('background-color', color)
+	this.pid_rows[pid].find('.color').css('background-color', color)
 }
 
 Scoreboard.prototype.updateScore = function(pid, score, delta) {
