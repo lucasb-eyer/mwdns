@@ -140,6 +140,10 @@ func (p *Player) GetJsonNew(itshim bool) string {
 	return fmt.Sprintf(`{"msg": "newplayer", "pid": %v, "canplay": %v, "itsyou": %v}`, p.Id, p.CanPlay, itshim)
 }
 
+func (p *Player) GetJsonLeave() string {
+	return fmt.Sprintf(`{"msg": "leaver", "pid": %v}`, p.Id)
+}
+
 func (p *Player) GetJsonPlayerInfo() string {
 	return fmt.Sprintf(`{"msg": "playerinfo", "pid": %v, "name": "%v", "color": "%v"}`, p.Id, p.Name, p.Color)
 }
@@ -286,14 +290,26 @@ func (g *Game) Run() {
 			g.SendPlayers(p) // Now send him all existing players (including himself)
 			g.SendBoardState(p)
 		case p := <-g.unregisterPlayer:
-			//TODO: check if it actually is in the list etc PROPER ERROR HANDLING
+			// Tell everybody about the big bad leaver.
+			g.Broadcast(p.GetJsonLeave())
+
+			// In classic mode, if it was this player's turn, it's now the next one's turn.
+			if g.Type == GAME_TYPE_CLASSIC && p.CanPlay && g.Players.Len() > 1 {
+				g.CyclicNextPlayer(p).SetCanPlay(true, g)
+			}
+
+			// Really delete the player's struct.
 			for e := g.Players.Front(); e != nil; e = e.Next() {
 				if e.Value.(*Player) == p {
 					g.Players.Remove(e)
 					break
 				}
 			}
-			//TODO: gamelogic, if 0 players: delete game etc
+
+			// No more players? Close this game.
+			if g.Players.Len() == 0 {
+				return;
+			}
 		}
 	}
 }

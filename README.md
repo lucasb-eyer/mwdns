@@ -70,11 +70,18 @@ If the card happened to be already scored the scoring player id is saved in "sco
 ### newplayer
 ```javascript
 {
-	"msg": "newplayer"
+	"msg": "newplayer",
 	"pid": 13,
 	"itsyou": false
 }
 ```
+
+### leaver
+```javascript
+{
+	"msg": "leaver",
+	"pid": "13"
+}
 
 ### playerinfo
 ```javascript
