@@ -41,7 +41,24 @@ func rndString(length int) string {
 	return strings.Join(a, "")
 }
 
+func cleanGames() {
+	// Goes over the list of active games and removes those which are over.
+	// TODO: highscore? history?
+	for gid, g := range activeGames {
+		// Gotta leave the first player some time to join tho!
+		if g.Players.Len() == 0 && time.Since(g.Started).Seconds() > 10 {
+			log.Println("Removing empty game ", gid)
+			delete(activeGames, gid)
+		}
+	}
+}
+
+// TODO: pray that this is not called in multiple threads! It's not safe at all.
 func gameHandler(w http.ResponseWriter, req *http.Request) {
+	// This is the "reaper" form of cleanup: cleanup every now and then
+	// (i.e. whenever there is a request to /game).
+	cleanGames()
+
 	gameId := req.URL.Query().Get("g")
 	if gameId == "" || len(gameId) != 6 {
 		// create a new game if no gameid is given

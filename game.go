@@ -13,6 +13,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 )
 
 const (
@@ -219,6 +220,7 @@ type Game struct {
 	maxPlayerId   int
 	Cards         map[int]*Card
 	cardCountLeft int //how many cards are still playable
+	Started       time.Time //Used to close zombie games.
 
 	Type int
 
@@ -248,6 +250,7 @@ func (g *Game) Broadcast(m string) {
 //TODO: handle client message "wantChangeColor"
 
 func (g *Game) Run() {
+	g.Started = time.Now()
 	for {
 		select {
 		//TODO: obscure cases can be checked here: if the player already disconnected etc
