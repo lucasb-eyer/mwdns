@@ -13,7 +13,7 @@ var deckFaceImg // what pattern to put on the backside of cards
 function initAssets() {
 	//this one is a leftover from the canvas rendering version, no image is needed anymore
 	deckFaceImg = new Image()
-	deckFaceImg.src = "/static/img/patterns/subtle/vichy.png" //maybe some preloading happens here, which would be rad... and useless
+	deckFaceImg.src = "static/img/patterns/subtle/vichy.png" //maybe some preloading happens here, which would be rad... and useless
 
 	deckFaceTemplate = $('<div>').addClass("deckFace").css("background-image","url("+deckFaceImg.src+")");
 	cardSource = new ImageSourceColorRandom(DEFAULT_CARD_W, DEFAULT_CARD_H, 10)
@@ -32,7 +32,7 @@ ImageSourceColorRandom.prototype.init = function() {
 	this.colors = randomDistinctiveHappyColors(this.typeCount);
 
  	for (var i = 0; i < this.typeCount; i++) {
-		var img = $('<img>').css("background-color",this.colors[i])
+		var img = $('<img src="static/img/transparent.gif">').css("background-color",this.colors[i])
 		this.images.push(img)
 	}
 }
