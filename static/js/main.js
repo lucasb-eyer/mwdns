@@ -47,6 +47,9 @@ function handleMessage(msg){
 			conn.send('{"wantChangeColor": "'+g_players[json.pid].color+'"}');
 			conn.send('{"wantChangeName": "'+g_players[json.pid].name+'"}');
 		}
+	} else if ( json.msg == "leaver" ) {
+		g_scoreboard.leaver(json.pid)
+		g_players[json.pid] = undefined
 	} else if ( json.msg == "playerinfo" ) {
 		//trust that the server already has cleared up any possible messes
 		g_players[json.pid].changeName(json.name);

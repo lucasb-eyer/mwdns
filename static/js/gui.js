@@ -3,7 +3,7 @@ Scoreboard = function(selector) {
 	this.pid_rows = {}
 }
 
-Scoreboard.prototype.addPlayer = function(pid, name, color, score) {
+Scoreboard.prototype.addPlayer = function(pid, name, color, score, canplay) {
 	// TODO: This should probably be in some template file somewhere else.
 	template = "<tr id=player" + pid + ">"
 	         + "  <td class=name>"
@@ -13,6 +13,8 @@ Scoreboard.prototype.addPlayer = function(pid, name, color, score) {
 	         + "</tr>";
 	this.node.find('table').append(template)
 	this.pid_rows[pid] = this.node.find('#player' + pid)
+
+	this.updateCanPlay(pid, canplay)
 }
 
 Scoreboard.prototype.updateName = function(pid, name) {
@@ -31,9 +33,17 @@ Scoreboard.prototype.updateScore = function(pid, score, delta) {
 }
 
 Scoreboard.prototype.updateCanPlay = function(pid, canplay) {
-	//TODO: something. (grey/black name maybe?)
+	// You can play: black name. You can't play: grey name.
+	this.pid_rows[pid].find('.name span').css('color', canplay ? 'black' : 'grey')
 }
 
 Scoreboard.prototype.leaver = function(pid) {
-	//TODO: something. (grey out and change score to red LEAVER?)
+	// Leaver gets greyed- and striked- out name...
+	this.pid_rows[pid].find('.name span').css({
+		'color': 'grey',
+		'text-decoration': 'line-through'
+	})
+	// ...and of course no points!
+	this.pid_rows[pid].find('.points').text('LEFT')
+	this.pid_rows[pid].find('.points').css('color', 'red')
 }

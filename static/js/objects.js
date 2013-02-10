@@ -312,7 +312,7 @@ Player = function(pid, name, color, canplay) {
 	// TODO: Maybe call changeCanPlay from here to achieve the same gui effect?
 
 	// Add myself to the scoreboard.
-	g_scoreboard.addPlayer(this.pid, this.name, this.color, this.points)
+	g_scoreboard.addPlayer(this.pid, this.name, this.color, this.points, this.canplay)
 }
 
 Player.prototype.changeCanPlay = function(canplay) {
