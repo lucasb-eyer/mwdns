@@ -277,7 +277,7 @@ Card.prototype.onMouseUp = function(e) {
 		this.isBeingDragged = false
 		this._broadcastPosition()
 	} else if (this.isBeingClicked) {
-		conn.send('{"wantFlip": "'+this.cardId+'"}');
+		sendMessage('{"wantFlip": "'+this.cardId+'"}');
 	}
 	this.isBeingClicked = false
 	g_currentlyDraggedCard = undefined
@@ -299,7 +299,7 @@ Card.prototype._broadcastPosition = function() {
 	// on the server because the server's json lib sucks ass.
 	// It needs a map of string->string as main message.
 	contentStr = contentStr.replace(/"/g,"'")
-	conn.send('{"moveCard": "'+contentStr+'"}')
+	sendMessage('{"moveCard": "'+contentStr+'"}')
 }
 
 Player = function(pid, name, color, canplay) {

@@ -44,8 +44,8 @@ function handleMessage(msg){
 			g_mypid = json.pid
 
 			// broadcast your chosen/generated color/name
-			conn.send('{"wantChangeColor": "'+g_players[json.pid].color+'"}');
-			conn.send('{"wantChangeName": "'+g_players[json.pid].name+'"}');
+			sendMessage('{"wantChangeColor": "'+g_players[json.pid].color+'"}');
+			sendMessage('{"wantChangeName": "'+g_players[json.pid].name+'"}');
 		}
 	} else if ( json.msg == "leaver" ) {
 		g_scoreboard.leaver(json.pid)
@@ -61,6 +61,11 @@ function handleMessage(msg){
 	} else if ( json.msg == "end" ) {
 		//TODO: display final game screen (scores, winner, new game)
 	}
+}
+
+function sendMessage(msg) {
+	console.log('Snd: ' + msg)
+	conn.send(msg)
 }
 
 $(document).ready(function() {

@@ -77,7 +77,6 @@ function init() {
 	})
 
 	$(document).on("keydown", function(e) {
-		console.log(e)
 		if((e.keyCode == 37 || e.keyCode == 65) && !keytable.left) {
 			keytable.left = window.setInterval(function() {
 				camera.moveBy(-CAMERA_KEYBOARD_SPEED*CAMERA_KEYBOARD_UPDATE_INTERVAL/1000.0, 0)
