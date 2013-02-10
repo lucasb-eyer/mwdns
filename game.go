@@ -337,18 +337,7 @@ func (g *Game) TryFlip(p *Player, cardid int) {
 
 			// And then switch to the next player.
 			p.SetCanPlay(false, g)
-			for e := g.Players.Front(); e != nil; e = e.Next() {
-				if e.Value.(*Player) == p {
-					var nextPlayer *Player
-					if e == g.Players.Back() {
-						nextPlayer = g.Players.Front().Value.(*Player)
-					} else {
-						nextPlayer = e.Next().Value.(*Player)
-					}
-					nextPlayer.SetCanPlay(true, g)
-					break
-				}
-			}
+			g.CyclicNextPlayer(p).SetCanPlay(true, g)
 		} else if g.Type == GAME_TYPE_RUSH {
 			// In rush mode, we only need to tell the current player to unflip the cards.
 			p.send <- firstCard.GetJsonCardFlip()
@@ -442,3 +431,21 @@ func (g *Game) SendPlayers(towhom *Player) {
 		}
 	}
 }
+
+func (g *Game) CyclicNextPlayer(from *Player) *Player {
+	// Returns the next player cycling through the list, or himself.
+	for e := g.Players.Front(); e != nil; e = e.Next() {
+		if e.Value.(*Player) == from {
+			var nextPlayer *Player
+			if e == g.Players.Back() {
+				nextPlayer = g.Players.Front().Value.(*Player)
+			} else {
+				nextPlayer = e.Next().Value.(*Player)
+			}
+			return nextPlayer
+		}
+	}
+
+	return from
+}
+
