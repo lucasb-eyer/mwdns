@@ -255,7 +255,7 @@ func (g *Game) Run() {
 			//send current board state to player
 			p.Id = g.maxPlayerId
 			p.Name = "Anon" //TODO: set the name?
-			p.Color = "#FFF"
+			p.Color = Rgb2Hex(HappyColor()) //TODO: check for color clash?
 			p.openCard = NO_CARD
 			p.Game = g
 
