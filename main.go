@@ -24,7 +24,7 @@ const (
 	IDLEN              = 6
 	DEFAULT_PAIR_COUNT = 10
 	DEFAULT_GAME_TYPE  = GAME_TYPE_CLASSIC
-	DEFAULT_MAX_PLAYERS= 5
+	DEFAULT_MAX_PLAYERS= 0
 
 	DEFAULT_W = 1300 - 150 // minus card w because pos is top left
 	DEFAULT_H = 800 - 220  // idem
@@ -117,7 +117,7 @@ func wsHandler(ws *websocket.Conn) {
 	}
 
 	// Check if the game can take any more players.
-	if game.Players.Len() >= game.MaxPlayers {
+	if game.Players.Len() >= game.MaxPlayers && game.MaxPlayers > 0 {
 		log.Println("Game is already full")
 		websocket.Message.Send(ws, fmt.Sprintf(`{"msg": "err_gamefull", "gid": "%v", "max": %v}`, gameId, game.MaxPlayers))
 		return

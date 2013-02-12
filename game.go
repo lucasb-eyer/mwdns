@@ -261,7 +261,7 @@ func (g *Game) Run() {
 		select {
 		//TODO: obscure cases can be checked here: if the player already disconnected etc
 		case p := <-g.registerPlayer:
-			if g.Players.Len() >= g.MaxPlayers {
+			if g.Players.Len() >= g.MaxPlayers && g.MaxPlayers > 0 {
 				// Sorry, the game is full.
 				continue
 			}
