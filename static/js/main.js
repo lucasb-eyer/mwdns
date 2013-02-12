@@ -61,9 +61,11 @@ function handleMessage(msg){
 	} else if ( json.msg == "end" ) {
 		//TODO: display final game screen (scores, winner, new game)
 	} else if ( json.msg == "err_gameid" ) {
-		alert("The game you want to join (id: " + json.gid + ") doesn't exist!")
+		errmsg = encodeURIComponent("The game you want to join (id: <b>" + json.gid + "</b>) doesn't exist!")
+		window.location.replace("/?errmsg=" + errmsg);
 	} else if ( json.msg == "err_gamefull" ) {
-		alert("The game you want to join (id: " + json.gid + ") is already full! It doesn't allow more than " + json.max + " players.")
+		errmsg = encodeURIComponent("The game you want to join (id: <b>" + json.gid + "</b>) is already full! It allows a <b>maximum of " + json.max + "</b> players.")
+		window.location.replace("/?errmsg=" + errmsg);
 	}
 }
 

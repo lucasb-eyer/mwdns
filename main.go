@@ -11,6 +11,7 @@ import (
 	"strings"
 	"text/template"
 	"time"
+	"net/url"
 )
 
 var addr = flag.String("addr", ":8080", "http service address")
@@ -97,7 +98,8 @@ func gameHandler(w http.ResponseWriter, req *http.Request) {
 		_, ok := activeGames[gameId]
 		if !ok {
 			log.Println("Game not found: ", gameId)
-			http.Redirect(w, req, "/", 303) //silent reditect to home screen, TODO: show message that game does not exist
+			errmsg := "The game you were trying to join (id: <b>" + gameId + "</b>) doesn't exist!"
+			http.Redirect(w, req, "/?errmsg=" + url.QueryEscape(errmsg), 303)
 			return
 		}
 		gameTempl.Execute(w, req.Host)

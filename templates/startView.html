@@ -27,10 +27,20 @@
 			display: none;
 			margin: 15px;
 		}
+
+		#errmsg {
+			text-align: left;
+			margin-top: 20px;
+		}
 	</style>
 </head>
 <body>
 	<div id=content>
+		<div id=errmsg class="alert alert-block alert-error hide">
+			<button type=button class=close data-dismiss=alert>&times;</button>
+			<h4>Warning!</h4>
+			<span id=errmsgtxt>Best check yo self, you're not looking too good.</span>
+		</div>
 		<h1>Pairs-Ga.me <br><small>the memory workout</small></h1>
 		<button class=btn id=toggle-settings><i class=icon-wrench></i></button>
 		<form action=/game method=get>
@@ -51,6 +61,25 @@
 	</div>
 
 	<script type=text/javascript>
+		// Thanks SO
+		function getParameterByName(name)
+		{
+			name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+			var results = new RegExp("[\\?&]" + name + "=([^&#]*)").exec(window.location.search);
+			if(results == null)
+				return "";
+			else
+				return decodeURIComponent(results[1].replace(/\+/g, " "));
+		}
+
+		// Display an error message at the top of the page in case there is
+		// attached error information to the request.
+		errmsg = getParameterByName('errmsg')
+		if(errmsg) {
+			$('#errmsgtxt').html(errmsg)
+			$('#errmsg').hide().removeClass('hide').fadeIn()
+		}
+
 		// Make the button reflecting the current number of cards blue
 		$('.ncards').on('click', function() {
 			$('#n').val($(this).text())
