@@ -109,6 +109,23 @@ If the card happened to be already scored the scoring player id is saved in "sco
 }
 ```
 
+### errors
+
+#### err\_gameid
+```javascript
+{
+	"msg": "err_gameid",
+	"gid": "XZejbF"
+}
+
+#### err\_gamefull
+```javascript
+{
+	"msg": "err_gamefull",
+	"gid": "FooBar",
+	"max": 10
+}
+
 Client to server
 ----------------
 

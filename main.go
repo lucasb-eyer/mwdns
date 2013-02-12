@@ -105,23 +105,19 @@ func gameHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 func wsHandler(ws *websocket.Conn) {
-	//TODO: proper error handling: The client should get a description of the error.
-
+	// Get the game we're talking about, if it exists.
 	gameId := ws.Request().URL.Query().Get("g")
-	if gameId == "" {
-		log.Println("Websocket request without valid gameId: ", gameId)
-		return
-	}
-
 	game, ok := activeGames[gameId]
 	if !ok {
-		log.Println("Game not found (for websocket request): ", ws)
+		log.Println("Websocket request with invalid gameId: ", gameId)
+		websocket.Message.Send(ws, `{"msg": "err_gameid", "gid": "` + gameId + `"}`)
 		return
 	}
 
 	// Check if the game can take any more players.
 	if game.Players.Len() >= game.MaxPlayers {
 		log.Println("Game is already full")
+		websocket.Message.Send(ws, fmt.Sprintf(`{"msg": "err_gamefull", "gid": "%v", "max": %v}`, gameId, game.MaxPlayers))
 		return
 	}
 

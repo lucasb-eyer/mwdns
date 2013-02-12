@@ -60,6 +60,10 @@ function handleMessage(msg){
 		g_players[json.pid].updatePoints(json.points)
 	} else if ( json.msg == "end" ) {
 		//TODO: display final game screen (scores, winner, new game)
+	} else if ( json.msg == "err_gameid" ) {
+		alert("The game you want to join (id: " + json.gid + ") doesn't exist!")
+	} else if ( json.msg == "err_gamefull" ) {
+		alert("The game you want to join (id: " + json.gid + ") is already full! It doesn't allow more than " + json.max + " players.")
 	}
 }
 
