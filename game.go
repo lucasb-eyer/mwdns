@@ -176,10 +176,11 @@ func (c *Card) GetJsonCardFlipAlways() string {
 	return fmt.Sprintf(`{"msg": "cardFlip", "id": %v, "type": %v, "scoredBy": %v}`, c.Id, c.Type, c.ScoredBy)
 }
 
-func NewGame(cardCount, gameType int) *Game {
+func NewGame(cardCount, gameType, maxPlayers int) *Game {
 	g := new(Game)
 	g.Players.Init()
 	g.Type = gameType
+	g.MaxPlayers = maxPlayers
 	g.Cards = make(map[int]*Card)
 	g.cardCountLeft = cardCount
 
@@ -227,6 +228,7 @@ type Game struct {
 	Started       time.Time //Used to close zombie games.
 
 	Type int
+	MaxPlayers int
 
 	registerPlayer         chan *Player
 	unregisterPlayer       chan *Player
@@ -259,6 +261,11 @@ func (g *Game) Run() {
 		select {
 		//TODO: obscure cases can be checked here: if the player already disconnected etc
 		case p := <-g.registerPlayer:
+			if g.Players.Len() >= g.MaxPlayers {
+				// Sorry, the game is full.
+				continue
+			}
+
 			//send current board state to player
 			p.Id = g.maxPlayerId
 			p.Name = "Anon" //TODO: set the name?

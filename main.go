@@ -23,6 +23,7 @@ const (
 	IDLEN              = 6
 	DEFAULT_PAIR_COUNT = 10
 	DEFAULT_GAME_TYPE  = GAME_TYPE_CLASSIC
+	DEFAULT_MAX_PLAYERS= 5
 
 	DEFAULT_W = 1300 - 150 // minus card w because pos is top left
 	DEFAULT_H = 800 - 220  // idem
@@ -75,16 +76,21 @@ func gameHandler(w http.ResponseWriter, req *http.Request) {
 			gameType = DEFAULT_GAME_TYPE
 		}
 
+		maxPlayers, err := strconv.Atoi(req.URL.Query().Get("m"))
+		if err != nil {
+			log.Println("Invalid max player count, defaulting to ", DEFAULT_MAX_PLAYERS)
+			maxPlayers = DEFAULT_MAX_PLAYERS
+		}
+
 		gameId = rndString(IDLEN)
-		g := NewGame(nCards, gameType)
+		g := NewGame(nCards, gameType, maxPlayers)
 		activeGames[gameId] = g
-		log.Println("New game of type ", gameType, " with ", nCards, " cards created: ", gameId)
+		log.Println("New game of type ", gameType, " with ", nCards, " cards and at most ", maxPlayers, " players created: ", gameId)
 		go g.Run()
 
 		http.Redirect(w, req, fmt.Sprintf("/game?g=%v", gameId), 303)
 	} else {
 		//game already exists.
-		//TODO: why is this printed so often? (31 times...)
 		log.Println("Game", gameId, "requested")
 
 		//redirect to the start page if the game does not exist
@@ -99,9 +105,10 @@ func gameHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 func wsHandler(ws *websocket.Conn) {
+	//TODO: proper error handling: The client should get a description of the error.
+
 	gameId := ws.Request().URL.Query().Get("g")
 	if gameId == "" {
-		//TODO: proper error handling
 		log.Println("Websocket request without valid gameId: ", gameId)
 		return
 	}
@@ -112,7 +119,11 @@ func wsHandler(ws *websocket.Conn) {
 		return
 	}
 
-	//TODO: check if game is running, can take any more players etc
+	// Check if the game can take any more players.
+	if game.Players.Len() >= game.MaxPlayers {
+		log.Println("Game is already full")
+		return
+	}
 
 	// create player for the game
 	player := &Player{
@@ -121,7 +132,8 @@ func wsHandler(ws *websocket.Conn) {
 
 		// create socket connection
 		send: make(chan string, 256),
-		ws:   ws}
+		ws:   ws,
+	}
 
 	game.AddPlayer(player)
 	defer func() { game.RemovePlayer(player) }()
