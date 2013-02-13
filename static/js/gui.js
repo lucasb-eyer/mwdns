@@ -20,6 +20,12 @@ Scoreboard.prototype.addPlayer = function(pid, name, color, score, canplay) {
 }
 
 Scoreboard.prototype.updateName = function(pid, name) {
+	// Little indicater for idi.. newbies.
+	if(pid == g_mypid) {
+		name += " (you)"
+	}
+
+	// Here jQuery's 'text' does the escaping of < and friends for us.
 	this.pid_rows[pid].find('.name span').text(name)
 }
 
