@@ -82,6 +82,7 @@ If the card happened to be already scored the scoring player id is saved in "sco
 	"msg": "leaver",
 	"pid": "13"
 }
+```
 
 ### playerinfo
 ```javascript
