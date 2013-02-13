@@ -304,12 +304,10 @@ Card.prototype._broadcastPosition = function() {
 
 Player = function(pid, name, color, canplay) {
 	this.pid = pid
-	this.name = name || "Bob"
-	this.color = color || randomHappyColor()
+	this.name = name
+	this.color = color
 	this.canplay = canplay || false
 	this.points = 0
-
-	// TODO: Maybe call changeCanPlay from here to achieve the same gui effect?
 
 	// Add myself to the scoreboard.
 	g_scoreboard.addPlayer(this.pid, this.name, this.color, this.points, this.canplay)

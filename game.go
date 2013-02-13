@@ -80,14 +80,14 @@ func (p *Player) reader() {
 			case "wantChangeName":
 				//TODO: check if this is a name, escape for the sake of all that is paranoid
 				p.Name = v
-				p.Game.Broadcast(p.GetJsonPlayerInfo())
+				p.Game.BroadcastPlayer(p)
 			case "wantChangeColor":
 				//TODO: check if this is a valid color
 				if matched, err := regexp.MatchString("^#[0-9A-Fa-f]{3,6}$", v); err != nil || !matched {
 					log.Fatal("Invalid color ", v)
 				} else {
 					p.Color = v
-					p.Game.Broadcast(p.GetJsonPlayerInfo())
+					p.Game.BroadcastPlayer(p)
 				}
 			default:
 				log.Println("Unknown message type: '", k, "' value: ", v)
@@ -136,16 +136,12 @@ func (p *Player) SetCanPlay(v bool, g *Game) {
 	g.Broadcast(p.GetJsonCanPlay())
 }
 
-func (p *Player) GetJsonNew(itshim bool) string {
-	return fmt.Sprintf(`{"msg": "newplayer", "pid": %v, "canplay": %v, "itsyou": %v}`, p.Id, p.CanPlay, itshim)
+func (p *Player) GetJsonPlayer(itshim bool) string {
+	return fmt.Sprintf(`{"msg": "player", "pid": %v, "canplay": %v, "itsyou": %v, "name": "%v", "color": "%v"}`, p.Id, p.CanPlay, itshim, p.Name, p.Color)
 }
 
 func (p *Player) GetJsonLeave() string {
 	return fmt.Sprintf(`{"msg": "leaver", "pid": %v}`, p.Id)
-}
-
-func (p *Player) GetJsonPlayerInfo() string {
-	return fmt.Sprintf(`{"msg": "playerinfo", "pid": %v, "name": "%v", "color": "%v"}`, p.Id, p.Name, p.Color)
 }
 
 type Card struct {
@@ -252,6 +248,16 @@ func (g *Game) Broadcast(m string) {
 	}
 }
 
+// Create and send a "player" message to all players.
+// This needs a separate function because the message sent to player "p_to_send"
+// is slightly different in that its "itsme" field is "true".
+func (g *Game) BroadcastPlayer(p_to_send *Player) {
+	for e := g.Players.Front(); e != nil; e = e.Next() {
+		p_receiver := e.Value.(*Player)
+		p_receiver.send <- p_to_send.GetJsonPlayer(p_to_send == p_receiver)
+	}
+}
+
 //TODO: handle client message "wantChangeName"
 //TODO: handle client message "wantChangeColor"
 
@@ -289,12 +295,12 @@ func (g *Game) Run() {
 				log.Fatalln("Unknown game type in game.Run:", g.Type)
 			}
 			// Send the new player to all other players (i.e. before adding him to the players list)
-			g.Broadcast(p.GetJsonNew(false))
+			g.BroadcastPlayer(p)
 			g.Players.PushBack(p)
 			g.maxPlayerId++
 
 			g.SendInitBoard(p)
-			g.SendPlayers(p) // Now send him all existing players (including himself)
+			g.SendAllPlayers(p) // Now send him all existing players (including himself)
 			g.SendBoardState(p)
 		case p := <-g.unregisterPlayer:
 			// Tell everybody about the big bad leaver.
@@ -445,16 +451,11 @@ func (g *Game) SendInitBoard(p *Player) {
 	p.send <- fmt.Sprintf(`{"msg": "initBoard", "cardCount": %v}`, len(g.Cards))
 }
 
-func (g *Game) SendPlayers(towhom *Player) {
-	// Sends a newplayer message to "towhom" for every player in the game
+func (g *Game) SendAllPlayers(towhom *Player) {
+	// Sends "towhom" one newplayer message for every player in the game
 	for e := g.Players.Front(); e != nil; e = e.Next() {
 		p := e.Value.(*Player)
-		towhom.send <- p.GetJsonNew(p == towhom)
-		// if about another player: send the established color and name
-		//TODO: strange things can happen here if people log in simultaneously
-		if p != towhom {
-			towhom.send <- p.GetJsonPlayerInfo()
-		}
+		towhom.send <- p.GetJsonPlayer(p == towhom)
 	}
 }
 

@@ -67,12 +67,15 @@ If the card happened to be already scored the scoring player id is saved in "sco
 }
 ```
 
-### newplayer
+### player
+This message is sent both whenever a new player joins and when a player changes his name or color.
 ```javascript
 {
-	"msg": "newplayer",
+	"msg": "player",
 	"pid": 13,
 	"itsyou": false
+	"name": "Bob"
+	"color": "#F00"
 }
 ```
 
@@ -81,16 +84,6 @@ If the card happened to be already scored the scoring player id is saved in "sco
 {
 	"msg": "leaver",
 	"pid": "13"
-}
-```
-
-### playerinfo
-```javascript
-{
-	"msg": "playerinfo",
-	"pid": 13,
-	"name": "Bob"
-	"color": "#F00"
 }
 ```
 

@@ -14,6 +14,8 @@ Scoreboard.prototype.addPlayer = function(pid, name, color, score, canplay) {
 	this.node.find('table').append(template)
 	this.pid_rows[pid] = this.node.find('#player' + pid)
 
+	this.updateName(pid, name)
+	this.updateColor(pid, color)
 	this.updateCanPlay(pid, canplay)
 }
 

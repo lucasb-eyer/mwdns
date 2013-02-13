@@ -37,23 +37,28 @@ function handleMessage(msg){
 		gameCards[json.id].moveTo(json.x, json.y, json.phi)
 	} else if ( json.msg == "cardFlip" ) {
 		gameCards[json.id].flipCard(json.type, json.scoredBy)
-	} else if ( json.msg == "newplayer" ) {
-		// TODO: The server should give the player a color too!
-		g_players[json.pid] = new Player(json.pid, undefined, undefined, json.canplay)
-		if ( json.itsyou ) {
-			g_mypid = json.pid
+	} else if ( json.msg == "player" ) {
+		if ( !g_players.hasOwnProperty(json.pid) ) {
+			// A new player?
+			if ( json.itsyou ) {
+				// And it's me? Get a hold of my own pid!
+				g_mypid = json.pid
 
-			// broadcast your chosen/generated color/name
-			sendMessage('{"wantChangeColor": "'+g_players[json.pid].color+'"}');
-			sendMessage('{"wantChangeName": "'+g_players[json.pid].name+'"}');
+				// TODO: If the player has stored settings (name, color) client-
+				// side, send them here using a "wantChangeXXX" message.
+				// json.name = ...
+				// json.color = ...
+			}
+
+			g_players[json.pid] = new Player(json.pid, json.name, json.color, json.canplay)
+		} else {
+			// An existing player? Change its settings.
+			g_players[json.pid].changeName(json.name);
+			g_players[json.pid].changeColor(json.color);
 		}
 	} else if ( json.msg == "leaver" ) {
 		g_scoreboard.leaver(json.pid)
-		g_players[json.pid] = undefined
-	} else if ( json.msg == "playerinfo" ) {
-		//trust that the server already has cleared up any possible messes
-		g_players[json.pid].changeName(json.name);
-		g_players[json.pid].changeColor(json.color);
+		delete g_players[json.pid]
 	} else if ( json.msg == "canplay" ) {
 		g_players[json.pid].changeCanPlay(json.canplay)
 	} else if ( json.msg == "points" ) {
