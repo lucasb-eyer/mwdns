@@ -50,6 +50,15 @@ Scoreboard.prototype.updateTurns = function(pid, turns) {
 	this.pid_rows[pid].find('.turns').text(turns)
 }
 
+Scoreboard.prototype.showInvite = function(showInvite) {
+	if (showInvite) {
+		$("#gameLink").text(document.URL)
+		$("#helpfulSuggestionBox").show();
+	} else {
+		$("#helpfulSuggestionBox").hide();
+	}
+}
+
 Scoreboard.prototype.leaver = function(pid) {
 	// Leaver gets greyed- and striked- out name...
 	this.pid_rows[pid].find('.name span').css({

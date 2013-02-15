@@ -56,9 +56,12 @@ function handleMessage(msg){
 			g_players[json.pid].changeName(json.name);
 			g_players[json.pid].changeColor(json.color);
 		}
+		// show a helpful suggestion if the player is alone (TODO: or not max players have joined?)
+		g_scoreboard.showInvite(g_players.length < 2)
 	} else if ( json.msg == "leaver" ) {
 		g_scoreboard.leaver(json.pid)
 		delete g_players[json.pid]
+		g_scoreboard.showInvite(true)
 	} else if ( json.msg == "canplay" ) {
 		g_players[json.pid].changeCanPlay(json.canplay)
 	} else if ( json.msg == "points" ) {
