@@ -67,6 +67,15 @@ If the card happened to be already scored the scoring player id is saved in "sco
 }
 ```
 
+### turns
+```javascript
+{
+	"msg": "turns",
+	"pid": 13,
+	"turns": 1
+}
+```
+
 ### player
 This message is sent both whenever a new player joins and when a player changes his name or color.
 ```javascript

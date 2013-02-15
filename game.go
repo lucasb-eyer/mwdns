@@ -112,6 +112,7 @@ type Player struct {
 	Id      int
 	CanPlay bool //TODO: set this through a player method, so the player is always notified
 	Points  int
+	Turns   int
 	Game    *Game
 
 	Name     string
@@ -355,6 +356,10 @@ func (g *Game) TryFlip(p *Player, cardid int) {
 	firstCard := g.Cards[p.openCard]
 	secondCard := g.Cards[cardid]
 	p.openCard = NO_CARD // Whatever happens, this player won't have an open card anymore
+
+	p.Turns++; //and one more played turn
+	g.Broadcast(fmt.Sprintf(`{"msg": "turns", "pid": %v, "turns": %v}`, p.Id, p.Turns))
+
 	if firstCard.Type != secondCard.Type {
 		// Too bad
 		p.PreviousWasGood = false

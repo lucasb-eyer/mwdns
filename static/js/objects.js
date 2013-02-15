@@ -308,9 +308,10 @@ Player = function(pid, name, color, canplay) {
 	this.color = color
 	this.canplay = canplay || false
 	this.points = 0
+	this.turns = 0
 
 	// Add myself to the scoreboard.
-	g_scoreboard.addPlayer(this.pid, this.name, this.color, this.points, this.canplay)
+	g_scoreboard.addPlayer(this.pid, this.name, this.color, this.turns, this.points, this.canplay)
 }
 
 Player.prototype.changeCanPlay = function(canplay) {
@@ -321,6 +322,11 @@ Player.prototype.changeCanPlay = function(canplay) {
 Player.prototype.updatePoints = function(newpoints) {
 	g_scoreboard.updateScore(this.pid, newpoints, newpoints - this.points)
 	this.points = newpoints
+}
+
+Player.prototype.updateTurns = function(newturns) {
+	g_scoreboard.updateTurns(this.pid, newturns)
+	this.turns = newturns
 }
 
 Player.prototype.changeName = function(newname) {
