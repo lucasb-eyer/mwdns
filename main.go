@@ -12,6 +12,8 @@ import (
 	"text/template"
 	"time"
 	"net/url"
+	"io/ioutil"
+	"encoding/json"
 )
 
 var addr = flag.String("addr", ":8080", "http service address")
@@ -25,6 +27,8 @@ const (
 	DEFAULT_PAIR_COUNT = 10
 	DEFAULT_GAME_TYPE  = GAME_TYPE_CLASSIC
 	DEFAULT_MAX_PLAYERS= 0
+
+	CARD_CONFIG_FILE="static/data/cards.json"
 
 	DEFAULT_W = 1300 - 150 // minus card w because pos is top left
 	DEFAULT_H = 800 - 220  // idem
@@ -140,8 +144,48 @@ func wsHandler(ws *websocket.Conn) {
 	player.reader()
 }
 
+type CardInformation struct {
+	DeckImages []string `json:"deckImages"`
+	AssetPrefix string `json:"assetPrefix"`
+	CardImageSources []CardImageSource `json:"cardImageSources"`
+}
+
+type CardImageSource struct {
+	// there is different metainformation which can be provided for json, see Unmarshal function documentation. Nifty.
+	Id int `json:"id"`
+	Name string `json:"name"`
+	Size int `json:"size"`
+	MaxPairs int `json:"maxPairs"`
+	CardSizeX int `json:"cardSizeX"`
+	CardSizeY int `json:"cardSizeY"`
+}
+
+var cardInformation CardInformation
+func parseCardInformation() {
+	var cardInformation CardInformation
+	b, err := ioutil.ReadFile(CARD_CONFIG_FILE)
+  if err != nil {
+		log.Fatalln("Failed to open card information file:", err)
+  }
+
+  err = json.Unmarshal(b, &cardInformation)
+  if err != nil {
+		log.Fatalln("Failed to parse card information file:", err)
+  }
+
+	// debug for json parsing. Spoiler: it currently works as expected
+	/*
+	log.Println("List of parsed card theme names:")
+	for _,r := range(cardInformation.CardImageSources) {
+		log.Println(r.Name)
+	}
+	*/
+}
+
 func main() {
 	rand.Seed(time.Now().UTC().UnixNano())
+	log.Println("Parsing card information from json file")
+	parseCardInformation()
 
 	sm := http.NewServeMux()
 	sm.HandleFunc("/", homeHandler)

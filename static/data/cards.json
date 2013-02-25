@@ -5,33 +5,36 @@
 	{
 	"id": 0,
 	"name": "Armor",
+	"maxPairs": 12,
+	"cardSizeX": 50,
+	"cardSizeY": 50,
+
 	"type": "tilemap",
 	"fileName": "flare_armor.png",
 	"imgCountX": 5,
 	"imgCountY": 5,
-	"size": 50
-	"count": 24,
-	"maxPairs": 12,
-	"cardSizeX": 50,
-	"cardSizeY": 50
+	"tileSizeX": 50,
+	"tileSizeY": 50
 	},
 	{
 	"id": 1,
 	"name": "Random Colors Square",
-	"type": "function",
-	"func": "randomDistinctiveHappyColors",
 	"maxPairs": 20,
 	"cardSizeX": 50,
-	"cardSizeY": 50
+	"cardSizeY": 50,
+
+	"type": "function",
+	"func": "randomDistinctiveHappyColors"
 	},
 	{
 	"id": 2,
 	"name": "Random Colors Portrait",
-	"type": "function",
-	"func": "randomDistinctiveHappyColors",
 	"maxPairs": 20,
 	"cardSizeX": 50,
-	"cardSizeY": 50
+	"cardSizeY": 50,
+
+	"type": "function",
+	"func": "randomDistinctiveHappyColors"
 	}
 ]
 }
