@@ -17,7 +17,7 @@ import (
 )
 
 var addr = flag.String("addr", ":8080", "http service address")
-var homeTempl = template.Must(template.ParseFiles("templates/startView.html"))
+var homeTempl = template.Must(template.New("Why this text, I am confused").ParseFiles("templates/startView.html"))
 var gameTempl = template.Must(template.ParseFiles("templates/gameView.html"))
 var activeGames = make(map[string]*Game)
 
@@ -30,12 +30,13 @@ const (
 
 	CARD_CONFIG_FILE = "static/data/cards.json"
 
+	//TODO: has to be adjusted for each game, depending on the deck
 	DEFAULT_W = 1300 - 150 // minus card w because pos is top left
 	DEFAULT_H = 800 - 220  // idem
 )
 
 func homeHandler(c http.ResponseWriter, req *http.Request) {
-	homeTempl.Execute(c, req.Host)
+	homeTempl.ExecuteTemplate(c, "startView.html", cardInformation) //req.Host?
 }
 
 func rndString(length int) string {
@@ -106,7 +107,7 @@ func gameHandler(w http.ResponseWriter, req *http.Request) {
 			http.Redirect(w, req, "/?errmsg="+url.QueryEscape(errmsg), 303)
 			return
 		}
-		gameTempl.Execute(w, req.Host)
+		gameTempl.Execute(w, nil)
 	}
 }
 
@@ -163,7 +164,6 @@ type CardImageSource struct {
 var cardInformation CardInformation
 
 func parseCardInformation() {
-	var cardInformation CardInformation
 	b, err := ioutil.ReadFile(CARD_CONFIG_FILE)
 	if err != nil {
 		log.Fatalln("Failed to open card information file:", err)

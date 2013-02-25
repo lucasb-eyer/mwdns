@@ -39,8 +39,9 @@
 				<div class="input-append">
 					<label for="card_type">Card Images</label>
     			<select name="card_type">
-    			  <option>Colors</option>
-    			  <option>Armor</option>
+						{{range .CardImageSources}}
+							<option value="{{.Id}}">{{.Name}}</option>
+						{{end}}
     			</select>
 				</div>
 			</div>
