@@ -221,10 +221,10 @@ type Game struct {
 	Players       list.List
 	maxPlayerId   int
 	Cards         map[int]*Card
-	cardCountLeft int //how many cards are still playable
+	cardCountLeft int       //how many cards are still playable
 	Started       time.Time //Used to close zombie games.
 
-	Type int
+	Type       int
 	MaxPlayers int
 
 	registerPlayer         chan *Player
@@ -275,7 +275,7 @@ func (g *Game) Run() {
 
 			//send current board state to player
 			p.Id = g.maxPlayerId
-			p.Name = "Anon" //TODO: set the name?
+			p.Name = "Anon"                 //TODO: set the name?
 			p.Color = Rgb2Hex(HappyColor()) //TODO: check for color clash?
 			p.openCard = NO_CARD
 			p.Game = g
@@ -322,7 +322,7 @@ func (g *Game) Run() {
 
 			// No more players? Close this game.
 			if g.Players.Len() == 0 {
-				return;
+				return
 			}
 		}
 	}
@@ -357,7 +357,7 @@ func (g *Game) TryFlip(p *Player, cardid int) {
 	secondCard := g.Cards[cardid]
 	p.openCard = NO_CARD // Whatever happens, this player won't have an open card anymore
 
-	p.Turns++; //and one more played turn
+	p.Turns++ //and one more played turn
 	g.Broadcast(fmt.Sprintf(`{"msg": "turns", "pid": %v, "turns": %v}`, p.Id, p.Turns))
 
 	if firstCard.Type != secondCard.Type {
@@ -480,4 +480,3 @@ func (g *Game) CyclicNextPlayer(from *Player) *Player {
 
 	return from
 }
-

@@ -2,18 +2,18 @@ package main
 
 import (
 	"code.google.com/p/go.net/websocket"
+	"encoding/json"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"math/rand"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 	"text/template"
 	"time"
-	"net/url"
-	"io/ioutil"
-	"encoding/json"
 )
 
 var addr = flag.String("addr", ":8080", "http service address")
@@ -22,13 +22,13 @@ var gameTempl = template.Must(template.ParseFiles("templates/gameView.html"))
 var activeGames = make(map[string]*Game)
 
 const (
-	IDCHARS            = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-	IDLEN              = 6
-	DEFAULT_PAIR_COUNT = 10
-	DEFAULT_GAME_TYPE  = GAME_TYPE_CLASSIC
-	DEFAULT_MAX_PLAYERS= 0
+	IDCHARS             = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	IDLEN               = 6
+	DEFAULT_PAIR_COUNT  = 10
+	DEFAULT_GAME_TYPE   = GAME_TYPE_CLASSIC
+	DEFAULT_MAX_PLAYERS = 0
 
-	CARD_CONFIG_FILE="static/data/cards.json"
+	CARD_CONFIG_FILE = "static/data/cards.json"
 
 	DEFAULT_W = 1300 - 150 // minus card w because pos is top left
 	DEFAULT_H = 800 - 220  // idem
@@ -103,7 +103,7 @@ func gameHandler(w http.ResponseWriter, req *http.Request) {
 		if !ok {
 			log.Println("Game not found: ", gameId)
 			errmsg := "The game you were trying to join (id: <b>" + gameId + "</b>) doesn't exist!"
-			http.Redirect(w, req, "/?errmsg=" + url.QueryEscape(errmsg), 303)
+			http.Redirect(w, req, "/?errmsg="+url.QueryEscape(errmsg), 303)
 			return
 		}
 		gameTempl.Execute(w, req.Host)
@@ -116,7 +116,7 @@ func wsHandler(ws *websocket.Conn) {
 	game, ok := activeGames[gameId]
 	if !ok {
 		log.Println("Websocket request with invalid gameId: ", gameId)
-		websocket.Message.Send(ws, `{"msg": "err_gameid", "gid": "` + gameId + `"}`)
+		websocket.Message.Send(ws, `{"msg": "err_gameid", "gid": "`+gameId+`"}`)
 		return
 	}
 
@@ -145,40 +145,41 @@ func wsHandler(ws *websocket.Conn) {
 }
 
 type CardInformation struct {
-	DeckImages []string `json:"deckImages"`
-	AssetPrefix string `json:"assetPrefix"`
+	DeckImages       []string          `json:"deckImages"`
+	AssetPrefix      string            `json:"assetPrefix"`
 	CardImageSources []CardImageSource `json:"cardImageSources"`
 }
 
 type CardImageSource struct {
 	// there is different metainformation which can be provided for json, see Unmarshal function documentation. Nifty.
-	Id int `json:"id"`
-	Name string `json:"name"`
-	Size int `json:"size"`
-	MaxPairs int `json:"maxPairs"`
-	CardSizeX int `json:"cardSizeX"`
-	CardSizeY int `json:"cardSizeY"`
+	Id        int    `json:"id"`
+	Name      string `json:"name"`
+	Size      int    `json:"size"`
+	MaxPairs  int    `json:"maxPairs"`
+	CardSizeX int    `json:"cardSizeX"`
+	CardSizeY int    `json:"cardSizeY"`
 }
 
 var cardInformation CardInformation
+
 func parseCardInformation() {
 	var cardInformation CardInformation
 	b, err := ioutil.ReadFile(CARD_CONFIG_FILE)
-  if err != nil {
+	if err != nil {
 		log.Fatalln("Failed to open card information file:", err)
-  }
+	}
 
-  err = json.Unmarshal(b, &cardInformation)
-  if err != nil {
+	err = json.Unmarshal(b, &cardInformation)
+	if err != nil {
 		log.Fatalln("Failed to parse card information file:", err)
-  }
+	}
 
 	// debug for json parsing. Spoiler: it currently works as expected
 	/*
-	log.Println("List of parsed card theme names:")
-	for _,r := range(cardInformation.CardImageSources) {
-		log.Println(r.Name)
-	}
+		log.Println("List of parsed card theme names:")
+		for _,r := range(cardInformation.CardImageSources) {
+			log.Println(r.Name)
+		}
 	*/
 }
 
