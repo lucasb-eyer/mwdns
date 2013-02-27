@@ -44,13 +44,16 @@ function init() {
 			camera.startPanning(e.pageX, e.pageY)
 			return false
 		}
+		return true
 	})
 
 	$(document).on("mouseup", function(e) {
 		// Stop panning the view when releasing the right mouse button
 		if(e.which == 3) {
 			camera.stopPanning(e.pageX, e.pageY)
+			return false
 		}
+		return true
 	})
 
 	// Scrolling for zooming should work everywhere.
@@ -73,7 +76,10 @@ function init() {
 		} else if(e.keyCode == 40 || e.keyCode == 83) {
 			window.clearInterval(keytable.down)
 			keytable.down = undefined
+		} else {
+			return true //none of these? pass the event on then
 		}
+		return false
 	})
 
 	$(document).on("keydown", function(e) {
@@ -93,7 +99,10 @@ function init() {
 			keytable.down = window.setInterval(function() {
 				camera.moveBy(0, CAMERA_KEYBOARD_SPEED*CAMERA_KEYBOARD_UPDATE_INTERVAL/1000.0)
 			}, CAMERA_KEYBOARD_UPDATE_INTERVAL)
+		} else {
+			return true //none of these? pass the event on then
 		}
+		return false
 	})
 }
 
