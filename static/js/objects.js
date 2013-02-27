@@ -244,6 +244,7 @@ Card.prototype.onMouseDown = function(e) {
 	this.preDragCenterDelta[1] -= this.y
 
 	if (e.ctrlKey) {
+		this.preDragPhi = this.phi
 		this.isBeingRotated = true;
 	}
 
@@ -251,21 +252,30 @@ Card.prototype.onMouseDown = function(e) {
 	return false
 }
 
-//TODO: replace this by a function sensing the global mouse movement for smooth dragging
-//on move, the currently dragged card(s) are moved along without minding if the mouse pointer leaves them for a fraction of a second
-//the current solution breaks quite happily
 Card.prototype.onMouseMove = function(e) {
-	if (this.isBeingRotated) {
-		var curPos = camera.screenToWorld(e.pageX, e.pageY)
-		this.phi = Math.atan2(curPos[0]-this.x,
-													this.y-curPos[1])*57.2957795
+	var curPos = camera.screenToWorld(e.pageX, e.pageY)
 
-		this.node.css("rotate",this.phi)
+	if (this.isBeingRotated) {
+		// Note: The Y axis pointing down plays nicely with the angles being
+		//       counter-clockwise, so no need to negate Y here.
+
+		// The angle at which the cursor was when we started dragging, relative to card center.
+		var dragStartCursorAngle = Math.atan2(this.preDragCenterDelta[1], this.preDragCenterDelta[0])*57.2957795
+
+		// The angle at which the cursor is right now, relative to the card center.
+		var currentCursorAngle = Math.atan2((curPos[1]-this.y), curPos[0]-this.x)*57.2957795
+
+		// Thus, this is how much the user feels he "turned" the cursor around the card.
+		var cursorPhi = currentCursorAngle - dragStartCursorAngle
+
+		// This just needs to be added to the angle the card had when we
+		//  started this whole ordeal.
+		this.phi = this.preDragPhi + cursorPhi
+		this.node.css("rotate", this.phi)
 
 		return false
 	}
 
-	// TODO: I wanted to put this into helpers.js, but it was undefined here! What's your plan with helpers.js?
 	if (this.isBeingClicked && !this.isBeingDragged && dist(this.preDragPos, [e.pageX, e.pageY]) > DRAG_INERTIA) {
 		// If the user is holding a mousebutton down while moving the mouse, he is dragging.
 		this.isBeingDragged = true
