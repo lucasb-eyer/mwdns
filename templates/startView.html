@@ -26,23 +26,29 @@
 				<button type="submit" class="span3 btn btn-large btn-success" name="t" value="0">CLASSIC</button>
 				<button type="submit" class="span3 btn btn-large btn-danger" name="t" value="1">RUSH</button>
 			</div>
-			<div class=well id="settings">
-				<div class="input-append">
-					<label for="n">Number of Pairs</label>
-					<input type="text" class="span2" id="n" name="n" value="10">
-					<button type="button" class="btn ncards">5</button>
-					<button type="button" class="btn ncards btn-primary">10</button>
-					<button type="button" class="btn ncards">15</button>
-					<button type="button" class="btn ncards">20</button>
+			<div class="well form-horizontal" id="settings">
+				<div class="control-group">
+					<label class="control-label" for="n">Number of Pairs:</label>
+					<div class="controls">
+						<div class="input-append">
+							<input type="text" class="span2" id="n" name="n" value="10">
+							<button type="button" class="btn ncards">5</button>
+							<button type="button" class="btn ncards btn-primary">10</button>
+							<button type="button" class="btn ncards">15</button>
+							<button type="button" class="btn ncards">20</button>
+						</div>
+					</div>
 				</div>
 
-				<div class="input-append">
-					<label for="card_type">Card Images</label>
-    			<select name="card_type">
-						{{range .CardImageSources}}
-							<option value="{{.Id}}">{{.Name}}</option>
-						{{end}}
-    			</select>
+				<div class="control-group">
+					<label class="control-label" for="card_type">Card Images:</label>
+					<div class="controls">
+						<select name="card_type">
+							{{range .CardImageSources}}
+								<option value="{{.Id}}">{{.Name}}</option>
+							{{end}}
+						</select>
+					</div>
 				</div>
 			</div>
 		</form>
