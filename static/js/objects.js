@@ -240,8 +240,8 @@ Card.prototype.onMouseDown = function(e) {
 	this.preDragPos = [e.pageX, e.pageY]
 	this.preDragCenterDelta = camera.screenToWorld(e.pageX, e.pageY)
 	// where the mouse is clicked, relative to the card center
-	this.preDragCenterDelta[0]=this.x-this.preDragCenterDelta[0] //TODO: this part needs reworking
-	this.preDragCenterDelta[1]=this.y-this.preDragCenterDelta[1]
+	this.preDragCenterDelta[0] -= this.x
+	this.preDragCenterDelta[1] -= this.y
 
 	if (e.ctrlKey) {
 		this.isBeingRotated = true;
@@ -272,9 +272,8 @@ Card.prototype.onMouseMove = function(e) {
 	}
 
 	if (this.isBeingDragged) {
-		var curPos = camera.screenToWorld(e.pageX, e.pageY)
-		this.x = curPos[0] + this.preDragCenterDelta[0] //mind the dx to the initial dx to the center
-		this.y = curPos[1] + this.preDragCenterDelta[1]
+		this.x = curPos[0] - this.preDragCenterDelta[0] //mind the dx to the initial dx to the center
+		this.y = curPos[1] - this.preDragCenterDelta[1]
 
 		this.node.css("top",this.y-this.height/2)
 		this.node.css("left",this.x-this.width/2)
