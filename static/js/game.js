@@ -52,6 +52,10 @@ function init() {
 		if(e.which == 3) {
 			camera.stopPanning(e.pageX, e.pageY)
 			return false
+		} else if (e.which == 1) {
+			if(g_currentlyDraggedCard != undefined) { //wat -> this var can be 0, which would leave it sad and motionless
+				gameCards[g_currentlyDraggedCard].onMouseUp(e)
+			}
 		}
 		return true
 	})

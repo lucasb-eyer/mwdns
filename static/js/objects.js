@@ -133,6 +133,7 @@ Card = function(cardId,type,x,y,w,h,phi) {
 	this.scoredBy = NO_PLAYER //which player has opened this particular pair of cards
 
 	this.isBeingClicked = false
+	this.isBeingRotated = false
 	this.isBeingDragged = false
 
 	//TODO: in fact, this might better be realized with a counter... but these are obscure cases
@@ -242,6 +243,10 @@ Card.prototype.onMouseDown = function(e) {
 	this.preDragCenterDelta[0]=this.x-this.preDragCenterDelta[0] //TODO: this part needs reworking
 	this.preDragCenterDelta[1]=this.y-this.preDragCenterDelta[1]
 
+	if (e.ctrlKey) {
+		this.isBeingRotated = true;
+	}
+
 	this.node.css("z-index", ++g_max_card_z)
 	return false
 }
@@ -250,6 +255,16 @@ Card.prototype.onMouseDown = function(e) {
 //on move, the currently dragged card(s) are moved along without minding if the mouse pointer leaves them for a fraction of a second
 //the current solution breaks quite happily
 Card.prototype.onMouseMove = function(e) {
+	if (this.isBeingRotated) {
+		var curPos = camera.screenToWorld(e.pageX, e.pageY)
+		this.phi = Math.atan2(curPos[0]-this.x,
+													this.y-curPos[1])*57.2957795
+
+		this.node.css("rotate",this.phi)
+
+		return false
+	}
+
 	// TODO: I wanted to put this into helpers.js, but it was undefined here! What's your plan with helpers.js?
 	if (this.isBeingClicked && !this.isBeingDragged && dist(this.preDragPos, [e.pageX, e.pageY]) > DRAG_INERTIA) {
 		// If the user is holding a mousebutton down while moving the mouse, he is dragging.
@@ -273,7 +288,10 @@ Card.prototype.onMouseUp = function(e) {
 		return true
 	}
 
-	if (this.isBeingDragged) {
+	if (this.isBeingRotated) {
+		this.isBeingRotated = false
+		this._broadcastPosition()
+	} else if (this.isBeingDragged) {
 		this.isBeingDragged = false
 		this._broadcastPosition()
 	} else if (this.isBeingClicked) {
