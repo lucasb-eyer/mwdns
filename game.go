@@ -6,11 +6,11 @@ import (
 	"container/list"
 	"encoding/json"
 	"fmt"
+	"github.com/lucasb-eyer/go-colorful"
 	"io"
 	"log"
 	"math"
 	"math/rand"
-	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -82,11 +82,10 @@ func (p *Player) reader() {
 				p.Name = v
 				p.Game.BroadcastPlayer(p)
 			case "wantChangeColor":
-				//TODO: check if this is a valid color
-				if matched, err := regexp.MatchString("^#[0-9A-Fa-f]{3,6}$", v); err != nil || !matched {
+				if col, err := colorful.Hex(v); err != nil {
 					log.Fatal("Invalid color ", v)
 				} else {
-					p.Color = v
+					p.Color = col
 					p.Game.BroadcastPlayer(p)
 				}
 			default:
@@ -116,7 +115,7 @@ type Player struct {
 	Game    *Game
 
 	Name     string
-	Color    string
+	Color    colorful.Color
 	openCard int // -1 if no card is opened yet, a card id if a card was already opened
 
 	// For the combo
@@ -138,7 +137,7 @@ func (p *Player) SetCanPlay(v bool, g *Game) {
 }
 
 func (p *Player) GetJsonPlayer(itshim bool) string {
-	return fmt.Sprintf(`{"msg": "player", "pid": %v, "canplay": %v, "itsyou": %v, "name": "%v", "color": "%v"}`, p.Id, p.CanPlay, itshim, p.Name, p.Color)
+	return fmt.Sprintf(`{"msg": "player", "pid": %v, "canplay": %v, "itsyou": %v, "name": "%v", "color": "%v"}`, p.Id, p.CanPlay, itshim, p.Name, p.Color.Hex())
 }
 
 func (p *Player) GetJsonLeave() string {
@@ -207,6 +206,10 @@ func NewGame(cardCount, gameType, maxPlayers int) *Game {
 		g.Cards[i] = &c
 	}
 
+	// Create the player colors for this game. We ignore the error since if the
+	// color palette is nil, a random color is simply drawn for each player.
+	g.availColors, _ = colorful.HappyPalette(g.MaxPlayers)
+
 	return g
 }
 
@@ -223,6 +226,7 @@ type Game struct {
 	Cards         map[int]*Card
 	cardCountLeft int       //how many cards are still playable
 	Started       time.Time //Used to close zombie games.
+	availColors   []colorful.Color
 
 	Type       int
 	MaxPlayers int
@@ -259,9 +263,6 @@ func (g *Game) BroadcastPlayer(p_to_send *Player) {
 	}
 }
 
-//TODO: handle client message "wantChangeName"
-//TODO: handle client message "wantChangeColor"
-
 func (g *Game) Run() {
 	g.Started = time.Now()
 	for {
@@ -275,10 +276,19 @@ func (g *Game) Run() {
 
 			//send current board state to player
 			p.Id = g.maxPlayerId
-			p.Name = "Anon"                 //TODO: set the name?
-			p.Color = Rgb2Hex(HappyColor()) //TODO: check for color clash?
+			p.Name = fmt.Sprintf("Anon%v", g.Players.Len())
 			p.openCard = NO_CARD
 			p.Game = g
+
+			// Set the player's color either by taking the first one of this
+			// game's palette or creating a random one.
+			if g.MaxPlayers > 0 || g.availColors == nil {
+				p.Color = g.availColors[0]
+				g.availColors = g.availColors[1:]
+			} else {
+				// TODO: colors might still clash in unlimited games. Shit happens?
+				p.Color = colorful.HappyColor()
+			}
 
 			// Note that we set CanPlay directly to avoid sending messages
 			// about a not-yet existing player to the client.
@@ -311,6 +321,9 @@ func (g *Game) Run() {
 			if g.Type == GAME_TYPE_CLASSIC && p.CanPlay && g.Players.Len() > 1 {
 				g.CyclicNextPlayer(p).SetCanPlay(true, g)
 			}
+
+			// The leaver's color is available again.
+			g.availColors = append(g.availColors, p.Color)
 
 			// Really delete the player's struct.
 			for e := g.Players.Front(); e != nil; e = e.Next() {
