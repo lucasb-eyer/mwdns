@@ -196,9 +196,13 @@ func NewGame(cardCount, gameType, maxPlayers int) *Game {
 	for i := 0; i < cardCount; i++ {
 		c := Card{
 			Id:       i,
-			X:        (float64)(i%ncardsx) / (float64)(ncardsx-1),
-			Y:        (float64)(i/ncardsx) / (float64)(ncardsy-1),
-			Phi:      0, //(float64)(rand.Intn(2*360) - 360), //no rotation for now
+			// The first half of the sum places the cards onto a grid.
+			// The second half moves each card around randomly within its cell.
+			// The factor (0.3) is how "much" the cards should move within their cell.
+			X:        (float64)(i%ncardsx) / (float64)(ncardsx-1) + 0.3*(rand.Float64()-0.5) / (float64)(ncardsx-1),
+			Y:        (float64)(i/ncardsx) / (float64)(ncardsy-1) + 0.3*(rand.Float64()-0.5) / (float64)(ncardsy-1),
+			// In this case, we allow only for a slight random rotation of the cards: -30..30 degree.
+			Phi:      (float64)(rand.Intn(2*30)-30),
 			Type:     shuffling_aux[i] / 2,
 			IsOpen:   false,
 			ScoredBy: NO_PLAYER}
