@@ -41,13 +41,36 @@
 				</div>
 
 				<div class="control-group">
-					<label class="control-label" for="card_type">Card Images:</label>
+					<label class="control-label" for="ct">Card Images:</label>
 					<div class="controls">
-						<select name="card_type">
+						<select name="ct">
 							{{range .CardImageSources}}
 								<option value="{{.Id}}">{{.Name}}</option>
 							{{end}}
 						</select>
+					</div>
+				</div>
+
+				<div class="control-group">
+					<label class="control-label" for="cl">Card Layout:</label>
+					<div class="controls">
+						<select name="cl">
+							<option value="0">Tight Grid</option>
+							<option value="1" selected>Loose Grid</option>
+							<option value="2">Cardstack</option>
+						</select>
+					</div>
+				</div>
+
+				<div class="control-group">
+					<label class="control-label" for="card_rotation">Random Rotations:</label>
+					<div class="controls">
+						<div class="btn-group" data-toggle="buttons-radio" >
+							<button type="button" data-toggle="button" value="0" name="cr" class="btn rotcards active">Perfect</button>
+							<button type="button" data-toggle="button" value="1" name="cr" class="btn rotcards btn-primary active">Jiggly</button>
+							<button type="button" data-toggle="button" value="2" name="cr" class="btn rotcards">Realistic</button>
+							<button type="button" data-toggle="button" value="3" name="cr" class="btn rotcards">Chaotic</button>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -82,6 +105,12 @@
 		$('#n').on('keyup change', function() {
 			var n = $('#n').val() || "10"
 			$('.ncards').each(function(i, e) { $(e).toggleClass('btn-primary', $(e).text() == n) })
+		})
+
+		// toggle class, depending on what rotation is selected
+		$('.rotcards').on('click', function() {
+			$('.rotcards').removeClass('btn-primary')
+			$(this).addClass('btn-primary')
 		})
 
 		$('#toggle-settings').on('click', function() {

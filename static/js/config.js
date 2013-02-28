@@ -4,8 +4,8 @@ var ZOOM_STEP = 1.1
 var MOVEMENT_SPEED = 30
 
 // the dimensions of the card, can differ depending on prefered style
-var DEFAULT_CARD_W = 100 //should be disregarded, except for default asset styles cardWidth etc from server instead
-var DEFAULT_CARD_H = 100
+var DEFAULT_CARD_W = 50 //should be disregarded, except for default asset styles cardWidth etc from server instead
+var DEFAULT_CARD_H = 50
 var DEFAULT_CARD_PHI = 0
 
 var DEFAULT_BOARD_W = 600

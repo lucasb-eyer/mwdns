@@ -103,6 +103,7 @@ Board.prototype.create = function() {
 	//this.node.draggable({start: onStartDragBoard, drag: onMoveDragBoard, stop: onStopDragBoard})
 }
 
+/*
 Board.prototype.rel2abs = function(x, y, cardw, cardh) {
 	// Convert x,y from relative (0-1) to absolute (0-boardsize) coordinates
 	// but also respect the card sizes so as not to go out of the game board.
@@ -119,6 +120,7 @@ Board.prototype.abs2rel = function(x, y, cardw, cardh) {
 	rely = (y-radius/2) / (this.height-radius)
 	return [relx, rely]
 }
+*/
 
 Card = function(cardId,type,x,y,w,h,phi) {
 	this.cardId = cardId
@@ -205,12 +207,8 @@ Card.prototype.create = function() {
 }
 
 Card.prototype.moveTo = function(x,y,phi) {
-	// Convert x,y from relative (0-1) to absolute (0-boardsize) coordinates
-	// but also respect the card sizes so as not to go out of the game board.
-	absxy = gameBoard.rel2abs(x, y, this.width, this.height)
-
-	this.x = absxy[0]
-	this.y = absxy[1]
+	this.x = x
+	this.y = y
 	this.phi = phi
 
 	//TODO: change duration, based on movement speed and movement distance
@@ -313,13 +311,10 @@ Card.prototype.onMouseUp = function(e) {
 }
 
 Card.prototype._broadcastPosition = function() {
-	// Don't forget to conver the coordinates to relative ones for the message.
-	relxy = gameBoard.abs2rel(this.x, this.y, this.width, this.height)
-
 	var contentStr = JSON.stringify({
 		id: this.cardId,
-		x: relxy[0],
-		y: relxy[1],
+		x: this.x,
+		y: this.y,
 		phi: this.phi
 	})
 	// We make this dance of stringifying the value and then jsonifying it back

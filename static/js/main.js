@@ -28,10 +28,9 @@ function connect() {
 function handleMessage(msg){
 	var json = jQuery.parseJSON(msg);
 	if ( json.msg == "initBoard" ) {
-		// TODO: Board-size dependent on the client's window size?
-		// TODO: Card-size dependent on the assets?
-		// TODO: the board size can be computed to fit the card grid
-		createBoard(DEFAULT_BOARD_W, DEFAULT_BOARD_H, DEFAULT_CARD_W, DEFAULT_CARD_H)
+		// TODO: Card-size dependent on the assets. get from json
+		//DEFAULT_BOARD_W, DEFAULT_BOARD_H
+		createBoard(json.boardWidth, json.boardHeight, DEFAULT_CARD_W, DEFAULT_CARD_H)
 		createCards(json.cardCount)
 	} else if ( json.msg == "cardMove" ) {
 		gameCards[json.id].moveTo(json.x, json.y, json.phi)

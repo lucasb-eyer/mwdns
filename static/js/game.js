@@ -120,6 +120,7 @@ function refreshWindowSize() {
 var cardWidth, cardHeight;
 function createBoard(width,height,card_width,card_height) {
 	gameBoard = new Board(width,height)
+	//TODO: take this from the json asset?
 	cardWidth = card_width
 	cardHeight = card_height
 	gameBoard.create()

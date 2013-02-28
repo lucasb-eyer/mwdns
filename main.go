@@ -85,8 +85,31 @@ func gameHandler(w http.ResponseWriter, req *http.Request) {
 			maxPlayers = DEFAULT_MAX_PLAYERS
 		}
 
+		//TODO: handle other elements
+		//ct (id from json - the card sizes are important)
+		//cl (tight grid = 0/loose grid/stack)
+		//cr (no rotations = 0/some/lots)
+
+		cardType, err := strconv.Atoi(req.URL.Query().Get("ct"))
+		if err != nil {
+			log.Println("Invalid card type parameter, defaulting to ", 0)
+			cardType = 0
+		}
+
+		cardLayout, err := strconv.Atoi(req.URL.Query().Get("cl"))
+		if err != nil {
+			log.Println("Invalid card layout parameter, defaulting to ", 0)
+			cardLayout = 0
+		}
+
+		cardRotation, err := strconv.Atoi(req.URL.Query().Get("cr"))
+		if err != nil {
+			log.Println("Invalid card rotation parameter, defaulting to ", 0)
+			cardRotation = 0
+		}
+
 		gameId = rndString(IDLEN)
-		g := NewGame(nCards, gameType, maxPlayers)
+		g := NewGame(nCards, gameType, maxPlayers, cardType, cardLayout, cardRotation)
 		activeGames[gameId] = g
 		log.Println("New game of type ", gameType, " with ", nCards, " cards and at most ", maxPlayers, " players created: ", gameId)
 		go g.Run()
@@ -156,6 +179,19 @@ type CardImageSource struct {
 	MaxPairs  int    `json:"maxPairs"`
 	CardSizeX int    `json:"cardSizeX"`
 	CardSizeY int    `json:"cardSizeY"`
+}
+
+func GetCardImageSource(id int) *CardImageSource {
+	if (len(cardInformation.CardImageSources) < id) {
+		id = 0
+		log.Println("ImageSource Id issue: too big ", id)
+	}
+	cardImageSource := &cardInformation.CardImageSources[id]
+	if (cardImageSource.Id != id) {
+		log.Println("ImageSource Id issue: wrong asset order, id != Id ", id)
+	}
+
+	return cardImageSource
 }
 
 var cardInformation CardInformation

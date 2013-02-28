@@ -172,13 +172,15 @@ func (c *Card) GetJsonCardFlipAlways() string {
 	return fmt.Sprintf(`{"msg": "cardFlip", "id": %v, "type": %v, "scoredBy": %v}`, c.Id, c.Type, c.ScoredBy)
 }
 
-func NewGame(cardCount, gameType, maxPlayers int) *Game {
+func NewGame(cardCount, gameType, maxPlayers, cardType, cardLayout, cardRotation int) *Game {
 	g := new(Game)
 	g.Players.Init()
 	g.Type = gameType
 	g.MaxPlayers = maxPlayers
 	g.Cards = make(map[int]*Card)
 	g.cardCountLeft = cardCount
+
+	g.CardType = cardType
 
 	// the size is padded client size, so the cards are always completely visible (eg +cardDim/2 at sides)
 	//TODO: to position the cards, the server would need to know the card size? (or we keep it fix)
@@ -189,20 +191,79 @@ func NewGame(cardCount, gameType, maxPlayers int) *Game {
 
 	shuffling_aux := rand.Perm(cardCount)
 
-	// We'll use a grid-layout for now.
-	// in fact this could be formulated as a circle packing problem.
-	ncardsx := (int)(math.Ceil(math.Sqrt((float64)(cardCount))))
-	ncardsy := (int)(math.Floor(math.Sqrt((float64)(cardCount))))
+	//decide on board size depending on cardType, layout, cardCount
+	//TODO: check index! Checking indeces is the least one can do
+	cardImageSource := GetCardImageSource(cardType)
+	padding := 0 //expected spacing between cards
+
+	//TODO: depending on the card layout and card type: choose a board size and distribute cards
+	switch(cardLayout) {
+		case CARD_LAYOUT_GRID_TIGHT:
+			padding = 10
+		case CARD_LAYOUT_GRID_LOOSE: //loose grid and stack share an expected board size?
+			fallthrough
+		case CARD_LAYOUT_STACK:
+			fallthrough
+		default:
+			padding = 20 //TODO: choose values depending on card style
+	}
+
+	// place between the grid and the cards
+	paddingBorderX := cardImageSource.CardSizeX + padding
+	paddingBorderY := cardImageSource.CardSizeX + padding
+
+	// for more fancy card layouts: this could be formulated as a circle packing problem.
+	approxRowColCount := math.Sqrt((float64)(cardCount))
+	//TODO: misleading naming? NOT number of columns
+	cardRowCount := (int)(math.Ceil(approxRowColCount)) //how many cards are in a row
+	cardColCount := (int)(math.Floor(approxRowColCount))
+	g.boardWidth  = paddingBorderX*2 + (cardImageSource.CardSizeX+padding)*cardRowCount
+	g.boardHeight = paddingBorderY*2 + (cardImageSource.CardSizeY+padding)*cardColCount
+
 	for i := 0; i < cardCount; i++ {
+		//TODO: depending on the card rotation: create the desired degree of entropy
+		phi := (float64)(0)
+		switch (cardRotation) {
+			case CARD_ROTATION_RL: //random multiple of 90
+				phi = (float64)(90*rand.Intn(4))
+				fallthrough
+			case CARD_ROTATION_JIGGLY: //a little (jiggly)
+				// In this case, we allow only for a slight random rotation of the cards: -30..30 degree.
+				phi += (float64)(rand.Intn(2*30)-30)
+			case CARD_ROTATION_CHAOS:
+				phi = (float64)(rand.Intn(360))
+			case CARD_ROTATION_NONE:
+				fallthrough
+			default:
+				phi = 0
+		}
+
+		x := 0.0
+		y := 0.0
+		switch(cardLayout) {
+			case CARD_LAYOUT_GRID_TIGHT:
+				fallthrough
+			case CARD_LAYOUT_GRID_LOOSE: //loose grid and stack share an expected board size?
+				x = (float64)(cardImageSource.CardSizeX/2 + paddingBorderX + (cardImageSource.CardSizeX+padding)*(i%cardRowCount))
+				y = (float64)(cardImageSource.CardSizeY/2 + paddingBorderY + (cardImageSource.CardSizeY+padding)*(i/cardRowCount))
+			case CARD_LAYOUT_STACK:
+				fallthrough
+			default:
+				x = (float64)(g.boardWidth/2)
+				y = (float64)(g.boardHeight/2)
+		}
+
 		c := Card{
 			Id:       i,
 			// The first half of the sum places the cards onto a grid.
 			// The second half moves each card around randomly within its cell.
 			// The factor (0.3) is how "much" the cards should move within their cell.
-			X:        (float64)(i%ncardsx) / (float64)(ncardsx-1) + 0.3*(rand.Float64()-0.5) / (float64)(ncardsx-1),
-			Y:        (float64)(i/ncardsx) / (float64)(ncardsy-1) + 0.3*(rand.Float64()-0.5) / (float64)(ncardsy-1),
-			// In this case, we allow only for a slight random rotation of the cards: -30..30 degree.
-			Phi:      (float64)(rand.Intn(2*30)-30),
+			//X:        (float64)(i%ncardsx) / (float64)(ncardsx-1) + 0.3*(rand.Float64()-0.5) / (float64)(ncardsx-1),
+			//Y:        (float64)(i/ncardsx) / (float64)(ncardsy-1) + 0.3*(rand.Float64()-0.5) / (float64)(ncardsy-1),
+			//no wiggling here yet :(
+			X:        x,
+			Y:        y,
+			Phi:      phi,
 			Type:     shuffling_aux[i] / 2,
 			IsOpen:   false,
 			ScoredBy: NO_PLAYER}
@@ -222,21 +283,17 @@ const (
 	GAME_TYPE_RUSH
 
 	NO_CARD = -1
-)
 
+	CARD_LAYOUT_STACK = 2
+	CARD_LAYOUT_GRID_TIGHT = 0
+	CARD_LAYOUT_GRID_LOOSE = 1
+
+	CARD_ROTATION_NONE = 0
+	CARD_ROTATION_JIGGLY = 1
+	CARD_ROTATION_RL = 2
+	CARD_ROTATION_CHAOS = 3
+)
 //iota is reset between const blocks
-const (
-	CARD_LAYOUT_STACK = iota
-	CARD_LAYOUT_GRID_TIGHT
-	CARD_LAYOUT_GRID_LOOSE
-)
-
-const (
-	CARD_ROTATION_NONE = iota
-	CARD_ROTATION_JIGGLY
-	CARD_ROTATION_RL
-	CARD_ROTATION_CHAOS
-)
 
 type Game struct {
 	Players       list.List
@@ -469,8 +526,8 @@ func (g *Game) MoveCard(cardp cardPosition) {
 	//TODO: is this necessary? trololoyes
 	// limit the card position to an area on/around the board -> clamp with padding
 	//TODO: g.BoardSizeX-g.CardSizeX should be a derived value...
-	card.X = math.Min(math.Max(0.0, cardp.X), 1.0)
-	card.Y = math.Min(math.Max(0.0, cardp.Y), 1.0)
+	card.X = math.Min(math.Max(0.0, cardp.X), (float64)(g.boardWidth))
+	card.Y = math.Min(math.Max(0.0, cardp.Y), (float64)(g.boardHeight))
 	card.Phi = cardp.Phi
 	g.Broadcast(card.GetJsonCardMove())
 }
@@ -488,7 +545,7 @@ func (g *Game) SendBoardState(p *Player) {
 }
 
 func (g *Game) SendInitBoard(p *Player) {
-	p.send <- fmt.Sprintf(`{"msg": "initBoard", "cardCount": %v}`, len(g.Cards))
+	p.send <- fmt.Sprintf(`{"msg": "initBoard", "boardWidth": %v, "boardHeight": %v, "cardCount": %v}`, g.boardWidth, g.boardHeight, len(g.Cards))
 }
 
 func (g *Game) SendAllPlayers(towhom *Player) {
