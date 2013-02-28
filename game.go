@@ -224,6 +224,20 @@ const (
 	NO_CARD = -1
 )
 
+//iota is reset between const blocks
+const (
+	CARD_LAYOUT_STACK = iota
+	CARD_LAYOUT_GRID_TIGHT
+	CARD_LAYOUT_GRID_LOOSE
+)
+
+const (
+	CARD_ROTATION_NONE = iota
+	CARD_ROTATION_JIGGLY
+	CARD_ROTATION_RL
+	CARD_ROTATION_CHAOS
+)
+
 type Game struct {
 	Players       list.List
 	maxPlayerId   int
@@ -232,8 +246,12 @@ type Game struct {
 	Started       time.Time //Used to close zombie games.
 	availColors   []colorful.Color
 
-	Type       int
+	Type       int //classic or rush - gamemodes
 	MaxPlayers int
+
+	CardType	int //what images to display to the players (asset id in cards.json)
+	boardWidth int
+	boardHeight int
 
 	registerPlayer         chan *Player
 	unregisterPlayer       chan *Player
