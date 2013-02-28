@@ -197,15 +197,15 @@ func NewGame(cardCount, gameType, maxPlayers, cardType, cardLayout, cardRotation
 	padding := 0 //expected spacing between cards
 
 	//TODO: depending on the card layout and card type: choose a board size and distribute cards
-	switch(cardLayout) {
-		case CARD_LAYOUT_GRID_TIGHT:
-			padding = 10
-		case CARD_LAYOUT_GRID_LOOSE: //loose grid and stack share an expected board size?
-			fallthrough
-		case CARD_LAYOUT_STACK:
-			fallthrough
-		default:
-			padding = 20 //TODO: choose values depending on card style
+	switch cardLayout {
+	case CARD_LAYOUT_GRID_TIGHT:
+		padding = 10
+	case CARD_LAYOUT_GRID_LOOSE: //loose grid and stack share an expected board size?
+		fallthrough
+	case CARD_LAYOUT_STACK:
+		fallthrough
+	default:
+		padding = 20 //TODO: choose values depending on card style
 	}
 
 	// place between the grid and the cards
@@ -217,44 +217,44 @@ func NewGame(cardCount, gameType, maxPlayers, cardType, cardLayout, cardRotation
 	//TODO: misleading naming? NOT number of columns
 	cardRowCount := (int)(math.Ceil(approxRowColCount)) //how many cards are in a row
 	cardColCount := (int)(math.Floor(approxRowColCount))
-	g.boardWidth  = paddingBorderX*2 + (cardImageSource.CardSizeX+padding)*cardRowCount
+	g.boardWidth = paddingBorderX*2 + (cardImageSource.CardSizeX+padding)*cardRowCount
 	g.boardHeight = paddingBorderY*2 + (cardImageSource.CardSizeY+padding)*cardColCount
 
 	for i := 0; i < cardCount; i++ {
 		//TODO: depending on the card rotation: create the desired degree of entropy
 		phi := (float64)(0)
-		switch (cardRotation) {
-			case CARD_ROTATION_RL: //random multiple of 90
-				phi = (float64)(90*rand.Intn(4))
-				fallthrough
-			case CARD_ROTATION_JIGGLY: //a little (jiggly)
-				// In this case, we allow only for a slight random rotation of the cards: -30..30 degree.
-				phi += (float64)(rand.Intn(2*30)-30)
-			case CARD_ROTATION_CHAOS:
-				phi = (float64)(rand.Intn(360))
-			case CARD_ROTATION_NONE:
-				fallthrough
-			default:
-				phi = 0
+		switch cardRotation {
+		case CARD_ROTATION_RL: //random multiple of 90
+			phi = (float64)(90 * rand.Intn(4))
+			fallthrough
+		case CARD_ROTATION_JIGGLY: //a little (jiggly)
+			// In this case, we allow only for a slight random rotation of the cards: -30..30 degree.
+			phi += (float64)(rand.Intn(2*30) - 30)
+		case CARD_ROTATION_CHAOS:
+			phi = (float64)(rand.Intn(360))
+		case CARD_ROTATION_NONE:
+			fallthrough
+		default:
+			phi = 0
 		}
 
 		x := 0.0
 		y := 0.0
-		switch(cardLayout) {
-			case CARD_LAYOUT_GRID_TIGHT:
-				fallthrough
-			case CARD_LAYOUT_GRID_LOOSE: //loose grid and stack share an expected board size?
-				x = (float64)(cardImageSource.CardSizeX/2 + paddingBorderX + (cardImageSource.CardSizeX+padding)*(i%cardRowCount))
-				y = (float64)(cardImageSource.CardSizeY/2 + paddingBorderY + (cardImageSource.CardSizeY+padding)*(i/cardRowCount))
-			case CARD_LAYOUT_STACK:
-				fallthrough
-			default:
-				x = (float64)(g.boardWidth/2)
-				y = (float64)(g.boardHeight/2)
+		switch cardLayout {
+		case CARD_LAYOUT_GRID_TIGHT:
+			fallthrough
+		case CARD_LAYOUT_GRID_LOOSE: //loose grid and stack share an expected board size?
+			x = (float64)(cardImageSource.CardSizeX/2 + paddingBorderX + (cardImageSource.CardSizeX+padding)*(i%cardRowCount))
+			y = (float64)(cardImageSource.CardSizeY/2 + paddingBorderY + (cardImageSource.CardSizeY+padding)*(i/cardRowCount))
+		case CARD_LAYOUT_STACK:
+			fallthrough
+		default:
+			x = (float64)(g.boardWidth / 2)
+			y = (float64)(g.boardHeight / 2)
 		}
 
 		c := Card{
-			Id:       i,
+			Id: i,
 			// The first half of the sum places the cards onto a grid.
 			// The second half moves each card around randomly within its cell.
 			// The factor (0.3) is how "much" the cards should move within their cell.
@@ -284,15 +284,16 @@ const (
 
 	NO_CARD = -1
 
-	CARD_LAYOUT_STACK = 2
+	CARD_LAYOUT_STACK      = 2
 	CARD_LAYOUT_GRID_TIGHT = 0
 	CARD_LAYOUT_GRID_LOOSE = 1
 
-	CARD_ROTATION_NONE = 0
+	CARD_ROTATION_NONE   = 0
 	CARD_ROTATION_JIGGLY = 1
-	CARD_ROTATION_RL = 2
-	CARD_ROTATION_CHAOS = 3
+	CARD_ROTATION_RL     = 2
+	CARD_ROTATION_CHAOS  = 3
 )
+
 //iota is reset between const blocks
 
 type Game struct {
@@ -306,8 +307,8 @@ type Game struct {
 	Type       int //classic or rush - gamemodes
 	MaxPlayers int
 
-	CardType	int //what images to display to the players (asset id in cards.json)
-	boardWidth int
+	CardType    int //what images to display to the players (asset id in cards.json)
+	boardWidth  int
 	boardHeight int
 
 	registerPlayer         chan *Player

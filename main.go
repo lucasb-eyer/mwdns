@@ -22,8 +22,8 @@ var gameTempl = template.Must(template.ParseFiles("templates/gameView.html"))
 var activeGames = make(map[string]*Game)
 
 const (
-	IDCHARS             = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-	IDLEN               = 6
+	IDCHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	IDLEN   = 6
 
 	DEFAULT_PAIR_COUNT  = 10
 	DEFAULT_GAME_TYPE   = GAME_TYPE_CLASSIC
@@ -182,12 +182,12 @@ type CardImageSource struct {
 }
 
 func GetCardImageSource(id int) *CardImageSource {
-	if (len(cardInformation.CardImageSources) < id) {
+	if len(cardInformation.CardImageSources) < id {
 		id = 0
 		log.Println("ImageSource Id issue: too big ", id)
 	}
 	cardImageSource := &cardInformation.CardImageSources[id]
-	if (cardImageSource.Id != id) {
+	if cardImageSource.Id != id {
 		log.Println("ImageSource Id issue: wrong asset order, id != Id ", id)
 	}
 
