@@ -12,13 +12,12 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
-	"text/template"
 	"time"
 )
 
 var addr = flag.String("addr", ":8080", "http service address")
-var homeTempl = template.Must(template.New("Why this text, I am confused").ParseFiles("templates/startView.html"))
-var gameTempl = template.Must(template.ParseFiles("templates/gameView.html"))
+var homeTempl = CreateAutoTemplate("templates/startView.html")
+var gameTempl = CreateAutoTemplate("templates/gameView.html")
 var activeGames = make(map[string]*Game)
 
 const (
@@ -33,7 +32,7 @@ const (
 )
 
 func homeHandler(c http.ResponseWriter, req *http.Request) {
-	homeTempl.ExecuteTemplate(c, "startView.html", cardInformation) //req.Host?
+	homeTempl.Execute(c, cardInformation) //req.Host?
 }
 
 func rndString(length int) string {
