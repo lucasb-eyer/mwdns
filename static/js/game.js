@@ -67,7 +67,18 @@ function init() {
 		return false
 	})
 
+	inputGotFocus = function() {
+		var $ae = $(document.activeElement)
+		return $ae.is('input') || $ae.is('textarea')
+	}
+
 	$(document).on("keyup", function(e) {
+		// We don't want to steal input's keystrokes!
+		if(inputGotFocus()) {
+			return true;
+		}
+
+		// Move the board around using WASD or arrow keys
 		if(e.keyCode == 37 || e.keyCode == 65) {
 			window.clearInterval(keytable.left)
 			keytable.left = undefined
@@ -87,6 +98,12 @@ function init() {
 	})
 
 	$(document).on("keydown", function(e) {
+		// We don't want to steal input's keystrokes!
+		if(inputGotFocus()) {
+			return true;
+		}
+
+		// Move the board around using WASD or arrow keys
 		if((e.keyCode == 37 || e.keyCode == 65) && !keytable.left) {
 			keytable.left = window.setInterval(function() {
 				camera.moveBy(-CAMERA_KEYBOARD_SPEED*CAMERA_KEYBOARD_UPDATE_INTERVAL/1000.0, 0)
