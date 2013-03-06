@@ -3,13 +3,18 @@ resizeGui = function() {
 	// to take all the size which is left.
 	// No, this is _not_ possible in CSS, it's not the typical "footer" thing
 	// since we don't know the height of the scoreboard statically.
-	guih = $('#playerGui').height()
-	msgh = $('#helpfulSuggestionBox').outerHeight(true)
-	scoreboardh = $('#scoreboard').outerHeight(true)
-	sendbuttonh = $('#chatControl').outerHeight(true)
-	chatmsg_margin = $('#chatMessages').outerHeight(true) - $('#chatMessages').innerHeight()
+	var guih = $('#playerGui').height()
+
+	// Strangely, the height is sometimes _not_ 0 even when the element is hidden.
+	// This is clearly a bug in jQuery, which I cannot reproduce in a fiddle.
+	var outerHeightOrZero = function($obj) { return $obj.is(":visible") ? $obj.outerHeight(true) : 0; }
+	var innerHeightOrZero = function($obj) { return $obj.is(":visible") ? $obj.innerHeight() : 0; }
+	var msgh = outerHeightOrZero($('#helpfulSuggestionBox'))
+	var scoreboardh = outerHeightOrZero($('#scoreboard'))
+	var sendbuttonh = outerHeightOrZero($('#chatControl'))
+	var chatmsg_margin = outerHeightOrZero($('#chatMessages')) - innerHeightOrZero($('#chatMessages'))
+
 	$('#chatMessages').height(guih - msgh - scoreboardh - sendbuttonh - chatmsg_margin)
-	console.log("resize: " + guih + "-" + msgh + "-" + scoreboardh + "-" + sendbuttonh + "-" + chatmsg_margin + " = " + $('#chatMessages').height())
 }
 
 Scoreboard = function(selector) {
@@ -19,13 +24,13 @@ Scoreboard = function(selector) {
 
 Scoreboard.prototype.addPlayer = function(pid, name, color, turns, points, canplay) {
 	// TODO: This should probably be in some template file somewhere else.
-	template = "<tr id=player" + pid + ">"
-	         + "  <td class=name>"
-	         + "    <div class=color></div><span>" + name + "</span>"
-	         + "  </td>"
-	         + "  <td class=turns>" + turns + "</td>" //TODO
-	         + "  <td class=points>" + points + "</td>"
-	         + "</tr>";
+	var template = "<tr id=player" + pid + ">"
+	             + "  <td class=name>"
+	             + "    <div class=color></div><span>" + name + "</span>"
+	             + "  </td>"
+	             + "  <td class=turns>" + turns + "</td>" //TODO
+	             + "  <td class=points>" + points + "</td>"
+	             + "</tr>";
 	this.node.find('tbody').append(template)
 	this.pid_rows[pid] = this.node.find('#player' + pid)
 
