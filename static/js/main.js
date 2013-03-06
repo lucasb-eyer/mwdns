@@ -67,6 +67,8 @@ function handleMessage(msg){
 		g_players[json.pid].updatePoints(json.points)
 	} else if ( json.msg == "turns" ) {
 		g_players[json.pid].updateTurns(json.turns)
+	} else if ( json.msg == "chat" ) {
+		g_chat.message(json.from, json.content)
 	} else if ( json.msg == "end" ) {
 		//TODO: display final game screen (scores, winner, new game)
 	} else if ( json.msg == "err_gameid" ) {

@@ -1,6 +1,6 @@
 var camera;
 var gameBoard, gameCards;
-var g_scoreboard;
+var g_scoreboard, g_chat;
 var g_players, g_mypid;
 var g_currentlyDraggedCard;
 
@@ -23,7 +23,8 @@ function init() {
 		refreshWindowSize()
 	})
 
-	g_scoreboard = new Scoreboard('#scoreboard');
+	g_scoreboard = new Scoreboard('#scoreboard')
+	g_chat = new Chat('#chatMessages', '#chatControl')
 
 	// We init the document-wide event handlers here to avoid confusion/hiding.
 

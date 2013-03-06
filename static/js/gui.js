@@ -91,3 +91,28 @@ Scoreboard.prototype.leaver = function(pid) {
 	this.pid_rows[pid].find('.points').css('color', 'red')
 }
 
+Chat = function(msglist_selector, form_selector) {
+	this.msglist = $(msglist_selector)
+	this.msglist.empty()
+
+	this.form = $(form_selector)
+	this.form.on('submit', function(ev) {
+		// Get what is written in the textfield.
+		var input = $(ev.target).find("[name=what]")
+		var text = input.val()
+
+		// Send and don't forget to clear it for a "sent" effect, even though we don't know.
+		sendMessage('{"chat": "'+text.replace(/"/g, "&quot;")+'"}')
+		input.val('')
+		return false
+	})
+}
+
+Chat.prototype.message = function(from, text) {
+	// Show the message using the player's name and color we know locally.
+	var name = g_players.hasOwnProperty(from) ? g_players[from].name : "???"
+	var color = g_players.hasOwnProperty(from) ? g_players[from].color : "black";
+	var html = $('<li><span class="messageWho" style="color:' + color + ';">' + name + ': </span>' +
+	                 '<span class="messageWhat">' + text + '</span>') // No need for </li>
+	this.msglist.append(html)
+}
