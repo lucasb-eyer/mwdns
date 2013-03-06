@@ -1,3 +1,17 @@
+resizeGui = function() {
+	// All controls are fine, except for the chat messages, which we want
+	// to take all the size which is left.
+	// No, this is _not_ possible in CSS, it's not the typical "footer" thing
+	// since we don't know the height of the scoreboard statically.
+	guih = $('#playerGui').height()
+	msgh = $('#helpfulSuggestionBox').outerHeight(true)
+	scoreboardh = $('#scoreboard').outerHeight(true)
+	sendbuttonh = $('#chatControl').outerHeight(true)
+	chatmsg_margin = $('#chatMessages').outerHeight(true) - $('#chatMessages').innerHeight()
+	$('#chatMessages').height(guih - msgh - scoreboardh - sendbuttonh - chatmsg_margin)
+	console.log("resize: " + guih + "-" + msgh + "-" + scoreboardh + "-" + sendbuttonh + "-" + chatmsg_margin + " = " + $('#chatMessages').height())
+}
+
 Scoreboard = function(selector) {
 	this.node = $(selector)
 	this.pid_rows = {}
@@ -12,12 +26,13 @@ Scoreboard.prototype.addPlayer = function(pid, name, color, turns, points, canpl
 	         + "  <td class=turns>" + turns + "</td>" //TODO
 	         + "  <td class=points>" + points + "</td>"
 	         + "</tr>";
-	this.node.find('table').append(template)
+	this.node.find('tbody').append(template)
 	this.pid_rows[pid] = this.node.find('#player' + pid)
 
 	this.updateName(pid, name)
 	this.updateColor(pid, color)
 	this.updateCanPlay(pid, canplay)
+	resizeGui()
 }
 
 Scoreboard.prototype.updateName = function(pid, name) {
@@ -57,6 +72,7 @@ Scoreboard.prototype.showInvite = function(showInvite) {
 	} else {
 		$("#helpfulSuggestionBox").hide();
 	}
+	resizeGui()
 }
 
 Scoreboard.prototype.leaver = function(pid) {
@@ -69,3 +85,4 @@ Scoreboard.prototype.leaver = function(pid) {
 	this.pid_rows[pid].find('.points').text('LEFT') //TODO: rather add LEFT so the score is still visible?
 	this.pid_rows[pid].find('.points').css('color', 'red')
 }
+

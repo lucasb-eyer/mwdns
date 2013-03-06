@@ -28,31 +28,33 @@
 	<div id="playerGui">
 		<div id="helpfulSuggestionBox">
 			<!-- TODO: make me hideable -->
-			Want to invite somebody to the game? Send them this link: <a id="gameLink"></a>
-		</div>
-		<div id="chat">
-			<ul id="messages">
-				<li><span class="messageWho">Bob:</span><span class="messageWhat">Hello</span></li>
-				<li><span class="messageWho">Alice:</span><span class="messageWhat">Hi</span></li>
-				<li><span class="messageWho">Bob:</span><span class="messageWhat">Hello</span></li>
-				<li><span class="messageWho">Bob:</span><span class="messageWhat">Hello</span></li>
-				<li><span class="messageWho">Bob:</span><span class="messageWhat">Hello</span></li>
-				<li><span class="messageWho">Alice:</span><span class="messageWhat">Hi</span></li>
-				<li><span class="messageWho">Alice:</span><span class="messageWhat">Hi</span></li>
-				<li><span class="messageWho">Alice:</span><span class="messageWhat">Hi</span></li>
-			</ul>
-			<!-- TODO: intercept key events that go into the textInput -->
-			<form onSubmit="return false;" id="chatControl">
-				<input id="chatControlSend" type="submit" value="Say:">
-				<input id="chatControlText" type="text" name="what">
-			</form>
+			Want to invite somebody to the game?<br>
+			Send them this link:<br>
+			<a id="gameLink"></a>
 		</div>
 		<div id="scoreboard">
 			<table>
-				<tr><th>Player</th><th>Turns</th><th>Score</th></tr>
-				<!-- Content rows created dynamically. -->
+				<!-- tr,th,td don't need closing tags in html5. -->
+				<thead><tr><th>Player<th>Turns<th>Score</thead>
+				<tbody>
+					<!-- Content rows created dynamically. -->
+				</tbody>
 			</table>
 		</div>
+		<ul id="chatMessages">
+			<li><span class="messageWho">Bob:</span><span class="messageWhat">Hello</span></li>
+			<li><span class="messageWho">Alice:</span><span class="messageWhat">Hi</span></li>
+			<li><span class="messageWho">Bob:</span><span class="messageWhat">Hello</span></li>
+			<li><span class="messageWho">Bob:</span><span class="messageWhat">Hello</span></li>
+			<li><span class="messageWho">Bob:</span><span class="messageWhat">Hello</span></li>
+			<li><span class="messageWho">Alice:</span><span class="messageWhat">Hi</span></li>
+			<li><span class="messageWho">Alice:</span><span class="messageWhat">Hi</span></li>
+			<li><span class="messageWho">Alice:</span><span class="messageWhat">Hi</span></li>
+		</ul>
+		<form onSubmit="return false;" id="chatControl">
+			<input id="chatControlSend" type="submit" value="Say:">
+			<input id="chatControlText" type="text" name="what">
+		</form>
 	</div>
 </body>
 </html>

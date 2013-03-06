@@ -132,6 +132,7 @@ function refreshWindowSize() {
 	VIEW_HEIGHT = window.innerHeight;
 	VIEW_WIDTH = window.innerWidth;
 	camera.updateObjects();
+	resizeGui();
 }
 
 var cardWidth, cardHeight;
