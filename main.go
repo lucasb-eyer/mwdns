@@ -67,21 +67,25 @@ func gameHandler(w http.ResponseWriter, req *http.Request) {
 		// create a new game if no gameid is given
 		nCards, err := strconv.Atoi(req.URL.Query().Get("n"))
 		if err != nil {
-			log.Println("Invalid number of pairs, defaulting to ", DEFAULT_PAIR_COUNT)
+			log.Println("Invalid number of pairs", req.URL.Query().Get("n"), ", defaulting to ", DEFAULT_PAIR_COUNT)
 			nCards = DEFAULT_PAIR_COUNT
 		}
 		nCards *= 2
 
 		gameType, err := strconv.Atoi(req.URL.Query().Get("t"))
 		if err != nil || (gameType != GAME_TYPE_CLASSIC && gameType != GAME_TYPE_RUSH) {
-			log.Println("Invalid game type, defaulting to ", DEFAULT_GAME_TYPE)
+			log.Println("Invalid game type", req.URL.Query().Get("t"), ", defaulting to ", DEFAULT_GAME_TYPE)
 			gameType = DEFAULT_GAME_TYPE
 		}
 
 		maxPlayers, err := strconv.Atoi(req.URL.Query().Get("m"))
 		if err != nil {
-			log.Println("Invalid max player count, defaulting to ", DEFAULT_MAX_PLAYERS)
-			maxPlayers = DEFAULT_MAX_PLAYERS
+			if req.URL.Query().Get("m") == "∞" {
+				maxPlayers = 0
+			} else {
+				log.Println("Invalid max player count", req.URL.Query().Get("m"), ", defaulting to ", DEFAULT_MAX_PLAYERS)
+				maxPlayers = DEFAULT_MAX_PLAYERS
+			}
 		}
 
 		//TODO: handle other elements
