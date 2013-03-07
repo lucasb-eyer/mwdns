@@ -546,7 +546,7 @@ func (g *Game) SendBoardState(p *Player) {
 }
 
 func (g *Game) SendInitBoard(p *Player) {
-	p.send <- fmt.Sprintf(`{"msg": "initBoard", "boardWidth": %v, "boardHeight": %v, "cardCount": %v}`, g.boardWidth, g.boardHeight, len(g.Cards))
+	p.send <- fmt.Sprintf(`{"msg": "initBoard", "boardWidth": %v, "boardHeight": %v, "cardCount": %v, "maxPlayers": %v}`, g.boardWidth, g.boardHeight, len(g.Cards), g.MaxPlayers)
 }
 
 func (g *Game) SendAllPlayers(towhom *Player) {

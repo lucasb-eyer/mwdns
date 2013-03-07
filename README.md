@@ -12,12 +12,14 @@ The messages sent through the websockets during a game.
 Server to client
 ----------------
 ### initBoard
+`maxPlayers == 0` means no limit.
 ```javascript
 {
 	"msg": "initBoard"
 	"boardWidth": 500
 	"boardHeight": 600
 	"cardCount": 13
+	"maxPlayers": 2
 }
 ```
 

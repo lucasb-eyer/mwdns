@@ -136,8 +136,8 @@ function refreshWindowSize() {
 	resizeGui();
 }
 
-function createBoard(width,height) {
-	gameBoard = new Board(width,height)
+function createBoard(width,height,maxPlayers) {
+	gameBoard = new Board(width,height,maxPlayers)
 	gameBoard.create()
 	$('body').append(gameBoard.node)
 

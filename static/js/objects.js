@@ -91,9 +91,10 @@ Camera.prototype.updatePan = function(x,y) {
 }
 
 // positioned on (0,0)
-Board = function(w,h) {
+Board = function(w,h,maxPlayers) {
 	this.width = w
 	this.height = h
+	this.maxPlayers = maxPlayers
 }
 
 Board.prototype.create = function() {

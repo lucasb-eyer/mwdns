@@ -30,7 +30,7 @@ function handleMessage(msg){
 	if ( json.msg == "initBoard" ) {
 		// TODO: Card-size dependent on the assets. get from json
 		//DEFAULT_BOARD_W, DEFAULT_BOARD_H
-		createBoard(json.boardWidth, json.boardHeight)
+		createBoard(json.boardWidth, json.boardHeight, json.maxPlayers)
 		//TODO: take this from the json asset?
 		createCards(json.cardCount, DEFAULT_CARD_W, DEFAULT_CARD_H)
 	} else if ( json.msg == "cardMove" ) {
@@ -56,8 +56,6 @@ function handleMessage(msg){
 			g_players[json.pid].changeName(json.name);
 			g_players[json.pid].changeColor(json.color);
 		}
-		// show a helpful suggestion if the player is alone (TODO: or not max players have joined?)
-		g_scoreboard.showInvite(g_players.length < 2)
 	} else if ( json.msg == "leaver" ) {
 		g_scoreboard.leaver(json.pid)
 		delete g_players[json.pid]

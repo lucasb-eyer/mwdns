@@ -42,6 +42,20 @@
 				</div>
 
 				<div class="control-group">
+					<label class="control-label" for="m">Max. allowed players:</label>
+					<div class="controls">
+						<div class="input-append">
+							<input type="text" class="span2" id="m" name="m" value="2">
+							<button type="button" class="btn nplayers">1</button>
+							<button type="button" class="btn nplayers btn-primary">2</button>
+							<button type="button" class="btn nplayers">3</button>
+							<button type="button" class="btn nplayers">5</button>
+							<button type="button" class="btn nplayers">&#8734;</button>
+						</div>
+					</div>
+				</div>
+
+				<div class="control-group">
 					<label class="control-label" for="ct">Card Images:</label>
 					<div class="controls">
 						<select name="ct">
@@ -98,15 +112,20 @@
 			$('#errmsg').hide().removeClass('hide').fadeIn()
 		}
 
-		// Make the button reflecting the current number of cards blue
-		$('.ncards').on('click', function() {
-			$('#n').val($(this).text())
-			$('#n').trigger('change')
-		})
-		$('#n').on('keyup change', function() {
-			var n = $('#n').val() || "10"
-			$('.ncards').each(function(i, e) { $(e).toggleClass('btn-primary', $(e).text() == n) })
-		})
+		// Make the button reflecting the current number of cards/max players blue
+		var sync_input_buttons = function(classname, inputname) {
+			// Make the button reflecting the current number of cards blue
+			$(classname).on('click', function() {
+				$(inputname).val($(this).text())
+				$(inputname).trigger('change')
+			})
+			$(inputname).on('keyup change', function() {
+				var n = $(inputname).val() || "10"
+				$(classname).each(function(i, e) { $(e).toggleClass('btn-primary', $(e).text() == n) })
+			})
+		}
+		sync_input_buttons(".ncards", "#n")
+		sync_input_buttons(".nplayers", "#m")
 
 		// toggle class, depending on what rotation is selected
 		$('.rotcards').on('click', function() {

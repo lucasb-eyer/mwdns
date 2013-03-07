@@ -37,6 +37,11 @@ Scoreboard.prototype.addPlayer = function(pid, name, color, turns, points, canpl
 	this.updateName(pid, name)
 	this.updateColor(pid, color)
 	this.updateCanPlay(pid, canplay)
+
+	// show a helpful suggestion if we're not full yet.
+	// +1 because the new player is not in the g_players array yet.
+	// != instead of <= so that we catch maxPlayers == 0 too.
+	this.showInvite(g_players.length+1 != gameBoard.maxPlayers)
 	resizeGui()
 }
 
@@ -89,6 +94,11 @@ Scoreboard.prototype.leaver = function(pid) {
 	// ...and of course no points!
 	this.pid_rows[pid].find('.points').text('LEFT') //TODO: rather add LEFT so the score is still visible?
 	this.pid_rows[pid].find('.points').css('color', 'red')
+
+	// If we are less than the maximum of players, show the invite again.
+	// -1 because the player is not removed from the array yet.
+	// != instead of <= so that we catch maxPlayers==0 too.
+	this.showInvite(g_players.length-1 != gameBoard.maxPlayers)
 }
 
 Chat = function(msglist_selector, form_selector) {
