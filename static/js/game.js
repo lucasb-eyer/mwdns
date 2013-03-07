@@ -136,12 +136,8 @@ function refreshWindowSize() {
 	resizeGui();
 }
 
-var cardWidth, cardHeight;
-function createBoard(width,height,card_width,card_height) {
+function createBoard(width,height) {
 	gameBoard = new Board(width,height)
-	//TODO: take this from the json asset?
-	cardWidth = card_width
-	cardHeight = card_height
 	gameBoard.create()
 	$('body').append(gameBoard.node)
 
@@ -149,13 +145,13 @@ function createBoard(width,height,card_width,card_height) {
 	camera.moveTo(gameBoard.width/2, gameBoard.height/2) //center on the middle of the game board
 }
 
-function createCards(cardCount) {
+function createCards(cardCount, cardWidth, cardHeight) {
 	// Sets the default initial position to be the center.
 	var defaultCardX = gameBoard.width/2 - cardWidth/2
 	var defaultCardY = gameBoard.height/2 - cardHeight/2
 
 	for (var i = 0; i < cardCount; i++) {
-		card = new Card(i,-1,defaultCardX,defaultCardY)
+		card = new Card(i,-1,defaultCardX,defaultCardY, cardWidth, cardHeight)
 		card.create()
 		gameBoard.node.append(card.node)
 

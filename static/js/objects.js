@@ -128,8 +128,8 @@ Card = function(cardId,type,x,y,w,h,phi) {
 	this.x = x // The center of the card, in (absolute) pixel
 	this.y = y
 	this.phi = phi || DEFAULT_CARD_PHI
-	this.width = w || cardWidth
-	this.height = h || cardHeight
+	this.width = w || DEFAULT_CARD_W
+	this.height = h || DEFAULT_CARD_H
 
 	//TODO: get from server, remember
 	this.scoredBy = NO_PLAYER //which player has opened this particular pair of cards

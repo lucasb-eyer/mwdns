@@ -30,8 +30,9 @@ function handleMessage(msg){
 	if ( json.msg == "initBoard" ) {
 		// TODO: Card-size dependent on the assets. get from json
 		//DEFAULT_BOARD_W, DEFAULT_BOARD_H
-		createBoard(json.boardWidth, json.boardHeight, DEFAULT_CARD_W, DEFAULT_CARD_H)
-		createCards(json.cardCount)
+		createBoard(json.boardWidth, json.boardHeight)
+		//TODO: take this from the json asset?
+		createCards(json.cardCount, DEFAULT_CARD_W, DEFAULT_CARD_H)
 	} else if ( json.msg == "cardMove" ) {
 		gameCards[json.id].moveTo(json.x, json.y, json.phi)
 	} else if ( json.msg == "cardFlip" ) {
