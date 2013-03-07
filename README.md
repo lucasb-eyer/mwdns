@@ -15,6 +15,8 @@ Server to client
 ```javascript
 {
 	"msg": "initBoard"
+	"boardWidth": 500
+	"boardHeight": 600
 	"cardCount": 13
 }
 ```
