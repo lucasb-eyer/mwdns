@@ -497,8 +497,8 @@ func (g *Game) TryFlip(p *Player, cardid int) {
 
 				// Shuffle some random cards around randomly.
 				for k, _ := range g.Cards {
-					if rand.Intn(5) == 0 {
-						g.MoveCard(cardPosition{Id: k, X: rand.Float64(), Y: rand.Float64(), Phi: (float64)(rand.Intn(2*360) - 360)})
+					if rand.Intn(3) == 0 {
+						g.MoveCard(cardPosition{Id: k, X: float64(g.boardWidth) * rand.Float64(), Y: float64(g.boardHeight) * rand.Float64(), Phi: (float64)(rand.Intn(2*360) - 360)})
 					}
 				}
 			}
