@@ -137,7 +137,8 @@ func (p *Player) SetCanPlay(v bool, g *Game) {
 }
 
 func (p *Player) GetJsonPlayer(itshim bool) string {
-	return fmt.Sprintf(`{"msg": "player", "pid": %v, "canplay": %v, "itsyou": %v, "name": "%v", "color": "%v"}`, p.Id, p.CanPlay, itshim, p.Name, p.Color.Hex())
+	name, _ := json.Marshal(p.Name)
+	return fmt.Sprintf(`{"msg": "player", "pid": %v, "canplay": %v, "itsyou": %v, "name": %v, "color": "%v"}`, p.Id, p.CanPlay, itshim, string(name), p.Color.Hex())
 }
 
 func (p *Player) GetJsonLeave() string {

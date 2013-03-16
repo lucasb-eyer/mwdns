@@ -46,13 +46,21 @@ Scoreboard.prototype.addPlayer = function(pid, name, color, turns, points, canpl
 }
 
 Scoreboard.prototype.updateName = function(pid, name) {
+	// Here jQuery's 'text' does the escaping of < and friends for us.
+	namespan = this.pid_rows[pid].find('.name span')
+	namespan.text(name)
+
 	// Little indicater for idi.. newbies.
 	if(pid == g_mypid) {
-		name += " (you)"
+		namespan.append(" (<a href id=change_name_link>you</a>)")
+		$('#change_name_link').on('click', function(e) {
+			newname = prompt('Change your name:', name)
+			if(newname) {
+				sendMessage('{"wantChangeName": '+JSON.stringify(newname)+'}')
+			}
+			return false
+		})
 	}
-
-	// Here jQuery's 'text' does the escaping of < and friends for us.
-	this.pid_rows[pid].find('.name span').text(name)
 }
 
 Scoreboard.prototype.updateColor = function(pid, color) {
