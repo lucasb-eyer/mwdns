@@ -136,7 +136,7 @@ Chat = function(msglist_selector, form_selector) {
 		var text = input.val()
 
 		// Send and don't forget to clear it for a "sent" effect, even though we don't know.
-		sendMessage('{"chat": "'+text.replace(/"/g, "&quot;")+'"}')
+		sendMessage('{"chat": "'+text.replace(/"/g, "&quot;")+'"}') //TODO: why not JSON.stringify, like with the wantChangeName message?
 		input.val('')
 		return false
 	})

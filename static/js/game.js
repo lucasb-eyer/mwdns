@@ -130,10 +130,17 @@ function init() {
 
 //listen for window size changes, adjust the VIEW_WIDTH, VIEW_HEIGHT global parameters, refresh the camera view
 function refreshWindowSize() {
-	VIEW_HEIGHT = window.innerHeight;
-	VIEW_WIDTH = window.innerWidth;
-	camera.updateObjects();
+    //TODO: fix copypasta
+	var outerWidthOrZero = function($obj) { return $obj.is(":visible") ? $obj.outerWidth(true) : 0; }
+
 	resizeGui();
+
+    // center the camera in the center of the visible part of the screen
+    //TODO: adjust zoom the first time it happens, correct z levels
+	VIEW_HEIGHT = window.innerHeight;
+	VIEW_WIDTH = window.innerWidth-outerWidthOrZero($("#playerGui"));
+
+	camera.updateObjects();
 }
 
 function createBoard(width,height,maxPlayers) {
