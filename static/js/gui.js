@@ -86,6 +86,22 @@ Scoreboard.prototype.updateTurns = function(pid, turns) {
 Scoreboard.prototype.showInvite = function(showInvite) {
 	if (showInvite) {
 		$("#gameLink").text(document.URL)
+		$("#gameLinkCopyButton").attr("data-clipboard-text",document.URL) //for ZeroClipboard
+		var clip = new ZeroClipboard( document.getElementById("gameLinkCopyButton"), {
+			moviePath: "/static/ZeroClipboard.swf"
+		});
+
+		// SEE: https://github.com/jonrohan/ZeroClipboard
+		clip.on( 'complete', function(client, args) {
+			//alternative: $(this)
+			$("#gameLinkCopyButton").text("Done")
+			window.setTimeout(function() {$("#gameLinkCopyButton").text("Copy")},1000) //show the copy text again after a second
+
+			//the line below hides the button
+			//this.style.display = 'none'; // "this" is the element that was clicked
+			//alert("Copied text to clipboard: " + args.text );
+		} );
+
 		$("#helpfulSuggestionBox").show();
 	} else {
 		$("#helpfulSuggestionBox").hide();
