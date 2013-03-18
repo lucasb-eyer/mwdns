@@ -133,10 +133,9 @@ Chat = function(msglist_selector, form_selector) {
 	this.form.on('submit', function(ev) {
 		// Get what is written in the textfield.
 		var input = $(ev.target).find("[name=what]")
-		var text = input.val()
 
 		// Send and don't forget to clear it for a "sent" effect, even though we don't know.
-		sendMessage('{"chat": "'+text.replace(/"/g, "&quot;")+'"}') //TODO: why not JSON.stringify, like with the wantChangeName message?
+		sendMessage('{"chat": '+JSON.stringify(input.val())+'}') //TODO: why not JSON.stringify, like with the wantChangeName message?
 		input.val('')
 		return false
 	})

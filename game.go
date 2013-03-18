@@ -535,7 +535,9 @@ func (g *Game) MoveCard(cardp cardPosition) {
 }
 
 func (g *Game) Chat(pname, msg string) {
-	g.Broadcast(fmt.Sprintf(`{"msg": "chat", "from": "%v", "content": "%v"}`, pname, msg))
+	name, _ := json.Marshal(pname)
+	jmsg, _ := json.Marshal(msg)
+	g.Broadcast(fmt.Sprintf(`{"msg": "chat", "from": %v, "content": %v}`, string(name), string(jmsg)))
 }
 
 // sends a board state to a player (ALL the cards)
