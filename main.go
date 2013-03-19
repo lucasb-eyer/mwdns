@@ -95,19 +95,19 @@ func gameHandler(w http.ResponseWriter, req *http.Request) {
 
 		cardType, err := strconv.Atoi(req.URL.Query().Get("ct"))
 		if err != nil {
-			log.Println("Invalid card type parameter, defaulting to ", 0)
+			log.Println("Invalid card type parameter", req.URL.Query().Get("ct"), ", defaulting to ", 0)
 			cardType = 0
 		}
 
 		cardLayout, err := strconv.Atoi(req.URL.Query().Get("cl"))
 		if err != nil {
-			log.Println("Invalid card layout parameter, defaulting to ", 0)
+			log.Println("Invalid card layout parameter", req.URL.Query().Get("cl"), ", defaulting to ", 0)
 			cardLayout = 0
 		}
 
 		cardRotation, err := strconv.Atoi(req.URL.Query().Get("cr"))
 		if err != nil {
-			log.Println("Invalid card rotation parameter, defaulting to ", 0)
+			log.Println("Invalid card rotation parameter", req.URL.Query().Get("cr"), ", defaulting to ", 0)
 			cardRotation = 0
 		}
 
