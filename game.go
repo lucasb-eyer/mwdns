@@ -234,9 +234,7 @@ func NewGame(cardCount, gameType, maxPlayers, cardType, cardLayout, cardRotation
 		case CARD_ROTATION_CHAOS:
 			phi = (float64)(rand.Intn(360))
 		case CARD_ROTATION_NONE:
-			fallthrough
 		default:
-			phi = 0
 		}
 
 		x := 0.0
