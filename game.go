@@ -205,6 +205,8 @@ func NewGame(cardCount, gameType, maxPlayers, cardType, cardLayout, cardRotation
 		fallthrough
 	case CARD_LAYOUT_STACK:
 		fallthrough
+	case CARD_LAYOUT_CHAOTIC:
+		fallthrough
 	default:
 		padding = 20 //TODO: choose values depending on card style
 	}
@@ -245,6 +247,9 @@ func NewGame(cardCount, gameType, maxPlayers, cardType, cardLayout, cardRotation
 		case CARD_LAYOUT_GRID_LOOSE: //loose grid and stack share an expected board size?
 			x = (float64)(cardImageSource.CardSizeX/2 + paddingBorderX + (cardImageSource.CardSizeX+padding)*(i%cardRowCount))
 			y = (float64)(cardImageSource.CardSizeY/2 + paddingBorderY + (cardImageSource.CardSizeY+padding)*(i/cardRowCount))
+		case CARD_LAYOUT_CHAOTIC:
+			x = (float64)(rand.Intn(g.boardWidth - cardImageSource.CardSizeX) + cardImageSource.CardSizeX/2)
+			y = (float64)(rand.Intn(g.boardHeight - cardImageSource.CardSizeY) + cardImageSource.CardSizeY/2)
 		case CARD_LAYOUT_STACK:
 			fallthrough
 		default:
@@ -283,9 +288,10 @@ const (
 
 	NO_CARD = -1
 
-	CARD_LAYOUT_STACK      = 2
 	CARD_LAYOUT_GRID_TIGHT = 0
 	CARD_LAYOUT_GRID_LOOSE = 1
+	CARD_LAYOUT_STACK      = 2
+	CARD_LAYOUT_CHAOTIC    = 3
 
 	CARD_ROTATION_NONE   = 0
 	CARD_ROTATION_JIGGLY = 1
