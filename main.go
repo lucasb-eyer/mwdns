@@ -21,7 +21,7 @@ var gameTempl = CreateAutoTemplate("templates/gameView.html")
 var activeGames = make(map[string]*Game)
 
 const (
-	IDCHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	IDCHARS = "abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ023456789"
 	IDLEN   = 6
 
 	DEFAULT_PAIR_COUNT  = 10
