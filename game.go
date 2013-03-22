@@ -399,6 +399,18 @@ func (g *Game) Run() {
 			g.SendAllPlayers(p) // Now send him all existing players (including himself)
 			g.SendBoardState(p)
 		case p := <-g.unregisterPlayer:
+			// If he had any open card, close it.
+			if p.openCard != NO_CARD {
+				g.Cards[p.openCard].IsOpen = false
+				g.Broadcast(g.Cards[p.openCard].GetJsonCardFlip())
+			}
+
+			// And if this was a turnbased game (classic) and it is his turn, end his turn.
+			if p.CanPlay && g.Type == GAME_TYPE_CLASSIC {
+				p.SetCanPlay(false, g)
+				g.CyclicNextPlayer(p).SetCanPlay(true, g)
+			}
+
 			// Tell everybody about the big bad leaver.
 			g.Broadcast(p.GetJsonLeave())
 
