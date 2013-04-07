@@ -20,9 +20,12 @@ resizeGui = function() {
 Scoreboard = function(selector) {
 	this.node = $(selector)
 	this.pid_rows = {}
+	this.players = {}
 }
 
 Scoreboard.prototype.addPlayer = function(pid, name, color, turns, points, canplay) {
+	this.players[pid] = {}
+
 	// TODO: This should probably be in some template file somewhere else.
 	var template = "<tr id=player" + pid + ">"
 	             + "  <td class=name>"
@@ -46,6 +49,8 @@ Scoreboard.prototype.addPlayer = function(pid, name, color, turns, points, canpl
 }
 
 Scoreboard.prototype.updateName = function(pid, name) {
+	this.players[pid].name = name
+
 	// Here jQuery's 'text' does the escaping of < and friends for us.
 	namespan = this.pid_rows[pid].find('.name span')
 	namespan.text(name)
@@ -64,10 +69,13 @@ Scoreboard.prototype.updateName = function(pid, name) {
 }
 
 Scoreboard.prototype.updateColor = function(pid, color) {
+	this.players[pid].color = color
 	this.pid_rows[pid].find('.color').css('background-color', color)
 }
 
 Scoreboard.prototype.updateScore = function(pid, points, delta) {
+	this.players[pid].score = points
+
 	// TODO: keep the scoreboard sorted?
 	this.pid_rows[pid].find('.points').text(points)
 
@@ -125,6 +133,19 @@ Scoreboard.prototype.leaver = function(pid) {
 	// -1 because the player is not removed from the array yet.
 	// != instead of <= so that we catch maxPlayers==0 too.
 	this.showInvite(g_players.length-1 != gameBoard.maxPlayers)
+
+	delete this.players[pid]
+}
+
+Scoreboard.prototype.gameOver = function(winnerid) {
+	// TODO: what about a "replay" button?
+	if(winnerid == g_mypid) {
+		$('#gameOverWon').fadeIn()  // OMG YES
+	} else {
+		$('#gameOverLost').fadeIn()
+		$('#gameOverLost .name').css('color', this.players[winnerid].color)
+		                        .text(this.players[winnerid].name)
+	}
 }
 
 Chat = function(msglist_selector, form_selector) {
