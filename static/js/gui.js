@@ -94,7 +94,7 @@ Scoreboard.prototype.showInvite = function(showInvite) {
 		// SEE: https://github.com/jonrohan/ZeroClipboard
 		clip.on( 'complete', function(client, args) {
 			//alternative: $(this)
-			$("#gameLinkCopyButton").text("Done")
+			$("#gameLinkCopyButton").text("Copied")
 			window.setTimeout(function() {$("#gameLinkCopyButton").text("Copy")},1000) //show the copy text again after a second
 
 			//the line below hides the button
