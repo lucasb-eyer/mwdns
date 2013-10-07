@@ -21,6 +21,25 @@ const (
 	NO_PLAYER = -1
 )
 
+type Player struct {
+	Id      int
+	CanPlay bool //TODO: set this through a player method, so the player is always notified
+	Points  int
+	Turns   int
+	Game    *Game
+
+	Name     string
+	Color    colorful.Color
+	openCard int // -1 if no card is opened yet, a card id if a card was already opened
+
+	// For the combo
+	PreviousWasGood bool
+
+	ws *websocket.Conn
+	// Buffered channel of outbound messages.
+	send chan string
+}
+
 type cardPosition struct {
 	Id  int
 	X   float64
@@ -105,25 +124,6 @@ func (p *Player) writer() {
 		}
 	}
 	p.ws.Close()
-}
-
-type Player struct {
-	Id      int
-	CanPlay bool //TODO: set this through a player method, so the player is always notified
-	Points  int
-	Turns   int
-	Game    *Game
-
-	Name     string
-	Color    colorful.Color
-	openCard int // -1 if no card is opened yet, a card id if a card was already opened
-
-	// For the combo
-	PreviousWasGood bool
-
-	ws *websocket.Conn
-	// Buffered channel of outbound messages.
-	send chan string
 }
 
 func (p *Player) GetJsonCanPlay() string {
@@ -315,6 +315,8 @@ type Game struct {
 	registerPlayer         chan *Player
 	unregisterPlayer       chan *Player
 	incomingPlayerMessages chan string
+
+	//TODO: we could save all events to make game replays possible, for fun
 }
 
 //TODO: actually do something with the channels

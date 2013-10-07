@@ -15,10 +15,7 @@ import (
 	"time"
 )
 
-var addr = flag.String("addr", ":8080", "http service address")
-var homeTempl = CreateAutoTemplate("templates/startView.html")
-var gameTempl = CreateAutoTemplate("templates/gameView.html")
-var activeGames = make(map[string]*Game)
+const DEV_MODE = true //whether development is currently going on - constant template reload
 
 const (
 	IDCHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
@@ -31,10 +28,6 @@ const (
 	CARD_CONFIG_FILE = "static/data/cards.json"
 )
 
-func homeHandler(c http.ResponseWriter, req *http.Request) {
-	homeTempl.Execute(c, cardInformation) //req.Host?
-}
-
 func rndString(length int) string {
 	a := make([]string, length)
 	for i := 0; i < length; i++ {
@@ -42,6 +35,69 @@ func rndString(length int) string {
 	}
 
 	return strings.Join(a, "")
+}
+
+type CardImageSource struct {
+	// there is different metainformation which can be provided for json, see Unmarshal function documentation. Nifty.
+	Id        int    `json:"id"`
+	Name      string `json:"name"`
+	Size      int    `json:"size"`
+	MaxPairs  int    `json:"maxPairs"`
+	CardSizeX int    `json:"cardSizeX"`
+	CardSizeY int    `json:"cardSizeY"`
+}
+
+type CardInformation struct {
+	DeckImages       []string          `json:"deckImages"`
+	AssetPrefix      string            `json:"assetPrefix"`
+	CardImageSources []CardImageSource `json:"cardImageSources"`
+}
+
+var (
+	cardInformation CardInformation
+	addr = flag.String("addr", "localhost:8080", "http service address")
+	homeTempl = CreateAutoTemplate("templates/startView.html", DEV_MODE)
+	gameTempl = CreateAutoTemplate("templates/gameView.html", DEV_MODE)
+	//CreateAutoTemplate("templates/startView.html")
+	//gameTempl = CreateAutoTemplate("templates/gameView.html")
+	activeGames = make(map[string]*Game)
+)
+
+func parseCardInformation() {
+	b, err := ioutil.ReadFile(CARD_CONFIG_FILE)
+	if err != nil {
+		log.Fatalln("Failed to open card information file:", err)
+	}
+
+	err = json.Unmarshal(b, &cardInformation)
+	if err != nil {
+		log.Fatalln("Failed to parse card information file:", err)
+	}
+
+	// debug code for json parsing. Spoiler: it currently works as expected
+	/*
+		log.Println("List of parsed card theme names:")
+		for _,r := range(cardInformation.CardImageSources) {
+			log.Println(r.Name)
+		}
+	*/
+}
+
+func GetCardImageSource(id int) *CardImageSource {
+	if len(cardInformation.CardImageSources) < id {
+		id = 0
+		log.Println("ImageSource Id issue: too big ", id)
+	}
+	cardImageSource := &cardInformation.CardImageSources[id]
+	if cardImageSource.Id != id {
+		log.Println("ImageSource Id issue: wrong asset order, id != Id ", id)
+	}
+
+	return cardImageSource
+}
+
+func homeHandler(c http.ResponseWriter, req *http.Request) {
+	homeTempl.Execute(c, cardInformation) //req.Host?
 }
 
 func cleanGames() {
@@ -56,6 +112,66 @@ func cleanGames() {
 	}
 }
 
+// called by the gameHandler, when no game id is given or the id looks invalid
+func tryCreateNewGame(w http.ResponseWriter, req *http.Request) {
+	// create a new game if no gameid is given
+	nCards, err := strconv.Atoi(req.URL.Query().Get("n"))
+	if err != nil {
+		log.Println("Invalid number of pairs", req.URL.Query().Get("n"), ", defaulting to ", DEFAULT_PAIR_COUNT)
+		nCards = DEFAULT_PAIR_COUNT
+	}
+	nCards *= 2
+
+	gameType, err := strconv.Atoi(req.URL.Query().Get("t"))
+	if err != nil || (gameType != GAME_TYPE_CLASSIC && gameType != GAME_TYPE_RUSH) {
+		log.Println("Invalid game type", req.URL.Query().Get("t"), ", defaulting to ", DEFAULT_GAME_TYPE)
+		gameType = DEFAULT_GAME_TYPE
+	}
+
+	maxPlayers, err := strconv.Atoi(req.URL.Query().Get("m"))
+	if err != nil {
+		if req.URL.Query().Get("m") == "∞" {
+			maxPlayers = 0
+		} else {
+			log.Println("Invalid max player count", req.URL.Query().Get("m"), ", defaulting to ", DEFAULT_MAX_PLAYERS)
+			maxPlayers = DEFAULT_MAX_PLAYERS
+		}
+	}
+
+	//TODO: handle other elements
+	//ct (id from json - the card sizes are important)
+	//cl (tight grid = 0/loose grid/stack)
+	//cr (no rotations = 0/some/lots)
+
+	cardType, err := strconv.Atoi(req.URL.Query().Get("ct"))
+	if err != nil {
+		log.Println("Invalid card type parameter, defaulting to ", 0)
+		cardType = 0
+	}
+
+	cardLayout, err := strconv.Atoi(req.URL.Query().Get("cl"))
+	if err != nil {
+		log.Println("Invalid card layout parameter, defaulting to ", 0)
+		cardLayout = 0
+	}
+
+	cardRotation, err := strconv.Atoi(req.URL.Query().Get("cr"))
+	if err != nil {
+		log.Println("Invalid card rotation parameter, defaulting to ", 0)
+		cardRotation = 0
+	}
+
+	//TODO: there we want to create a game, but do not really care for the exact id
+	//  this might be solved by one single go process, listening for channel requests for new games/for them to be deleted
+	var gameId = rndString(IDLEN)
+	g := NewGame(nCards, gameType, maxPlayers, cardType, cardLayout, cardRotation)
+	activeGames[gameId] = g
+	log.Println("New game of type ", gameType, " with ", nCards, " cards and at most ", maxPlayers, " players created: ", gameId)
+	go g.Run()
+
+	http.Redirect(w, req, fmt.Sprintf("/game?g=%v", gameId), 303)
+}
+
 // TODO: pray that this is not called in multiple threads! It's not safe at all.
 func gameHandler(w http.ResponseWriter, req *http.Request) {
 	// This is the "reaper" form of cleanup: cleanup every now and then
@@ -64,60 +180,7 @@ func gameHandler(w http.ResponseWriter, req *http.Request) {
 
 	gameId := req.URL.Query().Get("g")
 	if gameId == "" || len(gameId) != 6 {
-		// create a new game if no gameid is given
-		nCards, err := strconv.Atoi(req.URL.Query().Get("n"))
-		if err != nil {
-			log.Println("Invalid number of pairs", req.URL.Query().Get("n"), ", defaulting to ", DEFAULT_PAIR_COUNT)
-			nCards = DEFAULT_PAIR_COUNT
-		}
-		nCards *= 2
-
-		gameType, err := strconv.Atoi(req.URL.Query().Get("t"))
-		if err != nil || (gameType != GAME_TYPE_CLASSIC && gameType != GAME_TYPE_RUSH) {
-			log.Println("Invalid game type", req.URL.Query().Get("t"), ", defaulting to ", DEFAULT_GAME_TYPE)
-			gameType = DEFAULT_GAME_TYPE
-		}
-
-		maxPlayers, err := strconv.Atoi(req.URL.Query().Get("m"))
-		if err != nil {
-			if req.URL.Query().Get("m") == "∞" {
-				maxPlayers = 0
-			} else {
-				log.Println("Invalid max player count", req.URL.Query().Get("m"), ", defaulting to ", DEFAULT_MAX_PLAYERS)
-				maxPlayers = DEFAULT_MAX_PLAYERS
-			}
-		}
-
-		//TODO: handle other elements
-		//ct (id from json - the card sizes are important)
-		//cl (tight grid = 0/loose grid/stack)
-		//cr (no rotations = 0/some/lots)
-
-		cardType, err := strconv.Atoi(req.URL.Query().Get("ct"))
-		if err != nil {
-			log.Println("Invalid card type parameter, defaulting to ", 0)
-			cardType = 0
-		}
-
-		cardLayout, err := strconv.Atoi(req.URL.Query().Get("cl"))
-		if err != nil {
-			log.Println("Invalid card layout parameter, defaulting to ", 0)
-			cardLayout = 0
-		}
-
-		cardRotation, err := strconv.Atoi(req.URL.Query().Get("cr"))
-		if err != nil {
-			log.Println("Invalid card rotation parameter, defaulting to ", 0)
-			cardRotation = 0
-		}
-
-		gameId = rndString(IDLEN)
-		g := NewGame(nCards, gameType, maxPlayers, cardType, cardLayout, cardRotation)
-		activeGames[gameId] = g
-		log.Println("New game of type ", gameType, " with ", nCards, " cards and at most ", maxPlayers, " players created: ", gameId)
-		go g.Run()
-
-		http.Redirect(w, req, fmt.Sprintf("/game?g=%v", gameId), 303)
+		tryCreateNewGame(w,req)
 	} else {
 		//game already exists.
 		log.Println("Game", gameId, "requested")
@@ -134,6 +197,7 @@ func gameHandler(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
+// Accepts web socket connections from users and tries to associate them to a given open game.
 func wsHandler(ws *websocket.Conn) {
 	// Get the game we're talking about, if it exists.
 	gameId := ws.Request().URL.Query().Get("g")
@@ -168,61 +232,16 @@ func wsHandler(ws *websocket.Conn) {
 	player.reader()
 }
 
-type CardInformation struct {
-	DeckImages       []string          `json:"deckImages"`
-	AssetPrefix      string            `json:"assetPrefix"`
-	CardImageSources []CardImageSource `json:"cardImageSources"`
-}
-
-type CardImageSource struct {
-	// there is different metainformation which can be provided for json, see Unmarshal function documentation. Nifty.
-	Id        int    `json:"id"`
-	Name      string `json:"name"`
-	Size      int    `json:"size"`
-	MaxPairs  int    `json:"maxPairs"`
-	CardSizeX int    `json:"cardSizeX"`
-	CardSizeY int    `json:"cardSizeY"`
-}
-
-func GetCardImageSource(id int) *CardImageSource {
-	if len(cardInformation.CardImageSources) < id {
-		id = 0
-		log.Println("ImageSource Id issue: too big ", id)
-	}
-	cardImageSource := &cardInformation.CardImageSources[id]
-	if cardImageSource.Id != id {
-		log.Println("ImageSource Id issue: wrong asset order, id != Id ", id)
-	}
-
-	return cardImageSource
-}
-
-var cardInformation CardInformation
-
-func parseCardInformation() {
-	b, err := ioutil.ReadFile(CARD_CONFIG_FILE)
-	if err != nil {
-		log.Fatalln("Failed to open card information file:", err)
-	}
-
-	err = json.Unmarshal(b, &cardInformation)
-	if err != nil {
-		log.Fatalln("Failed to parse card information file:", err)
-	}
-
-	// debug for json parsing. Spoiler: it currently works as expected
-	/*
-		log.Println("List of parsed card theme names:")
-		for _,r := range(cardInformation.CardImageSources) {
-			log.Println(r.Name)
-		}
-	*/
-}
-
 func main() {
+	log.Println("__Initial setup")
 	rand.Seed(time.Now().UTC().UnixNano())
+	log.Println("_Loading templates")
+	homeTempl.load()
+	gameTempl.load()
 	log.Println("Parsing card information from json file")
 	parseCardInformation()
+
+	//TODO: game manager
 
 	sm := http.NewServeMux()
 	sm.HandleFunc("/", homeHandler)
@@ -230,7 +249,7 @@ func main() {
 	sm.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 	sm.Handle("/ws", websocket.Handler(wsHandler))
 
-	log.Println("Starting Server on ", *addr)
+	log.Printf("__Starting Server on '%v'\n", *addr)
 	s := http.Server{Handler: sm, Addr: *addr}
 	if err := s.ListenAndServe(); err != nil {
 		log.Fatal("ListenAndServe:", err)
