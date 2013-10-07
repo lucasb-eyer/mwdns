@@ -245,6 +245,8 @@ Card.prototype.onMouseDown = function(e) {
 	if (e.ctrlKey) {
 		this.preDragPhi = this.phi
 		this.isBeingRotated = true;
+	} else {
+		this.isBeingRotated = false;
 	}
 
 	this.node.css("z-index", ++g_max_card_z)

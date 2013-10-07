@@ -205,6 +205,8 @@ func NewGame(cardCount, gameType, maxPlayers, cardType, cardLayout, cardRotation
 		fallthrough
 	case CARD_LAYOUT_STACK:
 		fallthrough
+	case CARD_LAYOUT_CHAOTIC:
+		fallthrough
 	default:
 		padding = 20 //TODO: choose values depending on card style
 	}
@@ -234,9 +236,7 @@ func NewGame(cardCount, gameType, maxPlayers, cardType, cardLayout, cardRotation
 		case CARD_ROTATION_CHAOS:
 			phi = (float64)(rand.Intn(360))
 		case CARD_ROTATION_NONE:
-			fallthrough
 		default:
-			phi = 0
 		}
 
 		x := 0.0
@@ -247,6 +247,9 @@ func NewGame(cardCount, gameType, maxPlayers, cardType, cardLayout, cardRotation
 		case CARD_LAYOUT_GRID_LOOSE: //loose grid and stack share an expected board size?
 			x = (float64)(cardImageSource.CardSizeX/2 + paddingBorderX + (cardImageSource.CardSizeX+padding)*(i%cardRowCount))
 			y = (float64)(cardImageSource.CardSizeY/2 + paddingBorderY + (cardImageSource.CardSizeY+padding)*(i/cardRowCount))
+		case CARD_LAYOUT_CHAOTIC:
+			x = (float64)(rand.Intn(g.boardWidth - cardImageSource.CardSizeX) + cardImageSource.CardSizeX/2)
+			y = (float64)(rand.Intn(g.boardHeight - cardImageSource.CardSizeY) + cardImageSource.CardSizeY/2)
 		case CARD_LAYOUT_STACK:
 			fallthrough
 		default:
@@ -285,9 +288,10 @@ const (
 
 	NO_CARD = -1
 
-	CARD_LAYOUT_STACK      = 2
 	CARD_LAYOUT_GRID_TIGHT = 0
 	CARD_LAYOUT_GRID_LOOSE = 1
+	CARD_LAYOUT_STACK      = 2
+	CARD_LAYOUT_CHAOTIC    = 3
 
 	CARD_ROTATION_NONE   = 0
 	CARD_ROTATION_JIGGLY = 1
@@ -397,6 +401,18 @@ func (g *Game) Run() {
 			g.SendAllPlayers(p) // Now send him all existing players (including himself)
 			g.SendBoardState(p)
 		case p := <-g.unregisterPlayer:
+			// If he had any open card, close it.
+			if p.openCard != NO_CARD {
+				g.Cards[p.openCard].IsOpen = false
+				g.Broadcast(g.Cards[p.openCard].GetJsonCardFlip())
+			}
+
+			// And if this was a turnbased game (classic) and it is his turn, end his turn.
+			if p.CanPlay && g.Type == GAME_TYPE_CLASSIC {
+				p.SetCanPlay(false, g)
+				g.CyclicNextPlayer(p).SetCanPlay(true, g)
+			}
+
 			// Tell everybody about the big bad leaver.
 			g.Broadcast(p.GetJsonLeave())
 
@@ -537,7 +553,9 @@ func (g *Game) MoveCard(cardp cardPosition) {
 }
 
 func (g *Game) Chat(pname, msg string) {
-	g.Broadcast(fmt.Sprintf(`{"msg": "chat", "from": "%v", "content": "%v"}`, pname, msg))
+	name, _ := json.Marshal(pname)
+	jmsg, _ := json.Marshal(msg)
+	g.Broadcast(fmt.Sprintf(`{"msg": "chat", "from": %v, "content": %v}`, string(name), string(jmsg)))
 }
 
 // sends a board state to a player (ALL the cards)

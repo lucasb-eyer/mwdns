@@ -50,7 +50,7 @@
 							<button type="button" class="btn nplayers btn-primary">2</button>
 							<button type="button" class="btn nplayers">3</button>
 							<button type="button" class="btn nplayers">5</button>
-							<button type="button" class="btn nplayers">&#8734;</button>
+							<button type="button" value="∞" class="btn nplayers">&#8734;</button>
 						</div>
 					</div>
 				</div>
@@ -73,6 +73,7 @@
 							<option value="0">Tight Grid</option>
 							<option value="1" selected>Loose Grid</option>
 							<option value="2">Cardstack</option>
+							<option value="3">Chaotic</option>
 						</select>
 					</div>
 				</div>
@@ -87,6 +88,10 @@
 							<button type="button" data-toggle="button" value="3" name="cr" class="btn rotcards">Chaotic</button>
 						</div>
 					</div>
+					<!-- Unfortunately, I don't know of any other solution than
+					     to use a hidden input in here in order to pass the val
+					     as a URL query parameter. It's synced by js below. -->
+					<input type=text style="display: none" id="cr" name="cr" value="1"></input>
 				</div>
 			</div>
 		</form>
@@ -113,19 +118,23 @@
 		}
 
 		// Make the button reflecting the current number of cards/max players blue
-		var sync_input_buttons = function(classname, inputname) {
-			// Make the button reflecting the current number of cards blue
+		var sync_input_buttons = function(classname, inputname, default_) {
+			// When one of the buttons is clicked, make the input reflect the
+			// content of that button('s value)
 			$(classname).on('click', function() {
-				$(inputname).val($(this).text())
+				$(inputname).val($(this).val() || $(this).text())
 				$(inputname).trigger('change')
 			})
+			// When the input is changed, check if any of the button('s value)
+			// was entered and if so, "mark" that button.
 			$(inputname).on('keyup change', function() {
-				var n = $(inputname).val() || "10"
-				$(classname).each(function(i, e) { $(e).toggleClass('btn-primary', $(e).text() == n) })
+				var n = $(inputname).val() || default_
+				$(classname).each(function(i, e) { $(e).toggleClass('btn-primary', ($(e).val() || $(e).text()) == n) })
 			})
 		}
-		sync_input_buttons(".ncards", "#n")
-		sync_input_buttons(".nplayers", "#m")
+		sync_input_buttons(".ncards", "#n", "10")
+		sync_input_buttons(".nplayers", "#m", "2")
+		sync_input_buttons(".rotcards", "#cr", "1")
 
 		// toggle class, depending on what rotation is selected
 		$('.rotcards').on('click', function() {

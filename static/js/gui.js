@@ -20,9 +20,12 @@ resizeGui = function() {
 Scoreboard = function(selector) {
 	this.node = $(selector)
 	this.pid_rows = {}
+	this.players = {}
 }
 
 Scoreboard.prototype.addPlayer = function(pid, name, color, turns, points, canplay) {
+	this.players[pid] = {}
+
 	// TODO: This should probably be in some template file somewhere else.
 	var template = "<tr id=player" + pid + ">"
 	             + "  <td class=name>"
@@ -46,6 +49,8 @@ Scoreboard.prototype.addPlayer = function(pid, name, color, turns, points, canpl
 }
 
 Scoreboard.prototype.updateName = function(pid, name) {
+	this.players[pid].name = name
+
 	// Here jQuery's 'text' does the escaping of < and friends for us.
 	namespan = this.pid_rows[pid].find('.name span')
 	namespan.text(name)
@@ -64,10 +69,13 @@ Scoreboard.prototype.updateName = function(pid, name) {
 }
 
 Scoreboard.prototype.updateColor = function(pid, color) {
+	this.players[pid].color = color
 	this.pid_rows[pid].find('.color').css('background-color', color)
 }
 
 Scoreboard.prototype.updateScore = function(pid, points, delta) {
+	this.players[pid].score = points
+
 	// TODO: keep the scoreboard sorted?
 	this.pid_rows[pid].find('.points').text(points)
 
@@ -86,21 +94,23 @@ Scoreboard.prototype.updateTurns = function(pid, turns) {
 Scoreboard.prototype.showInvite = function(showInvite) {
 	if (showInvite) {
 		$("#gameLink").text(document.URL)
-		$("#gameLinkCopyButton").attr("data-clipboard-text",document.URL) //for ZeroClipboard
-		var clip = new ZeroClipboard( document.getElementById("gameLinkCopyButton"), {
-			moviePath: "/static/ZeroClipboard.swf"
-		});
 
-		// SEE: https://github.com/jonrohan/ZeroClipboard
-		clip.on( 'complete', function(client, args) {
-			//alternative: $(this)
-			$("#gameLinkCopyButton").text("Copied")
-			window.setTimeout(function() {$("#gameLinkCopyButton").text("Copy")},1000) //show the copy text again after a second
+		// Make the "link" copy to clipboard if clicked.
+		if(!$("#gameLink").attr("data-clipboard-text")) {
+			$("#gameLink").attr("data-clipboard-text", document.URL) // for ZeroClipboard
+			var clip = new ZeroClipboard(document.getElementById("gameLink"), {
+				moviePath: "/static/ZeroClipboard.swf"
+			})
 
-			//the line below hides the button
-			//this.style.display = 'none'; // "this" is the element that was clicked
-			//alert("Copied text to clipboard: " + args.text );
-		} );
+			// SEE: https://github.com/jonrohan/ZeroClipboard
+			clip.on('complete', function(client, args) {
+				// Give the user feedback that the URL is now copied.
+				$(this).text("Copied!")
+				window.setTimeout(function() {
+					$("#gameLink").text(document.URL)
+				}, 3000) //show the URL text again after some time
+			});
+		}
 
 		$("#helpfulSuggestionBox").show();
 	} else {
@@ -123,6 +133,19 @@ Scoreboard.prototype.leaver = function(pid) {
 	// -1 because the player is not removed from the array yet.
 	// != instead of <= so that we catch maxPlayers==0 too.
 	this.showInvite(g_players.length-1 != gameBoard.maxPlayers)
+
+	delete this.players[pid]
+}
+
+Scoreboard.prototype.gameOver = function(winnerid) {
+	// TODO: what about a "replay" button?
+	if(winnerid == g_mypid) {
+		$('#gameOverWon').fadeIn()  // OMG YES
+	} else {
+		$('#gameOverLost').fadeIn()
+		$('#gameOverLost .name').css('color', this.players[winnerid].color)
+		                        .text(this.players[winnerid].name)
+	}
 }
 
 Chat = function(msglist_selector, form_selector) {
@@ -133,10 +156,9 @@ Chat = function(msglist_selector, form_selector) {
 	this.form.on('submit', function(ev) {
 		// Get what is written in the textfield.
 		var input = $(ev.target).find("[name=what]")
-		var text = input.val()
 
 		// Send and don't forget to clear it for a "sent" effect, even though we don't know.
-		sendMessage('{"chat": "'+text.replace(/"/g, "&quot;")+'"}') //TODO: why not JSON.stringify, like with the wantChangeName message?
+		sendMessage('{"chat": '+JSON.stringify(input.val())+'}') //TODO: why not JSON.stringify, like with the wantChangeName message?
 		input.val('')
 		return false
 	})

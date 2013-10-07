@@ -31,8 +31,7 @@
 		<div id="helpfulSuggestionBox">
 			<!-- TODO: make me hideable -->
 			Want to invite somebody to the game?<br>
-			Send them this link:<br>
-            <button id="gameLinkCopyButton" title="Click to copy to clipboard.">Copy</button>
+			Send them this link (click to copy):<br>
 			<a id="gameLink"></a>
 		</div>
 		<div id="scoreboard">
@@ -58,6 +57,13 @@
 			<input id="chatControlSend" type="submit" value="Say:">
 			<input id="chatControlText" type="text" name="what">
 		</form>
+	</div>
+	<div id="gameOverLost">
+		<h1>You lose!</h1>
+		<h2>And <span class="name"></span> won...</h2>
+	</div>
+	<div id="gameOverWon">
+		<h1>You won!</h1>
 	</div>
 </body>
 </html>

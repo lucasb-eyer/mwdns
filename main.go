@@ -18,7 +18,7 @@ import (
 const DEV_MODE = true //whether development is currently going on - constant template reload
 
 const (
-	IDCHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	IDCHARS = "abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ023456789"
 	IDLEN   = 6
 
 	DEFAULT_PAIR_COUNT  = 10
@@ -145,19 +145,19 @@ func tryCreateNewGame(w http.ResponseWriter, req *http.Request) {
 
 	cardType, err := strconv.Atoi(req.URL.Query().Get("ct"))
 	if err != nil {
-		log.Println("Invalid card type parameter, defaulting to ", 0)
+		log.Println("Invalid card type parameter", req.URL.Query().Get("ct"), ", defaulting to ", 0)
 		cardType = 0
 	}
 
 	cardLayout, err := strconv.Atoi(req.URL.Query().Get("cl"))
 	if err != nil {
-		log.Println("Invalid card layout parameter, defaulting to ", 0)
+		log.Println("Invalid card layout parameter", req.URL.Query().Get("cl"), ", defaulting to ", 0)
 		cardLayout = 0
 	}
 
 	cardRotation, err := strconv.Atoi(req.URL.Query().Get("cr"))
 	if err != nil {
-		log.Println("Invalid card rotation parameter, defaulting to ", 0)
+		log.Println("Invalid card rotation parameter", req.URL.Query().Get("cr"), ", defaulting to ", 0)
 		cardRotation = 0
 	}
 

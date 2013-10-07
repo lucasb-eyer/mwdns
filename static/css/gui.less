@@ -1,8 +1,11 @@
+@playerGuiW: 270px;
+
 #playerGui {
+	z-index: 10;
 	position: absolute;
 	top: 0px;
 	right: 0px;
-	width: 270px;
+	width: @playerGuiW;
 	height: 100%;
 	background-color: white;
 }
@@ -68,4 +71,51 @@
 			text-align: right;
 		}
 	}
+}
+
+@gameOverLostW: 640px;
+@gameOverLostH: 480px;
+
+#gameOverLost {
+	display: none;
+	width: @gameOverLostW;
+	height: @gameOverLostH;
+	position: fixed;
+	left: 50%;
+	margin-left: (-(@gameOverLostW + @playerGuiW) / 2);  // Centers the thing
+	top: 10%;
+	z-index: 10;
+	background-image: url("http://www.pascalfredette.com/wp-content/uploads/2010/02/Game_Over1.jpg");
+	background-size: 640px 480px;
+	border: 5px solid black;
+	border-radius: 25px;
+
+	h1 {
+		position: absolute;
+		left: 300px;
+		top: 150px;
+	}
+
+	h2 {
+		position: absolute;
+		left: 300px;
+		top: 200px;
+	}
+
+	.name {
+		text-shadow: 2px 2px 4px;
+	}
+}
+
+#gameOverWon {
+	display: none;
+
+	width: 100%;
+	text-align: center;
+	margin-left: (-@playerGuiW/2);
+
+	z-index: 10;
+
+	color: gold;
+	text-shadow: 0 0 8px white;
 }

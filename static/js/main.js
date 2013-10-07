@@ -69,7 +69,7 @@ function handleMessage(msg){
 	} else if ( json.msg == "chat" ) {
 		g_chat.message(json.from, json.content)
 	} else if ( json.msg == "end" ) {
-		//TODO: display final game screen (scores, winner, new game)
+		g_scoreboard.gameOver(json.winner)
 	} else if ( json.msg == "err_gameid" ) {
 		errmsg = encodeURIComponent("The game you want to join (id: <b>" + json.gid + "</b>) doesn't exist!")
 		window.location.replace("/?errmsg=" + errmsg);
