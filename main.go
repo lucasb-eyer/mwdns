@@ -157,7 +157,8 @@ func tryCreateNewGame(w http.ResponseWriter, req *http.Request) {
     var gameId = rndString(IDLEN)
     g := NewGame(nCards, gameType, maxPlayers, cardType, cardLayout, cardRotation)
     activeGames[gameId] = g
-    log.Println("New game of type ", gameType, " with ", nCards, " cards and at most ", maxPlayers, " players created: ", gameId)
+    log.Println("New game of type", gameType, "with", nCards, "cards and at most", maxPlayers, "players created: ", gameId)
+    log.Println("The above game's card type is", cardType, "the card layout is", cardLayout, "and their rotation is", cardRotation)
     go g.Run()
 
     http.Redirect(w, req, fmt.Sprintf("/game?g=%v", gameId), 303)
