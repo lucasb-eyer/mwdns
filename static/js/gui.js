@@ -80,6 +80,23 @@ Scoreboard.prototype.updateScore = function(pid, points, delta) {
     this.pid_rows[pid].find('.points').text(points)
 
     // TODO: Show a special effect using the delta, if given
+    if ( delta ) {
+        var pointvalstr = (delta > 0 ? "+" : "-") + delta
+        var pointstr = " Point" + (delta > 1 ? "s" : "")
+        g_chat.message(pid, pointvalstr + pointstr)
+
+        var playername = g_players[pid].name
+        var html = $("<div class=flying_points>" + playername + ": " + pointvalstr + "</div>")
+        html.css("top", (VIEW_HEIGHT/2) + "px")
+        html.css("left", (VIEW_WIDTH-100) + "px")
+        $("body").append(html)
+        html.animate({
+            top: (VIEW_HEIGHT/4) + "px",
+            opacity: 0,
+        }, 2000, 'swing', function() {
+            html.remove()
+        })
+    }
 }
 
 Scoreboard.prototype.updateCanPlay = function(pid, canplay) {
