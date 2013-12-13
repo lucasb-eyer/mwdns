@@ -88,7 +88,7 @@ Scoreboard.prototype.updateScore = function(pid, points, delta) {
         var playername = g_players[pid].name
         var html = $("<div class=flying_points>" + playername + ": " + pointvalstr + "</div>")
         html.css("top", (VIEW_HEIGHT/2) + "px")
-        html.css("left", (VIEW_WIDTH-100) + "px")
+        html.css("left", (VIEW_WIDTH-120) + "px")
         $("body").append(html)
         html.animate({
             top: (VIEW_HEIGHT/4) + "px",
