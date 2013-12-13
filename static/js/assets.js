@@ -56,26 +56,32 @@ ImageSourceColorRandom.prototype.getElement = function(type) {
 }
 
 //TODO: generalized tile map image processor instead of this one
-function ImageSourceTileMapArmor() {
-    this.name = "Armor"
+function ImageSourceTileMap(cardInformation) {
+    this.name = "TileMap: " + cardInformation.name
 
     //only relevant for tileMaps
-    this.imgCountX = 5
-    this.imgCountY = 5
-    this.tileSize = 50
-    this.fileName = "flare_armor.png"
-    this.path = getAssetPath(this.fileName)
-    //TODO: handle lists of single images?
+    this.imgCountX = cardInformation.imgCountX
+    this.imgCountY = cardInformation.imgCountY
 
-    this.count = 24
+    this.cardSizeX = cardInformation.cardSizeX
+    this.cardSizeY = cardInformation.cardSizeY
+    this.tileSizeX = cardInformation.tileSizeX
+    this.tileSizeY = cardInformation.tileSizeY
+
+    this.fileName = cardInformation.fileName
+
+    //TODO: handle lists of single images?
+    this.path = getAssetPath(this.fileName)
+
+    this.count = cardInformation.maxPairs*2
 
     this.init()
 }
 
-ImageSourceTileMapArmor.prototype.init = function() {
+ImageSourceTileMap.prototype.init = function() {
     this.cvs = document.createElement("canvas")
-    this.cvs.width = this.tileSize
-    this.cvs.height = this.tileSize
+    this.cvs.width = this.cardSizeX
+    this.cvs.height = this.cardSizeY
     this.ctx = this.cvs.getContext("2d")
     //TODO: error checking and happy things
 
@@ -91,8 +97,8 @@ ImageSourceTileMapArmor.prototype.init = function() {
 
             //TODO: draw each tilemap image on an own img
             this.ctx.drawImage(this.sourceImage,
-                tilePos[0]*this.tileSize, tilePos[1]*this.tileSize,
-                this.tileSize, this.tileSize, 0,0,this.tileSize,this.tileSize)
+                tilePos[0]*this.tileSizeX, tilePos[1]*this.tileSizeY,
+                this.tileSizeX, this.tileSizeY, 0,0,this.cardSizeX,this.cardSizeY)
             var img = new Image()
             img.src = this.cvs.toDataURL("image/png")
             this.images.push(img)
@@ -102,6 +108,6 @@ ImageSourceTileMapArmor.prototype.init = function() {
     }, this))
 }
 
-ImageSourceTileMapArmor.prototype.getElement = function(type) {
+ImageSourceTileMap.prototype.getElement = function(type) {
     return $(this.images[parseInt(type)]).clone()
 }

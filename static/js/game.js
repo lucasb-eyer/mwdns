@@ -154,53 +154,48 @@ function createBoard(width,height,maxPlayers) {
 
 
 function createCards(cardCount, cardType) {
-    try {
-        var sources = cardTypeDefinitions.cardImageSources
+    var sources = cardTypeDefinitions.cardImageSources
 
-        if (!cardType in sources) {
-            console.error("cardType " +cardType+ " not specified in definition!")
-            cardType = 1 //default to random colors square
-        }
-
-        cardInformation = sources[cardType]
-        console.debug("Trying to load card type '"+cardInformation.name+"'.")
-
-        var cardWidth = cardInformation.cardSizeX
-        var cardHeight = cardInformation.cardSizeY
-
-        //TODO: check constraints like maxPairs?
-
-        switch (cardInformation.type) {
-            case "function":
-                switch(cardInformation.func) {
-                    case "randomDistinctiveHappyColors":
-                        cardSource = new ImageSourceColorRandom(cardWidth, cardHeight, cardCount)
-                        break;
-                    default:
-                        console.error("No such card look function '"+ cardInformation.func +"'.")
-                }
-                break;
-            case "tilemap":
-                //TODO: this is cheating, and does not respect the card size
-                // a general tilemap-processing thingy would be appropriate, that actually processes the cardInformation
-                cardSource = new ImageSourceTileMapArmor(cardInformation)
-            default:
-                console.error("Unknown card source: " + cardInformation)
-        }
-
-    } catch(err) {
-        console.error(err)
-        console.debug("Something went wrong, falling back to happy colors!")
-
-        //TODO: take card type information and load it
-        var cardWidth = DEFAULT_CARD_W;
-        var cardHeight = DEFAULT_CARD_H;
-
-        //TODO: this should be changed on the fly on initBoard
-        cardSource = new ImageSourceColorRandom(cardWidth, cardHeight, cardCount)
-        //cardSource = new ImageSourceTileMapArmor()
+    if (!cardType in sources) {
+        console.error("cardType " +cardType+ " not specified in definition!")
+        cardType = 1 //default to random colors square
     }
 
+    cardInformation = sources[cardType]
+    console.debug("Trying to load card type '"+cardInformation.name+"'.")
+
+    //TODO: check constraints like maxPairs?
+    var cardWidth = cardInformation.cardSizeX || DEFAULT_CARD_W
+    var cardHeight = cardInformation.cardSizeY || DEFAULT_CARD_H
+
+    if (cardWidth === undefined || cardHeight === undefined) {
+        console.error("Width or height are badly defined, reverting to defaults")
+    }
+
+    //TODO: this giant try is a BAD thing
+    switch (cardInformation.type) {
+        case "function":
+            switch(cardInformation.func) {
+                case "randomDistinctiveHappyColors":
+                    cardSource = new ImageSourceColorRandom(cardWidth, cardHeight, cardCount)
+                    break;
+                default:
+                    console.error("No such card look function '"+ cardInformation.func +"'.")
+            }
+            break;
+        case "tilemap":
+            //TODO: this is cheating, and does not respect the card size
+            // a general tilemap-processing thingy would be appropriate, that actually processes the cardInformation
+            cardSource = new ImageSourceTileMap(cardInformation)
+        default:
+            console.error("Unknown card source: " + cardInformation)
+    }
+
+    // set default if stuff went wrong
+    if (cardSource === undefined) {
+        console.debug("Something went wrong, falling back to happy colors!")
+        cardSource = new ImageSourceColorRandom(cardWidth, cardHeight, cardCount)
+    }
 
     // Sets the default initial position to be the center.
     var defaultCardX = gameBoard.width/2 - cardWidth/2
