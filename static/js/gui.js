@@ -89,13 +89,14 @@ Scoreboard.prototype.updateScore = function(pid, points, delta) {
         var html = $("<div class=flying_points>" + playername + ": " + pointvalstr + "</div>")
         html.css("color", this.players[pid].color)
         html.css("top", (VIEW_HEIGHT/2) + "px")
-        html.css("left", (VIEW_WIDTH-120) + "px")
+        html.css("left", (VIEW_WIDTH-150) + "px")
+        html.css("z-index", g_max_card_z + 10)
         $("body").append(html)
         html.animate({
             top: (VIEW_HEIGHT/4) + "px",
             opacity: 0,
         }, 2000, 'swing', function() {
-            // html.remove()
+            html.remove()
         })
     }
 }
