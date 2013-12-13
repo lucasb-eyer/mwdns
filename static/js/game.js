@@ -155,7 +155,7 @@ function createBoard(width,height,maxPlayers) {
 function createCards(cardCount, cardType) {
     var sources = cardTypeDefinitions.cardImageSources
 
-    if (sources.indexOf(cardType) === -1) {
+    if (!(cardType in sources)) {
         console.error("cardType " +cardType+ " not specified in definition!")
         cardType = 1 //default to random colors square
     }
