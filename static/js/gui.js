@@ -28,10 +28,11 @@ Scoreboard.prototype.addPlayer = function(pid, name, color, turns, points, canpl
 
     // TODO: This should probably be in some template file somewhere else.
     var template = "<tr id=player" + pid + ">"
+                 + "  <td class=hasTurn>" + "</td>"
                  + "  <td class=name>"
                  + "    <div class=color></div><span>" + name + "</span>"
                  + "  </td>"
-                 + "  <td class=turns>" + turns + "</td>" //TODO
+                 + "  <td class=turns>" + turns + "</td>"
                  + "  <td class=points>" + points + "</td>"
                  + "</tr>"
     this.node.find('tbody').append(template)
@@ -102,7 +103,12 @@ Scoreboard.prototype.updateScore = function(pid, points, delta) {
 
 Scoreboard.prototype.updateCanPlay = function(pid, canplay) {
     // You can play: black name. You can't play: grey name.
-    this.pid_rows[pid].find('.name span').css('color', canplay ? 'black' : 'grey')
+    var name_element = this.pid_rows[pid].find('.name span')
+
+    name_element.css('color', canplay ? 'black' : 'grey')
+    name_element.css('font-weight', canplay ? 'bold' : 'normal')
+
+    this.pid_rows[pid].find('.hasTurn').text(canplay ? '→' : '')
 }
 
 Scoreboard.prototype.updateTurns = function(pid, turns) {
