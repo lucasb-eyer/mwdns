@@ -250,6 +250,12 @@ func NewGame(cardCount, gameType, maxPlayers, cardType, cardLayout, cardRotation
 		case CARD_LAYOUT_CHAOTIC:
 			x = (float64)(rand.Intn(g.boardWidth - cardImageSource.CardSizeX) + cardImageSource.CardSizeX/2)
 			y = (float64)(rand.Intn(g.boardHeight - cardImageSource.CardSizeY) + cardImageSource.CardSizeY/2)
+			// Or do we want less random chaos?
+			// The first half of the sum places the cards onto a grid.
+			// The second half moves each card around randomly within its cell.
+			// The factor (0.3) is how "much" the cards should move within their cell.
+			//X:        (float64)(i%ncardsx) / (float64)(ncardsx-1) + 0.3*(rand.Float64()-0.5) / (float64)(ncardsx-1),
+			//Y:        (float64)(i/ncardsx) / (float64)(ncardsy-1) + 0.3*(rand.Float64()-0.5) / (float64)(ncardsy-1),
 		case CARD_LAYOUT_STACK:
 			fallthrough
 		default:
@@ -259,12 +265,6 @@ func NewGame(cardCount, gameType, maxPlayers, cardType, cardLayout, cardRotation
 
 		c := Card{
 			Id: i,
-			// The first half of the sum places the cards onto a grid.
-			// The second half moves each card around randomly within its cell.
-			// The factor (0.3) is how "much" the cards should move within their cell.
-			//X:        (float64)(i%ncardsx) / (float64)(ncardsx-1) + 0.3*(rand.Float64()-0.5) / (float64)(ncardsx-1),
-			//Y:        (float64)(i/ncardsx) / (float64)(ncardsy-1) + 0.3*(rand.Float64()-0.5) / (float64)(ncardsy-1),
-			//no wiggling here yet :(
 			X:        x,
 			Y:        y,
 			Phi:      phi,

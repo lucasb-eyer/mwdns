@@ -58,8 +58,6 @@ var (
 	addr = flag.String("addr", "localhost:8080", "http service address")
 	homeTempl = CreateAutoTemplate("templates/startView.html", DEV_MODE)
 	gameTempl = CreateAutoTemplate("templates/gameView.html", DEV_MODE)
-	//CreateAutoTemplate("templates/startView.html")
-	//gameTempl = CreateAutoTemplate("templates/gameView.html")
 	activeGames = make(map[string]*Game)
 )
 
@@ -73,14 +71,6 @@ func parseCardInformation() {
 	if err != nil {
 		log.Fatalln("Failed to parse card information file:", err)
 	}
-
-	// debug code for json parsing. Spoiler: it currently works as expected
-	/*
-		log.Println("List of parsed card theme names:")
-		for _,r := range(cardInformation.CardImageSources) {
-			log.Println(r.Name)
-		}
-	*/
 }
 
 func GetCardImageSource(id int) *CardImageSource {
@@ -138,23 +128,21 @@ func tryCreateNewGame(w http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	//TODO: handle other elements
 	//ct (id from json - the card sizes are important)
-	//cl (tight grid = 0/loose grid/stack)
-	//cr (no rotations = 0/some/lots)
-
 	cardType, err := strconv.Atoi(req.URL.Query().Get("ct"))
 	if err != nil {
 		log.Println("Invalid card type parameter", req.URL.Query().Get("ct"), ", defaulting to ", 0)
 		cardType = 0
 	}
 
+	//cl (tight grid = 0/loose grid/stack)
 	cardLayout, err := strconv.Atoi(req.URL.Query().Get("cl"))
 	if err != nil {
 		log.Println("Invalid card layout parameter", req.URL.Query().Get("cl"), ", defaulting to ", 0)
 		cardLayout = 0
 	}
 
+	//cr (no rotations = 0/some/lots)
 	cardRotation, err := strconv.Atoi(req.URL.Query().Get("cr"))
 	if err != nil {
 		log.Println("Invalid card rotation parameter", req.URL.Query().Get("cr"), ", defaulting to ", 0)
