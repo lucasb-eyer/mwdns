@@ -59,6 +59,7 @@ Scoreboard.prototype.updateName = function(pid, name) {
     // Little indicater for idi.. newbies.
     if(pid == g_mypid) {
         namespan.append(" (<a href class='change_name_link'>you</a>)")
+        $('.change_name_link').off('click'); //remove previous events
         $('.change_name_link').on('click', function(e) {
             newname = prompt('Change your name:', name)
             if(newname) {
