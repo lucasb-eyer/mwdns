@@ -12,7 +12,9 @@ The messages sent through the websockets during a game.
 Server to client
 ----------------
 ### initBoard
+
 `maxPlayers == 0` means no limit.
+
 ```javascript
 {
 	"msg": "initBoard"
@@ -24,15 +26,16 @@ Server to client
 ```
 
 ### cardMove
-x,y are the center of the card as a relative (%) position on the board.
-phi is the angle in degrees.
+`x`,`y` are the center of the card as a relative (%) position on the board.
+`phi` is the angle in degrees.
+
 ```javascript
 {
 	"msg": "cardMove",
 	"id": 13,
 	"x": 0.13,
 	"y": 0.52,
-	"phi": 0.03,
+	"phi": 30,
 }
 ```
 
@@ -54,6 +57,7 @@ If the card happened to be already scored the scoring player id is saved in "sco
 ```
 
 ### chatmsg
+
 ```javascript
 {
 	"msg": "chat",
@@ -63,6 +67,7 @@ If the card happened to be already scored the scoring player id is saved in "sco
 ```
 
 ### points
+
 ```javascript
 {
 	"msg": "points",
@@ -72,6 +77,7 @@ If the card happened to be already scored the scoring player id is saved in "sco
 ```
 
 ### turns
+
 ```javascript
 {
 	"msg": "turns",
@@ -83,6 +89,7 @@ If the card happened to be already scored the scoring player id is saved in "sco
 
 ### player
 This message is sent both whenever a new player joins and when a player changes his name or color.
+
 ```javascript
 {
 	"msg": "player",
@@ -94,6 +101,7 @@ This message is sent both whenever a new player joins and when a player changes 
 ```
 
 ### leaver
+
 ```javascript
 {
 	"msg": "leaver",
@@ -102,6 +110,7 @@ This message is sent both whenever a new player joins and when a player changes 
 ```
 
 ### canplay
+
 ```javascript
 {
 	"msg": "canplay",
@@ -111,6 +120,7 @@ This message is sent both whenever a new player joins and when a player changes 
 ```
 
 ### endgamemsg
+
 ```javascript
 {
 	"msg": "end"
@@ -120,6 +130,7 @@ This message is sent both whenever a new player joins and when a player changes 
 ### errors
 
 #### err\_gameid
+
 ```javascript
 {
 	"msg": "err_gameid",
@@ -128,6 +139,7 @@ This message is sent both whenever a new player joins and when a player changes 
 ```
 
 #### err\_gamefull
+
 ```javascript
 {
 	"msg": "err_gamefull",
@@ -142,6 +154,7 @@ Client to server
 ### wantFlip
 A client can send this to the server whenever it wants to flip OPEN a card. There will be no answer.
 The client should wait to get a "flipped" message, or nothing ever.
+
 ```javascript
 {
 	"wantFlip": "13"
@@ -149,6 +162,7 @@ The client should wait to get a "flipped" message, or nothing ever.
 ```
 
 ### chatmsg
+
 ```javascript
 {
 	"chat": "gl, hf"
@@ -156,6 +170,7 @@ The client should wait to get a "flipped" message, or nothing ever.
 ```
 
 ### wantChangeName
+
 ```javascript
 {
 	"wantChangeName": "Bob"
@@ -163,6 +178,7 @@ The client should wait to get a "flipped" message, or nothing ever.
 ```
 
 ### wantChangeColor
+
 ```javascript
 {
 	"wantChangeColor": "#F00"
@@ -170,6 +186,7 @@ The client should wait to get a "flipped" message, or nothing ever.
 ```
 
 ### moveCard
+
 ```javascript
 {
 	"moveCard": {
@@ -180,3 +197,4 @@ The client should wait to get a "flipped" message, or nothing ever.
 	}
 }
 ```
+
