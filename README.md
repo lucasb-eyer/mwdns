@@ -76,7 +76,8 @@ If the card happened to be already scored the scoring player id is saved in "sco
 {
 	"msg": "turns",
 	"pid": 13,
-	"turns": 1
+	"turns": 2,
+	"flips": 4
 }
 ```
 
