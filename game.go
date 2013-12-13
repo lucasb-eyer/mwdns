@@ -193,7 +193,7 @@ func NewGame(cardCount, gameType, maxPlayers, cardType, cardLayout, cardRotation
     shuffling_aux := rand.Perm(cardCount)
 
     //decide on board size depending on cardType, layout, cardCount
-    //TODO: check index! Checking indeces is the least one can do
+    //TODO: check index! Checking indeces is the least one can do !Important
     cardImageSource := GetCardImageSource(cardType)
     padding := 0 //expected spacing between cards
 
@@ -220,6 +220,7 @@ func NewGame(cardCount, gameType, maxPlayers, cardType, cardLayout, cardRotation
     //TODO: misleading naming? NOT number of columns
     cardRowCount := (int)(math.Ceil(approxRowColCount)) //how many cards are in a row
     cardColCount := (int)(math.Floor(approxRowColCount))
+    //TODO: may enforce a square board, not rectangular
     g.boardWidth = paddingBorderX*2 + (cardImageSource.CardSizeX+padding)*cardRowCount
     g.boardHeight = paddingBorderY*2 + (cardImageSource.CardSizeY+padding)*cardColCount
 
@@ -567,7 +568,8 @@ func (g *Game) SendBoardState(p *Player) {
 }
 
 func (g *Game) SendInitBoard(p *Player) {
-    p.send <- fmt.Sprintf(`{"msg": "initBoard", "boardWidth": %v, "boardHeight": %v, "cardCount": %v, "maxPlayers": %v}`, g.boardWidth, g.boardHeight, len(g.Cards), g.MaxPlayers)
+    p.send <- fmt.Sprintf(`{"msg": "initBoard", "boardWidth": %v, "boardHeight": %v, "cardCount": %v, "maxPlayers": %v, "cardType": %v}`,
+        g.boardWidth, g.boardHeight, len(g.Cards), g.MaxPlayers, g.CardType)
 }
 
 func (g *Game) SendAllPlayers(towhom *Player) {
