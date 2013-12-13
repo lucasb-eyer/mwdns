@@ -31,7 +31,7 @@
 	"name": "Random Colors Portrait",
 	"maxPairs": 20,
 	"cardSizeX": 50,
-	"cardSizeY": 50,
+	"cardSizeY": 80,
 
 	"type": "function",
 	"func": "randomDistinctiveHappyColors"
