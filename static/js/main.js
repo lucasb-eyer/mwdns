@@ -32,8 +32,18 @@ function handleMessage(msg){
         createCards(json.cardCount, json.cardType)
     } else if ( json.msg == "cardMove" ) {
         gameCards[json.id].moveTo(json.x, json.y, json.phi)
-    } else if ( json.msg == "cardFlip" ) {
-        gameCards[json.id].flipCard(json.type, json.scoredBy)
+    } else if ( json.msg == "cardOpen" ) {
+        gameCards[json.id].open(json.type, json.scoredBy)
+    } else if ( json.msg == "cardsClose" ) {
+        var cardsToClose = []
+        for (var i=0 ; i<json.ids.length ; i++) {
+            if(json.ids[i] in gameCards) {
+                cardsToClose.push(gameCards[json.ids[i]])
+            }
+        }
+        closeCards(cardsToClose)
+        // Coffee:
+        // closeCards (gameCards[id] for id in json.ids when gameCards[id]?)
     } else if ( json.msg == "player" ) {
         if ( !g_players.hasOwnProperty(json.pid) ) {
             // A new player?

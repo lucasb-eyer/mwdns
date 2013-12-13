@@ -39,20 +39,29 @@ Server to client
 }
 ```
 
-### cardFlip
-Type is the "picture" on the card ; you could also call it "class" if you prefer.
-If the type changes from something to -1 (i.e. the card flips closed),
-the client side needs to show the closing animation 1-2 seconds later.
-This is necessary for the case of the second card being opened and not matching
-the first card, so that everyone has enough time to see both card.
+### cardOpen
+`type` is the "picture" on the card ; you could also call it "class" if you prefer.
 
-If the card happened to be already scored the scoring player id is saved in "scoredBy"
+If the card happens to be scored, the scoring player id is saved in `scoredBy`.
+
 ```javascript
 {
-	"msg": "cardFlip",
+	"msg": "cardOpen",
 	"id": 13,
-	"type": -1,
+	"type": 4,
 	"scoredBy": -1
+}
+```
+
+### cardsClose
+When one or more cards need to be flipped closed together.
+The client probably wants to do that with a little delay, as it will be
+sent immediately after the second card is opened.
+
+```javascript
+{
+	"msg": "cardsClose",
+	"ids": [13, 10]
 }
 ```
 

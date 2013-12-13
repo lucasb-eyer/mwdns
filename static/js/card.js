@@ -17,21 +17,17 @@ Card = function(cardId,type,x,y,w,h,phi) {
     this.isBeingRotated = false
     this.isBeingDragged = false
 
-    //TODO: in fact, this might better be realized with a counter... but these are obscure cases
-    this.isWaitingForFlipback = false
+    this.whenWasOpened = Date.now()
+    this.waitingForFlipback = false
 }
 
-Card.prototype.showBack = function() {
-    this.type = -1
-    this.node.empty()
-    this.node.append(deckFaceTemplate.clone())
-}
-
-Card.prototype.showFront = function(type,scoredBy) {
+Card.prototype.open = function(type, scoredBy) {
+    this.whenWasOpened = Date.now()
     this.type = type
     this.scoredBy = scoredBy
-    this.node.empty()
+
     //here more elaborate cards might be constructed
+    this.node.empty()
     this.node.append(cardSource.getElement(type).clone())
 
     if (g_players.hasOwnProperty(this.scoredBy)) {
@@ -42,29 +38,36 @@ Card.prototype.showFront = function(type,scoredBy) {
     }
 }
 
-//TODO: animations may come in here
-Card.prototype.doFlipCard = function(type,scoredBy) {
-    this.type = type
-    // only mind the waiting if flipping back to -1
-    if (this.waitingForFlipback || type != -1) {
-        // either draw the deckFace
-        if (type == -1) {
-            this.showBack()
-        // or the actual frontside of the card
-        } else {
-            this.showFront(type,scoredBy)
-        }
+Card.prototype.close = function() {
+    // But scored cards stay open! This is important in rush mode when
+    // Alice opens a card and while it is waiting to be closed, Bob scores it.
+    if (this.scoredBy == NO_PLAYER) {
+        this.type = -1
+        this.node.empty()
+        this.node.append(deckFaceTemplate.clone())
     }
 }
 
-// considers a healthy timeout, if the card is flipped back
-// this code is quite ugly
-Card.prototype.flipCard = function(type,scoredBy) {
-    if (type == -1) {
-        this.waitingForFlipback = true
-        setTimeout($.proxy(function(){this.doFlipCard(type,scoredBy)},this), CARD_TURNBACK_TIMEOUT)
+function closeCards(cards) {
+    var lastOpenedTime = 0
+
+    for (var i=0 ; i<cards.length ; i++) {
+        lastOpenedTime = Math.max(lastOpenedTime, cards[i].whenWasOpened)
+    }
+
+    function closeAllNow() {
+        for (var i=0 ; i<cards.length ; i++) {
+            cards[i].close()
+        }
+    }
+
+    var topen = Date.now() - lastOpenedTime
+    if (topen > MIN_CARD_TURNBACK_MS) {
+        // ... either immediately if it has been open long enough ...
+        closeAllNow()
     } else {
-        this.doFlipCard(type,scoredBy)
+        // ... or after the minimum delay.
+        window.setTimeout(closeAllNow, MIN_CARD_TURNBACK_MS - topen)
     }
 }
 
@@ -82,7 +85,7 @@ Card.prototype.create = function() {
     // the "proxy" part is necessary, as otherwise the this in the methods does not address the object -.- wat?
     this.node.bind("mousedown", $.proxy(this.onMouseDown,this))
     this.node.bind("mouseup", $.proxy(this.onMouseUp,this))
-    this.showBack() //flip to the back side without wait or animations
+    this.close() //flip to the back side without wait or animations
 }
 
 Card.prototype.moveTo = function(x,y,phi) {

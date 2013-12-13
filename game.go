@@ -161,17 +161,18 @@ func (c *Card) GetJsonCardMove() string {
     return fmt.Sprintf(`{"msg": "cardMove", "id": %v, "x": %v, "y": %v, "phi": %v}`, c.Id, c.X, c.Y, c.Phi)
 }
 
-func (c *Card) GetJsonCardFlip() string {
-    Type := NO_TYPE
-    if c.IsOpen {
-        Type = c.Type
-    }
-
-    return fmt.Sprintf(`{"msg": "cardFlip", "id": %v, "type": %v, "scoredBy": %v}`, c.Id, Type, c.ScoredBy)
+func (c *Card) GetJsonCardOpen() string {
+    return fmt.Sprintf(`{"msg": "cardOpen", "id": %v, "type": %v, "scoredBy": %v}`, c.Id, c.Type, c.ScoredBy)
 }
 
-func (c *Card) GetJsonCardFlipAlways() string {
-    return fmt.Sprintf(`{"msg": "cardFlip", "id": %v, "type": %v, "scoredBy": %v}`, c.Id, c.Type, c.ScoredBy)
+// Could probably be done more elegantly with an array of cards
+// and map and join, but whatever, we only ever need up to two.
+func getJsonCardClose1(c *Card) string {
+    return fmt.Sprintf(`{"msg": "cardsClose", "ids": [%v]}`, c.Id)
+}
+
+func getJsonCardClose2(c1 *Card, c2 *Card) string {
+    return fmt.Sprintf(`{"msg": "cardsClose", "ids": [%v, %v]}`, c1.Id, c2.Id)
 }
 
 func NewGame(cardCount, gameType, maxPlayers, cardType, cardLayout, cardRotation int) *Game {
@@ -406,7 +407,7 @@ func (g *Game) Run() {
             // If he had any open card, close it.
             if p.openCard != NO_CARD {
                 g.Cards[p.openCard].IsOpen = false
-                g.Broadcast(g.Cards[p.openCard].GetJsonCardFlip())
+                g.Broadcast(getJsonCardClose1(g.Cards[p.openCard]))
             }
 
             // And if this was a turnbased game (classic) and it is his turn, end his turn.
@@ -452,12 +453,12 @@ func (g *Game) TryFlip(p *Player, cardid int) {
     if g.Type == GAME_TYPE_CLASSIC {
         // In classic mode, every player sees the cards one flips right away.
         g.Cards[cardid].IsOpen = true
-        g.Broadcast(g.Cards[cardid].GetJsonCardFlip())
+        g.Broadcast(g.Cards[cardid].GetJsonCardOpen())
     } else if g.Type == GAME_TYPE_RUSH {
         // In rush mode, only the player opening the card sees it, others don't.
         // This is achieved by sending only that player the card type, but not
         // marking it as opened in general.
-        p.send <- g.Cards[cardid].GetJsonCardFlipAlways()
+        p.send <- g.Cards[cardid].GetJsonCardOpen()
     }
 
     // If this is the first card the player opens, that's it! But also keep track of it.
@@ -483,16 +484,17 @@ func (g *Game) TryFlip(p *Player, cardid int) {
             firstCard.IsOpen = false
             secondCard.IsOpen = false
             // In the classic mode, we need to close both card for everyone.
-            g.Broadcast(firstCard.GetJsonCardFlip())
-            g.Broadcast(secondCard.GetJsonCardFlip())
+            g.Broadcast(getJsonCardClose2(firstCard, secondCard))
 
             // And then switch to the next player.
             p.SetCanPlay(false, g)
             g.CyclicNextPlayer(p).SetCanPlay(true, g)
         } else if g.Type == GAME_TYPE_RUSH {
-            // In rush mode, we only need to tell the current player to unflip the cards.
-            p.send <- firstCard.GetJsonCardFlip()
-            p.send <- secondCard.GetJsonCardFlip()
+            // Note that in rush mode, we always keep the cards closed, unless
+            // they are scored. This means no need to "re-close" here since they
+            // haven't been opened! Thus the following two lines send the close
+            // messages.
+            p.send <- getJsonCardClose2(firstCard, secondCard)
         }
         p.Turns++ //and one more played turn at the end of it
 
@@ -509,8 +511,8 @@ func (g *Game) TryFlip(p *Player, cardid int) {
         if g.Type == GAME_TYPE_RUSH {
             firstCard.IsOpen = true
             secondCard.IsOpen = true
-            g.Broadcast(firstCard.GetJsonCardFlip())
-            g.Broadcast(secondCard.GetJsonCardFlip())
+            g.Broadcast(firstCard.GetJsonCardOpen())
+            g.Broadcast(secondCard.GetJsonCardOpen())
 
             // Check for combo, i.e. successful opening twice.
             if p.PreviousWasGood {
@@ -526,8 +528,8 @@ func (g *Game) TryFlip(p *Player, cardid int) {
             }
         } else {
             //we need to broadcast the card owner anyway
-            g.Broadcast(firstCard.GetJsonCardFlip())
-            g.Broadcast(secondCard.GetJsonCardFlip())
+            g.Broadcast(firstCard.GetJsonCardOpen())
+            g.Broadcast(secondCard.GetJsonCardOpen())
         }
 
         p.PreviousWasGood = true
@@ -564,9 +566,11 @@ func (g *Game) Chat(pname, msg string) {
 
 // sends a board state to a player (ALL the cards)
 func (g *Game) SendBoardState(p *Player) {
-    for _, val := range g.Cards {
-        p.send <- val.GetJsonCardMove()
-        p.send <- val.GetJsonCardFlip()
+    for _, card := range g.Cards {
+        p.send <- card.GetJsonCardMove()
+        if card.IsOpen {
+            p.send <- card.GetJsonCardOpen()
+        }
     }
 }
 
