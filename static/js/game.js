@@ -152,11 +152,10 @@ function createBoard(width,height,maxPlayers) {
     camera.moveTo(gameBoard.width/2, gameBoard.height/2) //center on the middle of the game board
 }
 
-
 function createCards(cardCount, cardType) {
     var sources = cardTypeDefinitions.cardImageSources
 
-    if (!cardType in sources) {
+    if (sources.indexOf(cardType) === -1) {
         console.error("cardType " +cardType+ " not specified in definition!")
         cardType = 1 //default to random colors square
     }
