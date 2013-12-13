@@ -103,8 +103,11 @@ This message is sent both whenever a new player joins and when a player changes 
 {
 	"msg": "player",
 	"pid": 13,
-	"itsyou": false
-	"name": "Bob"
+	"itsyou": false,
+	"name": "Bob",
+	"points": 2,
+	"flips": 18,
+	"turns": 18,
 	"color": "#F00"
 }
 ```

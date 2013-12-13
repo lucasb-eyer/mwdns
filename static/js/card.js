@@ -10,7 +10,7 @@ Card = function(cardId,type,x,y,w,h,phi) {
     this.width = w || DEFAULT_CARD_W
     this.height = h || DEFAULT_CARD_H
 
-    //TODO: get from server, remember
+    // get from server, remember
     this.scoredBy = NO_PLAYER //which player has opened this particular pair of cards
 
     this.isBeingClicked = false
@@ -21,14 +21,23 @@ Card = function(cardId,type,x,y,w,h,phi) {
     this.waitingForFlipback = false
 }
 
-Card.prototype.open = function(type, scoredBy) {
-    this.whenWasOpened = Date.now()
-    this.type = type
-    this.scoredBy = scoredBy
+Card.prototype.refresh = function() {
+    if (this.type == -1) {
+        this.showBack()
+    } else {
+        this.showFront()
+    }
+}
 
+Card.prototype.showBack = function() {
+    this.node.empty()
+    this.node.append(deckFaceTemplate.clone())
+}
+
+Card.prototype.showFront = function() {
     //here more elaborate cards might be constructed
     this.node.empty()
-    this.node.append(cardSource.getElement(type).clone())
+    this.node.append(cardSource.getElement(this.type).clone())
 
     if (g_players.hasOwnProperty(this.scoredBy)) {
         var color = g_players[this.scoredBy].color
@@ -38,13 +47,19 @@ Card.prototype.open = function(type, scoredBy) {
     }
 }
 
+Card.prototype.open = function(type, scoredBy) {
+    this.whenWasOpened = Date.now()
+    this.type = type
+    this.scoredBy = scoredBy
+    this.showFront()
+}
+
 Card.prototype.close = function() {
     // But scored cards stay open! This is important in rush mode when
     // Alice opens a card and while it is waiting to be closed, Bob scores it.
     if (this.scoredBy == NO_PLAYER) {
         this.type = -1
-        this.node.empty()
-        this.node.append(deckFaceTemplate.clone())
+        this.showBack()
     }
 }
 

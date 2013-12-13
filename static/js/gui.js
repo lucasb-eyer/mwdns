@@ -11,10 +11,11 @@ resizeGui = function() {
     var innerHeightOrZero = function($obj) { return $obj.is(":visible") ? $obj.innerHeight() : 0 }
     var msgh = outerHeightOrZero($('#helpfulSuggestionBox'))
     var scoreboardh = outerHeightOrZero($('#scoreboard'))
+    var helph = outerHeightOrZero($('#help'))
     var sendbuttonh = outerHeightOrZero($('#chatControl'))
     var chatmsg_margin = outerHeightOrZero($('#chatMessages')) - innerHeightOrZero($('#chatMessages'))
 
-    $('#chatMessages').height(guih - msgh - scoreboardh - sendbuttonh - chatmsg_margin)
+    $('#chatMessages').height(guih - msgh - scoreboardh - sendbuttonh - chatmsg_margin - helph)
 }
 
 Scoreboard = function(selector) {

@@ -152,11 +152,10 @@ function createBoard(width,height,maxPlayers) {
     camera.moveTo(gameBoard.width/2, gameBoard.height/2) //center on the middle of the game board
 }
 
-
 function createCards(cardCount, cardType) {
     var sources = cardTypeDefinitions.cardImageSources
 
-    if (!cardType in sources) {
+    if (sources.indexOf(cardType) === -1) {
         console.error("cardType " +cardType+ " not specified in definition!")
         cardType = 1 //default to random colors square
     }
@@ -187,8 +186,9 @@ function createCards(cardCount, cardType) {
             //TODO: this is cheating, and does not respect the card size
             // a general tilemap-processing thingy would be appropriate, that actually processes the cardInformation
             cardSource = new ImageSourceTileMap(cardInformation)
+            break;
         default:
-            console.error("Unknown card source: " + cardInformation)
+            console.error("Unknown card source: " + cardInformation.type + "(" + cardInformation.id + ")")
     }
 
     // set default if stuff went wrong
