@@ -238,7 +238,7 @@ func main() {
 	log.Println("_Loading templates")
 	homeTempl.load()
 	gameTempl.load()
-	log.Println("Parsing card information from json file")
+	log.Println("Parsing card information from JSON file")
 	parseCardInformation()
 
 	//TODO: game manager
@@ -249,6 +249,7 @@ func main() {
 	sm.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 	sm.Handle("/ws", websocket.Handler(wsHandler))
 
+    flag.Parse()
 	log.Printf("__Starting Server on '%v'\n", *addr)
 	s := http.Server{Handler: sm, Addr: *addr}
 	if err := s.ListenAndServe(); err != nil {
