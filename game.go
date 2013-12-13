@@ -25,7 +25,8 @@ type Player struct {
     Id      int
     CanPlay bool //TODO: set this through a player method, so the player is always notified
     Points  int
-    Turns   int
+    Turns   int  //Rush Turns == # of flips != Classic Turns
+    Flips   int
     Game    *Game
 
     Name     string
@@ -470,8 +471,8 @@ func (g *Game) TryFlip(p *Player, cardid int) {
     secondCard := g.Cards[cardid]
     p.openCard = NO_CARD // Whatever happens, this player won't have an open card anymore
 
-    p.Turns++ //and one more played turn
-    g.Broadcast(fmt.Sprintf(`{"msg": "turns", "pid": %v, "turns": %v}`, p.Id, p.Turns))
+    // one more flip
+    p.Flips++
 
     if firstCard.Type != secondCard.Type {
         // Too bad
@@ -493,6 +494,7 @@ func (g *Game) TryFlip(p *Player, cardid int) {
             p.send <- firstCard.GetJsonCardFlip()
             p.send <- secondCard.GetJsonCardFlip()
         }
+        p.Turns++ //and one more played turn at the end of it
 
     } else {
         //SCOOORE!
@@ -540,6 +542,7 @@ func (g *Game) TryFlip(p *Player, cardid int) {
             g.Broadcast(fmt.Sprintf(`{"msg": "end", "winner": "%v"}`, p.Id))
         }
     }
+    g.Broadcast(fmt.Sprintf(`{"msg": "turns", "pid": %v, "turns": %v, "flips": %v}`, p.Id, p.Turns, p.Flips))
 }
 
 func (g *Game) MoveCard(cardp cardPosition) {
