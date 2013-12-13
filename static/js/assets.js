@@ -1,23 +1,35 @@
-var assetPrefix = "/static/img/assets/"
-function getAssetPath(file) {
-    return assetPrefix+file
-}
+var cardTypeDefinitions //has to be loaded
 
-var assets = ["flare_armor.png"]
-assets = assets.map(getAssetPath)
-
-var cardSource // where to get card faces, might be called ImageSource
+var assetPrefix
 var deckFaceTemplate
 var deckFaceImg // what pattern to put on the backside of cards
 
 function initAssets() {
+    //load card information
+    $.ajax({
+        dataType: "json",
+        url: "/static/data/cards.json",
+        data: {},
+        async: false, //slooow dooown
+        success: function( data ) {
+            cardTypeDefinitions = data; //global variable
+        }
+    }).fail(function() {
+            //TODO: log error?
+            console.error("Request to load card information failed!")
+        });
+
+    assetPrefix = cardTypeDefinitions.assetPrefix
+
     //this one is a leftover from the canvas rendering version, no image is needed anymore
     deckFaceImg = new Image()
-    deckFaceImg.src = "static/img/patterns/subtle/vichy.png" //maybe some preloading happens here, which would be rad... and useless
+    deckFaceImg.src = cardTypeDefinitions.deckImages[0] //TODO: might want to take a different deck image (first currently)
+    //maybe some preloading happens here, which would be rad... and useless
 
     deckFaceTemplate = $('<div>').addClass("deckFace").css("background-image","url("+deckFaceImg.src+")")
-    cardSource = new ImageSourceColorRandom(DEFAULT_CARD_W, DEFAULT_CARD_H, 10)
-    //cardSource = new ImageSourceTileMapArmor()
+}
+function getAssetPath(file) {
+    return assetPrefix+file
 }
 
 ImageSourceColorRandom = function(width,height, typeCount) {
@@ -39,9 +51,11 @@ ImageSourceColorRandom.prototype.init = function() {
 
 ImageSourceColorRandom.prototype.getElement = function(type) {
     //TODO: error handling, watch that the images element is not empty or anything
-    return this.images[parseInt(type)].clone()
+    return this.images[parseInt(type)].clone() //TODO: trying to do this without expecting errors causes the white-borderless-card syndrome
+    //look below for similar error sources
 }
 
+//TODO: generalized tile map image processor instead of this one
 function ImageSourceTileMapArmor() {
     this.name = "Armor"
 

@@ -78,7 +78,10 @@ func GetCardImageSource(id int) *CardImageSource {
         id = 0
         log.Println("ImageSource Id issue: too big ", id)
     }
+
+    //TODO: basically we could have a dictionary of id: definition in the json data file instead of a list
     cardImageSource := &cardInformation.CardImageSources[id]
+    // check if array position is equal to the id of the card type
     if cardImageSource.Id != id {
         log.Println("ImageSource Id issue: wrong asset order, id != Id ", id)
     }

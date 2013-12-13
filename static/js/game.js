@@ -152,7 +152,56 @@ function createBoard(width,height,maxPlayers) {
     camera.moveTo(gameBoard.width/2, gameBoard.height/2) //center on the middle of the game board
 }
 
-function createCards(cardCount, cardWidth, cardHeight) {
+
+function createCards(cardCount, cardType) {
+    try {
+        var sources = cardTypeDefinitions.cardImageSources
+
+        if (!cardType in sources) {
+            console.error("cardType " +cardType+ " not specified in definition!")
+            cardType = 1 //default to random colors square
+        }
+
+        cardInformation = sources[cardType]
+        console.debug("Trying to load card type '"+cardInformation.name+"'.")
+
+        var cardWidth = cardInformation.cardSizeX
+        var cardHeight = cardInformation.cardSizeY
+
+        //TODO: check constraints like maxPairs?
+
+        switch (cardInformation.type) {
+            case "function":
+                switch(cardInformation.func) {
+                    case "randomDistinctiveHappyColors":
+                        cardSource = new ImageSourceColorRandom(cardWidth, cardHeight, cardCount)
+                        break;
+                    default:
+                        console.error("No such card look function '"+ cardInformation.func +"'.")
+                }
+                break;
+            case "tilemap":
+                //TODO: this is cheating, and does not respect the card size
+                // a general tilemap-processing thingy would be appropriate, that actually processes the cardInformation
+                cardSource = new ImageSourceTileMapArmor(cardInformation)
+            default:
+                console.error("Unknown card source: " + cardInformation)
+        }
+
+    } catch(err) {
+        console.error(err)
+        console.debug("Something went wrong, falling back to happy colors!")
+
+        //TODO: take card type information and load it
+        var cardWidth = DEFAULT_CARD_W;
+        var cardHeight = DEFAULT_CARD_H;
+
+        //TODO: this should be changed on the fly on initBoard
+        cardSource = new ImageSourceColorRandom(cardWidth, cardHeight, cardCount)
+        //cardSource = new ImageSourceTileMapArmor()
+    }
+
+
     // Sets the default initial position to be the center.
     var defaultCardX = gameBoard.width/2 - cardWidth/2
     var defaultCardY = gameBoard.height/2 - cardHeight/2
