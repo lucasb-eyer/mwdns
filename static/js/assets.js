@@ -104,7 +104,10 @@ ImageSourceTileMap.prototype.init = function() {
             this.images.push(img)
         }
 
-        //TODO: redraw already visible cards (kind of hacky, prevents white boring cards (if they are already flipped open when the images are not yet loaded)
+        //redraw already visible cards (kind of hacky, prevents white boring cards (if they are already flipped open when the images are not yet loaded)
+        for (var id in gameCards) {
+            gameCards[id].refresh()
+        }
     }, this))
 }
 

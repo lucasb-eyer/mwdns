@@ -10,7 +10,7 @@ Card = function(cardId,type,x,y,w,h,phi) {
     this.width = w || DEFAULT_CARD_W
     this.height = h || DEFAULT_CARD_H
 
-    //TODO: get from server, remember
+    // get from server, remember
     this.scoredBy = NO_PLAYER //which player has opened this particular pair of cards
 
     this.isBeingClicked = false
@@ -19,6 +19,14 @@ Card = function(cardId,type,x,y,w,h,phi) {
 
     //TODO: in fact, this might better be realized with a counter... but these are obscure cases
     this.isWaitingForFlipback = false
+}
+
+Card.prototype.refresh = function() {
+    if (this.type == -1) {
+        this.showBack()
+    } else {
+        this.showFront(this.type,this.scoredBy)
+    }
 }
 
 Card.prototype.showBack = function() {
