@@ -142,6 +142,11 @@
         sync_input_buttons(".cardlayout", "#cl", "1")
         sync_input_buttons(".rotcards", "#cr", "1")
 
+        // react to card image source changes, by adjusting the possible number of pairs
+        $("select[name='ct']").change(function(e) {
+            console.log($( this ).val()) //the id of the selected option
+        })
+
         $('#toggle-settings').on('click', function() {
             $('#settings').fadeToggle()
         })
