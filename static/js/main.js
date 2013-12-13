@@ -56,6 +56,10 @@ function handleMessage(msg){
             g_players[json.pid].changeName(json.name)
             g_players[json.pid].changeColor(json.color)
         }
+
+        //in any case, update points scored/turns taken display
+        g_players[json.pid].updateTurns(json.turns)
+        g_players[json.pid].updatePoints(json.points)
     } else if ( json.msg == "leaver" ) {
         g_scoreboard.leaver(json.pid)
         delete g_players[json.pid]

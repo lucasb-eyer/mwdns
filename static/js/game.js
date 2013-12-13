@@ -187,8 +187,9 @@ function createCards(cardCount, cardType) {
             //TODO: this is cheating, and does not respect the card size
             // a general tilemap-processing thingy would be appropriate, that actually processes the cardInformation
             cardSource = new ImageSourceTileMap(cardInformation)
+            break;
         default:
-            console.error("Unknown card source: " + cardInformation)
+            console.error("Unknown card source: " + cardInformation.type + "(" + cardInformation.id + ")")
     }
 
     // set default if stuff went wrong
