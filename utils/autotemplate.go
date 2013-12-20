@@ -1,4 +1,4 @@
-package main
+package utils
 
 import(
     "html/template"
@@ -16,7 +16,7 @@ type AutoTemplate struct {
     devMode bool //whether we would like to reload constantly
 }
 
-func (tpl *AutoTemplate) load() {
+func (tpl *AutoTemplate) Load() {
     // Order *is* important for "race conditions".
     tpl.when = time.Now()
     tpl.tpl = template.Must(template.ParseFiles(tpl.path))
@@ -37,7 +37,7 @@ func (self *AutoTemplate) Execute(c http.ResponseWriter, data interface{}) {
         // If so, we need to reload it.
         if stat, err := os.Stat(self.path) ; err == nil {
             if stat.ModTime().After(self.when) {
-                self.load()
+                self.Load()
             }
         } else {
             log.Println("Error stat'ing ", self.path)

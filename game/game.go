@@ -1,4 +1,4 @@
-package main
+package game
 
 import (
     "bytes"
@@ -14,6 +14,8 @@ import (
     "strconv"
     "strings"
     "time"
+
+    "github.com/lucasb-eyer/mwdns/utils"
 )
 
 const (
@@ -41,6 +43,18 @@ type Player struct {
     send chan string
 }
 
+func NewPlayer(ws *websocket.Conn) *Player {
+    return &Player{
+        CanPlay: false,
+        Points:  0,
+
+        // create socket connection
+        send: make(chan string, 256),
+        ws:   ws,
+    }
+
+}
+
 type cardPosition struct {
     Id  int
     X   float64
@@ -48,7 +62,7 @@ type cardPosition struct {
     Phi float64
 }
 
-func (p *Player) reader() {
+func (p *Player) Reader() {
     for {
         var message string
         err := websocket.Message.Receive(p.ws, &message)
@@ -116,7 +130,7 @@ func (p *Player) reader() {
     p.ws.Close()
 }
 
-func (p *Player) writer() {
+func (p *Player) Writer() {
     for message := range p.send {
         err := websocket.Message.Send(p.ws, message)
         if err != nil {
@@ -196,7 +210,7 @@ func NewGame(cardCount, gameType, maxPlayers, cardType, cardLayout, cardRotation
 
     //decide on board size depending on cardType, layout, cardCount
     //TODO: check index! Checking indeces is the least one can do !Important
-    cardImageSource := GetCardImageSource(cardType)
+    cardImageSource := utils.GetCardImageSource(cardType)
     padding := 0 //expected spacing between cards
 
     //TODO: depending on the card layout and card type: choose a board size and distribute cards
