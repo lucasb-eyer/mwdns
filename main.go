@@ -10,6 +10,7 @@ import (
     "net/url"
     "strconv"
     "time"
+    "sync"
 
     "github.com/lucasb-eyer/mwdns/game"
     "github.com/lucasb-eyer/mwdns/utils"
@@ -28,25 +29,26 @@ const (
 
 type GameManager struct {
     activeGames map[string]*game.Game
+    gameMutex sync.Mutex //to manage access to the activeGames map
 }
 
 func NewGameManager() *GameManager {
     gm := &GameManager{}
-    //TODO: init channels
     gm.activeGames = make(map[string]*game.Game)
-
     return gm
 }
 
 func (gm *GameManager) CreateNewGame(nCards, gameType, maxPlayers, cardType, cardLayout, cardRotation int) (gameId string) {
     //TODO: there we want to create a game, but do not really care for the exact id
     //  this might be solved by one single go process, listening for channel requests for new games/for them to be deleted
+    gm.gameMutex.Lock()
+    defer gm.gameMutex.Unlock()
     gameId = utils.RndString(IDLEN) //TODO: check for collision
-
     g := game.NewGame(nCards, gameType, maxPlayers, cardType, cardLayout, cardRotation)
 
     //TODO channels, as map is not threadsafe (?)
     gm.activeGames[gameId] = g
+    //TODO: defer can already happen here
 
     log.Println("New game of type", gameType, "with", nCards, "cards and at most", maxPlayers, "players created: ", gameId)
     log.Println("The above game's card type is", cardType, "the card layout is", cardLayout, "and their rotation is", cardRotation)
@@ -58,6 +60,9 @@ func (gm *GameManager) CreateNewGame(nCards, gameType, maxPlayers, cardType, car
 func (gm *GameManager) cleanGames() {
     // Goes over the list of active games and removes those which are over.
     // TODO: highscore? history?
+
+    gm.gameMutex.Lock()
+    defer gm.gameMutex.Unlock()
     for gid, g := range gm.activeGames {
         // Gotta leave the first player some time to join tho!
         if g.Players.Len() == 0 && time.Since(g.Started).Seconds() > 10 {
@@ -161,6 +166,7 @@ func gameHandler(w http.ResponseWriter, req *http.Request) {
 func wsHandler(ws *websocket.Conn) {
     // Get the game we're talking about, if it exists.
     gameId := ws.Request().URL.Query().Get("g")
+
     gameInstance, ok := gameManager.activeGames[gameId]
     if !ok {
         log.Println("Websocket request with invalid gameId: ", gameId)
@@ -177,9 +183,10 @@ func wsHandler(ws *websocket.Conn) {
 
     // create player for the game
     player := game.NewPlayer(ws)
-
+    // As this works with channels internally, we are alrighty TODO: check for error?
     gameInstance.AddPlayer(player)
-    //TODO: always remove the player instead of setting him/her inactive?
+
+    //TODO: always remove the player instead of setting him/her inactive? Rather mark as inactive?
     defer func() { gameInstance.RemovePlayer(player) }()
 
     go player.Writer()
@@ -195,8 +202,6 @@ func main() {
 
     log.Println("Parsing card information from JSON file")
     utils.ParseCardInformation()
-
-    //TODO: game manager
 
     sm := http.NewServeMux()
     sm.HandleFunc("/", homeHandler)
