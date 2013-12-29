@@ -42,14 +42,12 @@ func NewGameManager() *GameManager {
 func (gm *GameManager) CreateNewGame(nCards, gameType, maxPlayers, cardType, cardLayout, cardRotation int) (gameId string) {
     //TODO: there we want to create a game, but do not really care for the exact id
     //  this might be solved by one single go process, listening for channel requests for new games/for them to be deleted
-    gm.gameMutex.Lock()
-    defer gm.gameMutex.Unlock()
     gameId = utils.RndString(IDLEN) //TODO: check for collision
     g := game.NewGame(nCards, gameType, maxPlayers, cardType, cardLayout, cardRotation)
 
-    //TODO channels, as map is not threadsafe (?)
+    gm.gameMutex.Lock()
     gm.activeGames[gameId] = g
-    //TODO: defer can already happen here
+    gm.gameMutex.Unlock()
 
     log.Println("New game of type", gameType, "with", nCards, "cards and at most", maxPlayers, "players created: ", gameId)
     log.Println("The above game's card type is", cardType, "the card layout is", cardLayout, "and their rotation is", cardRotation)
