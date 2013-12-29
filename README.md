@@ -3,6 +3,11 @@ Installation
 
 TODO :) with `go get`. Maybe even explain installing/setting up go?
 
+Node dependencies for minification:
+```
+sudo npm install -g less uglify-js
+```
+
 Running
 =======
 

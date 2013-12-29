@@ -17,6 +17,7 @@ import (
 )
 
 const DEV_MODE = true //whether development is currently going on - constant template reload
+const MIN_RES = true //whether minified js/less ressources shall be included in the templates
 
 const (
     // length of game id
@@ -131,10 +132,18 @@ var (
     gameTempl = utils.CreateAutoTemplate("templates/gameView.html", DEV_MODE)
 
     gameManager = NewGameManager()
+
+    templateStruct = struct {
+        CardInformation *utils.CardInformationStruct
+        Production bool //TODO: confusing
+    } {
+        &utils.CardInformation,
+        MIN_RES,
+    }
 )
 
 func homeHandler(c http.ResponseWriter, req *http.Request) {
-    homeTempl.Execute(c, utils.CardInformation) //req.Host?
+    homeTempl.Execute(c, templateStruct) //req.Host?
 }
 
 // TODO: pray that this is not called in multiple threads! It's not safe at all.
@@ -158,7 +167,7 @@ func gameHandler(w http.ResponseWriter, req *http.Request) {
             http.Redirect(w, req, "/?errmsg="+url.QueryEscape(errmsg), 303)
             return
         }
-        gameTempl.Execute(w, nil)
+        gameTempl.Execute(w, templateStruct)
     }
 }
 

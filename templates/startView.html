@@ -12,8 +12,12 @@
     <link rel=stylesheet href=/static/css/bootstrap.min.css />
     <script src=/static/js/dep/bootstrap.min.js></script>
 
+    {{if .Production}}
     <link rel=stylesheet/less href=/static/css/main_start.less />
     <script type=text/javascript src=/static/js/dep/less-1.3.1.min.js></script>
+    {{else}}
+    <link rel=stylesheet/css href=/static/min/main_start.min.css />
+    {{end}}
 </head>
 <body>
     <div id=content>
@@ -61,7 +65,7 @@
                     <label class=control-label for=ct>Card Images:</label>
                     <div class=controls>
                         <select name=ct>
-                            {{range .CardImageSources}}
+                            {{range .CardInformation.CardImageSources}}
                                 <option value="{{.Id}}">{{.Name}}</option>
                             {{end}}
                         </select>
