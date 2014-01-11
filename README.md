@@ -37,6 +37,7 @@ Server to client
 ### initBoard
 
 `maxPlayers == 0` means no limit.
+the `colors` array is only non-empty when the server provides the color palette information.
 
 ```javascript
 {
@@ -45,6 +46,7 @@ Server to client
 	"boardHeight": 600
 	"cardCount": 13
 	"maxPlayers": 2
+	"colors": [colorString, ...]
 }
 ```
 

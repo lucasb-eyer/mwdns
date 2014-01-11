@@ -35,6 +35,14 @@
 
 	"type": "function",
 	"func": "randomDistinctiveHappyColors"
+	},
+	{
+	"id": 3,
+	"name": "Distinguishable Colors",
+	"maxPairs": 40,
+	"cardSizeX": 50,
+	"cardSizeY": 50,
+	"type": "server"
 	}
 ]
 }

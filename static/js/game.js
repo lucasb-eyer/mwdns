@@ -152,7 +152,7 @@ function createBoard(width,height,maxPlayers) {
     camera.moveTo(gameBoard.width/2, gameBoard.height/2) //center on the middle of the game board
 }
 
-function createCards(cardCount, cardType) {
+function createCards(cardCount, cardType, colors) {
     var sources = cardTypeDefinitions.cardImageSources
 
     if (!(cardType in sources)) {
@@ -187,8 +187,11 @@ function createCards(cardCount, cardType) {
             // a general tilemap-processing thingy would be appropriate, that actually processes the cardInformation
             cardSource = new ImageSourceTileMap(cardInformation)
             break;
+        case "server":
+            cardSource = new ImageSourceColorServer(cardWidth, cardHeight, cardCount, colors)
+            break;
         default:
-            console.error("Unknown card source: " + cardInformation.type + "(" + cardInformation.id + ")")
+            console.error("Unknown card source: " + cardInformation.type + " (id: " + cardInformation.id + ")")
     }
 
     // set default if stuff went wrong

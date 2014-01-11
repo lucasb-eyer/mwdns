@@ -14,10 +14,10 @@ type CardImageSource struct {
     // there is different metainformation which can be provided for json, see Unmarshal function documentation. Nifty.
     Id        int    `json:"id"`
     Name      string `json:"name"`
-    Size      int    `json:"size"`
     MaxPairs  int    `json:"maxPairs"`
     CardSizeX int    `json:"cardSizeX"`
     CardSizeY int    `json:"cardSizeY"`
+    Type      string `json:"type"`
 }
 
 type CardInformationStruct struct {

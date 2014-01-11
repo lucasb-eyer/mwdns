@@ -55,7 +55,35 @@ ImageSourceColorRandom.prototype.getElement = function(type) {
     //look below for similar error sources
 }
 
-//TODO: generalized tile map image processor instead of this one
+// copy pasta
+ImageSourceColorServer = function(width,height, typeCount, colors) {
+    this.width = width
+    this.height = height
+    this.typeCount = typeCount
+    this.colors = colors
+
+    if (typeCount > colors.length) {
+        console.error("More cards are requested, than there are server colors!")
+    }
+
+    this.init()
+}
+
+ImageSourceColorServer.prototype.init = function() {
+    this.images = []
+
+     for (var i = 0; i < this.typeCount; i++) {
+        var img = $('<img src="static/img/transparent.gif">').css("background-color",this.colors[i])
+        this.images.push(img)
+    }
+}
+
+ImageSourceColorServer.prototype.getElement = function(type) {
+    //TODO: error handling, watch that the images element is not empty or anything
+    return this.images[parseInt(type)].clone() //TODO: trying to do this without expecting errors causes the white-borderless-card syndrome
+    //look below for similar error sources
+}
+
 function ImageSourceTileMap(cardInformation) {
     this.name = "TileMap: " + cardInformation.name
 

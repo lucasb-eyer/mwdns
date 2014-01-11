@@ -213,6 +213,20 @@ func NewGame(cardCount, gameType, maxPlayers, cardType, cardLayout, cardRotation
     cardImageSource := utils.GetCardImageSource(cardType)
     padding := 0 //expected spacing between cards
 
+    if cardImageSource.Type == "server" {
+        switch(cardImageSource.Name) {
+            case "Distinguishable Colors": //TODO: distinguishing by id seems a bad idea, as is distinguishing by name
+                //generate colors
+                g.cardColors, _ = colorful.HappyPalette(cardImageSource.MaxPairs) //TODO: errors?
+            default:
+                // initialize color array to some default
+                g.cardColors, _ = colorful.HappyPalette(cardImageSource.MaxPairs)
+                log.Println("Unknown server side card type '%v'", cardImageSource.Id)
+        }
+    } else {
+        g.cardColors = make([]colorful.Color, 0)
+    }
+
     //TODO: depending on the card layout and card type: choose a board size and distribute cards
     switch cardLayout {
     case CARD_LAYOUT_GRID_TIGHT:
@@ -324,7 +338,7 @@ type Game struct {
     Cards         map[int]*Card
     cardCountLeft int       //how many cards are still playable
     Started       time.Time //Used to close zombie games.
-    availColors   []colorful.Color
+    availColors   []colorful.Color //TODO: player colors?
 
     Type       int //classic or rush - gamemodes
     MaxPlayers int
@@ -332,6 +346,7 @@ type Game struct {
     CardType    int //what images to display to the players (asset id in cards.json)
     boardWidth  int
     boardHeight int
+    cardColors  []colorful.Color
 
     registerPlayer         chan *Player
     unregisterPlayer       chan *Player
@@ -589,8 +604,20 @@ func (g *Game) SendBoardState(p *Player) {
 }
 
 func (g *Game) SendInitBoard(p *Player) {
-    p.send <- fmt.Sprintf(`{"msg": "initBoard", "boardWidth": %v, "boardHeight": %v, "cardCount": %v, "maxPlayers": %v, "cardType": %v}`,
-        g.boardWidth, g.boardHeight, len(g.Cards), g.MaxPlayers, g.CardType)
+    stringArray := make([]string, len(g.cardColors))
+    for i, v := range(g.cardColors) {
+        stringArray[i] = v.Hex()
+    }
+
+    var colorArray = ""
+    if len(g.cardColors) > 0 {
+        colorArray = fmt.Sprintf("[\"%v\"]", strings.Join(stringArray, "\", \""))
+    } else {
+        colorArray = "[]"
+    }
+
+    p.send <- fmt.Sprintf(`{"msg": "initBoard", "boardWidth": %v, "boardHeight": %v, "cardCount": %v, "maxPlayers": %v, "cardType": %v, "colors": %v}`,
+        g.boardWidth, g.boardHeight, len(g.Cards), g.MaxPlayers, g.CardType, colorArray)
 }
 
 func (g *Game) SendAllPlayers(towhom *Player) {

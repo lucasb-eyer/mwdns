@@ -29,7 +29,7 @@ function handleMessage(msg){
     var json = jQuery.parseJSON(msg)
     if ( json.msg == "initBoard" ) {
         createBoard(json.boardWidth, json.boardHeight, json.maxPlayers)
-        createCards(json.cardCount, json.cardType)
+        createCards(json.cardCount, json.cardType, json.colors)
     } else if ( json.msg == "cardMove" ) {
         gameCards[json.id].moveTo(json.x, json.y, json.phi)
     } else if ( json.msg == "cardOpen" ) {
