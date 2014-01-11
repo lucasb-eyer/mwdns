@@ -17,14 +17,14 @@
     <link rel=stylesheet href=/static/css/bootstrap.min.css />
     <script src=/static/js/dep/bootstrap.js></script>
 
-    {{if .Production}}
+    {{if .Minified}}
+    <link rel=stylesheet/css href=/static/min/main_game.min.css />
+    {{else}}
     <link rel=stylesheet/less href=/static/css/main_game.less />
     <script type=text/javascript src=/static/js/dep/less-1.3.1.min.js></script>
-    {{else}}
-    <link rel=stylesheet/css href=/static/min/main_game.min.css />
     {{end}}
 
-    {{if .Production}}
+    {{if .Minified}}
         <script type=text/javascript src=/static/min/all.min.js></script>
     {{else}}
         <script type=text/javascript src=/static/js/helpers.js></script>

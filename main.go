@@ -17,7 +17,7 @@ import (
 )
 
 const DEV_MODE = true //whether development is currently going on - constant template reload
-const MIN_RES = true //whether minified js/less ressources shall be included in the templates
+const MIN_RES = false //whether minified js/less ressources shall be included in the templates
 
 const (
     // length of game id
@@ -133,7 +133,7 @@ var (
 
     templateStruct = struct {
         CardInformation *utils.CardInformationStruct
-        Production bool //TODO: confusing
+        Minified bool
     } {
         &utils.CardInformation,
         MIN_RES,
