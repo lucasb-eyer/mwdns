@@ -308,7 +308,7 @@ func NewGame(cardCount, gameType, maxPlayers, cardType, cardLayout, cardRotation
 
     // Create the player colors for this game. We ignore the error since if the
     // color palette is nil, a random color is simply drawn for each player.
-    g.availColors, _ = colorful.HappyPalette(g.MaxPlayers)
+    g.playerColors, _ = colorful.HappyPalette(g.MaxPlayers)
 
     return g
 }
@@ -338,7 +338,7 @@ type Game struct {
     Cards         map[int]*Card
     cardCountLeft int       //how many cards are still playable
     Started       time.Time //Used to close zombie games.
-    availColors   []colorful.Color //TODO: player colors?
+    playerColors   []colorful.Color
 
     Type       int //classic or rush - gamemodes
     MaxPlayers int
@@ -401,9 +401,9 @@ func (g *Game) Run() {
 
             // Set the player's color either by taking the first one of this
             // game's palette or creating a random one.
-            if g.MaxPlayers > 0 || g.availColors == nil {
-                p.Color = g.availColors[0]
-                g.availColors = g.availColors[1:]
+            if g.MaxPlayers > 0 || g.playerColors == nil {
+                p.Color = g.playerColors[0]
+                g.playerColors = g.playerColors[1:]
             } else {
                 // TODO: colors might still clash in unlimited games. Shit happens?
                 p.Color = colorful.HappyColor()
@@ -454,7 +454,7 @@ func (g *Game) Run() {
             }
 
             // The leaver's color is available again.
-            g.availColors = append(g.availColors, p.Color)
+            g.playerColors = append(g.playerColors, p.Color)
 
             // Really delete the player's struct.
             for e := g.Players.Front(); e != nil; e = e.Next() {
