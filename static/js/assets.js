@@ -91,6 +91,8 @@ function ImageSourceTileMap(cardInformation) {
     this.imgCountX = cardInformation.imgCountX
     this.imgCountY = cardInformation.imgCountY
 
+    this.maxPairs = cardInformation.maxPairs
+
     this.cardSizeX = cardInformation.cardSizeX
     this.cardSizeY = cardInformation.cardSizeY
     this.tileSizeX = cardInformation.tileSizeX
@@ -120,8 +122,12 @@ ImageSourceTileMap.prototype.init = function() {
 
     // proxy so this = this object
     $(this.sourceImage).load($.proxy(function() {
-        for (var i = 1; i < 25; i++) {
-            var tilePos = [i%this.imgCountX,Math.floor(i/this.imgCountY)]
+        //if (this.imgCountY * this.imgCountX < this.maxPairs) {
+        //    console.error("CardSource might be wrong! More pairs requested than can be found.")
+        //}
+
+        for (var i = 0; i < this.maxPairs; i++) {
+            var tilePos = [i%this.imgCountX ,Math.floor(i/this.imgCountX)]
 
             //TODO: draw each tilemap image on an own img
             this.ctx.drawImage(this.sourceImage,
