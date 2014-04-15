@@ -122,14 +122,14 @@ func (p *Player) Writer() {
     p.ws.Close()
 }
 
-func (p *Player) GetJsonCanPlay() string {
-    return fmt.Sprintf(`{"msg": "canplay", "pid": %v, "canplay": %v}`, p.Id, p.CanPlay)
-}
-
 func (p *Player) SetCanPlay(v bool, g *Game) {
     p.CanPlay = v
     //notify the respective player with a message and everybody else too
     g.Broadcast(p.GetJsonCanPlay())
+}
+
+func (p *Player) GetJsonCanPlay() string {
+    return fmt.Sprintf(`{"msg": "canplay", "pid": %v, "canplay": %v}`, p.Id, p.CanPlay)
 }
 
 func (p *Player) GetJsonPlayer(itshim bool) string {

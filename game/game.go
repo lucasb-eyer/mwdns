@@ -1,17 +1,13 @@
 package game
 
 import (
-    //"bytes"
-    //"code.google.com/p/go.net/websocket"
     "container/list"
     "encoding/json"
     "fmt"
     "github.com/lucasb-eyer/go-colorful"
-    //"io"
     "log"
     "math"
     "math/rand"
-    //"strconv"
     "strings"
     "time"
     //"sync"
