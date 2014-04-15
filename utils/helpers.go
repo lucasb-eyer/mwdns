@@ -2,7 +2,6 @@ package utils
 
 import (
     "math/rand"
-    "strings"
 )
 
 const (
@@ -11,10 +10,10 @@ const (
 )
 
 func RndString(length int) string {
-    a := make([]string, length)
+    a := make([]uint8, length)
     for i := 0; i < length; i++ {
-        a[i] = (string)(IDCHARS[rand.Intn(len(IDCHARS))])
+        a[i] = IDCHARS[rand.Intn(len(IDCHARS))]
     }
 
-    return strings.Join(a, "")
+    return string(a)
 }
