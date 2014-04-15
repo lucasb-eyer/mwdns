@@ -16,10 +16,11 @@ import (
     "github.com/lucasb-eyer/mwdns/utils"
 )
 
-const DEV_MODE = true //whether development is currently going on - constant template reload
-const MIN_RES = false //whether minified js/less ressources shall be included in the templates
 
 const (
+    DEV_MODE = true //whether development is currently going on - constant template reload
+    MIN_RES = false //whether minified js/less ressources shall be included in the templates
+
     // length of game id
     IDLEN   = 6
 
@@ -46,8 +47,8 @@ func (gm *GameManager) CreateNewGame(nCards, gameType, maxPlayers, cardType, car
     g := game.NewGame(nCards, gameType, maxPlayers, cardType, cardLayout, cardRotation)
 
     gm.gameMutex.Lock()
+    defer gm.gameMutex.Unlock() //this is holding the mutex longer than needed
     gm.activeGames[gameId] = g
-    gm.gameMutex.Unlock()
 
     log.Println("New game of type", gameType, "with", nCards, "cards and at most", maxPlayers, "players created: ", gameId)
     log.Println("The above game's card type is", cardType, "the card layout is", cardLayout, "and their rotation is", cardRotation)
@@ -56,6 +57,7 @@ func (gm *GameManager) CreateNewGame(nCards, gameType, maxPlayers, cardType, car
     return
 }
 
+//TODO: may not clean them right away?
 func (gm *GameManager) cleanGames() {
     // Goes over the list of active games and removes those which are over.
     // TODO: highscore? history?
@@ -71,6 +73,7 @@ func (gm *GameManager) cleanGames() {
     }
 }
 
+// parses url arguments and tries to create a new game with the given parameters
 // called by the gameHandler, when no game id is given or the id looks invalid
 func tryCreateNewGame(w http.ResponseWriter, req *http.Request) {
     // create a new game if no gameid is given
@@ -119,7 +122,6 @@ func tryCreateNewGame(w http.ResponseWriter, req *http.Request) {
     }
 
     gameId := gameManager.CreateNewGame(nCards, gameType, maxPlayers, cardType, cardLayout, cardRotation)
-
     http.Redirect(w, req, fmt.Sprintf("/game?g=%v", gameId), 303)
 }
 
@@ -131,6 +133,7 @@ var (
 
     gameManager = NewGameManager()
 
+    // a nameless struct, to hold information to be rendered in the template (whether to assume minified js/css and the card type to use)
     templateStruct = struct {
         CardInformation *utils.CardInformationStruct
         Minified bool
@@ -141,10 +144,9 @@ var (
 )
 
 func homeHandler(c http.ResponseWriter, req *http.Request) {
-    homeTempl.Execute(c, templateStruct) //req.Host?
+    homeTempl.Execute(c, templateStruct)
 }
 
-// TODO: pray that this is not called in multiple threads! It's not safe at all.
 func gameHandler(w http.ResponseWriter, req *http.Request) {
     // This is the "reaper" form of cleanup: cleanup every now and then
     // (i.e. whenever there is a request to /game).
@@ -207,7 +209,7 @@ func main() {
     homeTempl.Load()
     gameTempl.Load()
 
-    log.Println("Parsing card information from JSON file")
+    log.Println("_Parsing card information from JSON file")
     utils.ParseCardInformation()
 
     sm := http.NewServeMux()

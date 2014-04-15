@@ -57,4 +57,3 @@ func GetCardImageSource(id int) *CardImageSource {
 
     return cardImageSource
 }
-
