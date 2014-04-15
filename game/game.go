@@ -1,192 +1,69 @@
 package game
 
 import (
-    "bytes"
-    "code.google.com/p/go.net/websocket"
+    //"bytes"
+    //"code.google.com/p/go.net/websocket"
     "container/list"
     "encoding/json"
     "fmt"
     "github.com/lucasb-eyer/go-colorful"
-    "io"
+    //"io"
     "log"
     "math"
     "math/rand"
-    "strconv"
+    //"strconv"
     "strings"
     "time"
+    //"sync"
 
     "github.com/lucasb-eyer/mwdns/utils"
 )
 
 const (
-    NO_TYPE   = -1
     NO_PLAYER = -1
 )
 
-type Player struct {
-    Id      int
-    CanPlay bool //TODO: set this through a player method, so the player is always notified
-    Points  int
-    Turns   int  //Rush Turns == # of flips != Classic Turns
-    Flips   int
-    Game    *Game
+//iota is reset between const blocks
+const (
+    GAME_TYPE_CLASSIC = iota
+    GAME_TYPE_RUSH
 
-    Name     string
-    Color    colorful.Color
-    openCard int // -1 if no card is opened yet, a card id if a card was already opened
+    NO_CARD = -1
 
-    // For the combo
-    PreviousWasGood bool
+    CARD_LAYOUT_GRID_TIGHT = 0
+    CARD_LAYOUT_GRID_LOOSE = 1
+    CARD_LAYOUT_STACK      = 2
+    CARD_LAYOUT_CHAOTIC    = 3
 
-    ws *websocket.Conn
-    // Buffered channel of outbound messages.
-    send chan string
-}
+    CARD_ROTATION_NONE   = 0
+    CARD_ROTATION_JIGGLY = 1
+    CARD_ROTATION_RL     = 2
+    CARD_ROTATION_CHAOS  = 3
+)
 
-func NewPlayer(ws *websocket.Conn) *Player {
-    return &Player{
-        CanPlay: false,
-        Points:  0,
+type Game struct {
+    Players       list.List
+    maxPlayerId   int
+    Cards         map[int]*Card
+    cardCountLeft int       //how many cards are still playable
+    Started       time.Time //Used to close zombie games.
+    playerColors   []colorful.Color
 
-        // create socket connection
-        send: make(chan string, 256),
-        ws:   ws,
-    }
+    Type       int //classic or rush - gamemodes
+    MaxPlayers int
 
-}
+    CardType    int //what images to display to the players (asset id in cards.json)
+    boardWidth  int
+    boardHeight int
+    cardColors  []colorful.Color
 
-type cardPosition struct {
-    Id  int
-    X   float64
-    Y   float64
-    Phi float64
-}
+    registerPlayer         chan *Player
+    unregisterPlayer       chan *Player
+    incomingPlayerMessages chan string
 
-func (p *Player) Reader() {
-    for {
-        var message string
-        err := websocket.Message.Receive(p.ws, &message)
-        if err == io.EOF {
-            log.Println("Client closed the connection.")
-            break
-        } else if err != nil {
-            log.Println("Got a socket read error: ", err)
-            break
-        }
+    //gameMutex sync.Mutex
 
-        log.Println("Message from websocket! ", message)
-
-        msgReader := bytes.NewReader([]byte(message))
-        dec := json.NewDecoder(msgReader)
-        var metaMessage map[string]string
-
-        if err := dec.Decode(&metaMessage); err != nil {
-            log.Fatalln("JSON decode error:", err)
-        }
-
-        //TODO: unmarshal errors here crash the server, rather drop invalid messages: logging, but otherwise ignoring them
-        //process each single message, depending on the type key
-        for k, v := range metaMessage {
-            switch k {
-            case "wantFlip": //TODO: implement in client
-                cardid, err := strconv.Atoi(v)
-                if err != nil {
-                    log.Fatal("Invalid cardid ", v)
-                }
-                log.Println("Want to flip card ", cardid)
-
-                p.Game.TryFlip(p, cardid)
-            case "chat":
-                log.Println("got chat message: ", v)
-                p.Game.Chat(fmt.Sprintf("%v", p.Id), v)
-            case "moveCard":
-                //TODO: REALLY take care of malformed incoming messages... this sucks (server crashes)
-                //TODO: v looks wrong here? -> server crashes
-                content := strings.Replace(v, "'", "\"", -1) //decode makeshift json encoding
-
-                contentReader := strings.NewReader(content)
-                dec := json.NewDecoder(contentReader)
-                var cardpos cardPosition
-                if err := dec.Decode(&cardpos); err != nil {
-                    log.Fatalln("JSON decode error in moveCard:", err)
-                }
-                p.Game.MoveCard(cardpos)
-            case "wantChangeName":
-                //TODO: check if this is a name, escape for the sake of all that is paranoid
-                p.Name = v
-                p.Game.BroadcastPlayer(p)
-            case "wantChangeColor":
-                if col, err := colorful.Hex(v); err != nil {
-                    log.Fatal("Invalid color ", v)
-                } else {
-                    p.Color = col
-                    p.Game.BroadcastPlayer(p)
-                }
-            default:
-                log.Println("Unknown message type: '", k, "' value: ", v)
-            }
-        }
-    }
-    p.ws.Close()
-}
-
-func (p *Player) Writer() {
-    for message := range p.send {
-        err := websocket.Message.Send(p.ws, message)
-        if err != nil {
-            log.Println("Got a socket write error: ", err)
-            break
-        }
-    }
-    p.ws.Close()
-}
-
-func (p *Player) GetJsonCanPlay() string {
-    return fmt.Sprintf(`{"msg": "canplay", "pid": %v, "canplay": %v}`, p.Id, p.CanPlay)
-}
-
-func (p *Player) SetCanPlay(v bool, g *Game) {
-    p.CanPlay = v
-    //notify the respective player with a message and everybody else too
-    g.Broadcast(p.GetJsonCanPlay())
-}
-
-func (p *Player) GetJsonPlayer(itshim bool) string {
-    name, _ := json.Marshal(p.Name)
-    return fmt.Sprintf(`{"msg": "player", "pid": %v, "canplay": %v, "itsyou": %v, "name": %v, "color": "%v", "points": %v, "flips": %v, "turns": %v}`, p.Id, p.CanPlay, itshim, string(name), p.Color.Hex(), p.Points, p.Flips, p.Turns)
-}
-
-func (p *Player) GetJsonLeave() string {
-    return fmt.Sprintf(`{"msg": "leaver", "pid": %v}`, p.Id)
-}
-
-type Card struct {
-    Id     int
-    X      float64
-    Y      float64
-    Phi    float64
-    IsOpen bool
-    Type   int
-
-    ScoredBy int //the playerid, denoting to whom the points go
-}
-
-func (c *Card) GetJsonCardMove() string {
-    return fmt.Sprintf(`{"msg": "cardMove", "id": %v, "x": %v, "y": %v, "phi": %v}`, c.Id, c.X, c.Y, c.Phi)
-}
-
-func (c *Card) GetJsonCardOpen() string {
-    return fmt.Sprintf(`{"msg": "cardOpen", "id": %v, "type": %v, "scoredBy": %v}`, c.Id, c.Type, c.ScoredBy)
-}
-
-// Could probably be done more elegantly with an array of cards
-// and map and join, but whatever, we only ever need up to two.
-func getJsonCardClose1(c *Card) string {
-    return fmt.Sprintf(`{"msg": "cardsClose", "ids": [%v]}`, c.Id)
-}
-
-func getJsonCardClose2(c1 *Card, c2 *Card) string {
-    return fmt.Sprintf(`{"msg": "cardsClose", "ids": [%v, %v]}`, c1.Id, c2.Id)
+    //TODO: we could save all events to make game replays possible, for fun
 }
 
 func NewGame(cardCount, gameType, maxPlayers, cardType, cardLayout, cardRotation int) *Game {
@@ -311,48 +188,6 @@ func NewGame(cardCount, gameType, maxPlayers, cardType, cardLayout, cardRotation
     g.playerColors, _ = colorful.HappyPalette(g.MaxPlayers)
 
     return g
-}
-
-const (
-    GAME_TYPE_CLASSIC = iota
-    GAME_TYPE_RUSH
-
-    NO_CARD = -1
-
-    CARD_LAYOUT_GRID_TIGHT = 0
-    CARD_LAYOUT_GRID_LOOSE = 1
-    CARD_LAYOUT_STACK      = 2
-    CARD_LAYOUT_CHAOTIC    = 3
-
-    CARD_ROTATION_NONE   = 0
-    CARD_ROTATION_JIGGLY = 1
-    CARD_ROTATION_RL     = 2
-    CARD_ROTATION_CHAOS  = 3
-)
-
-//iota is reset between const blocks
-
-type Game struct {
-    Players       list.List
-    maxPlayerId   int
-    Cards         map[int]*Card
-    cardCountLeft int       //how many cards are still playable
-    Started       time.Time //Used to close zombie games.
-    playerColors   []colorful.Color
-
-    Type       int //classic or rush - gamemodes
-    MaxPlayers int
-
-    CardType    int //what images to display to the players (asset id in cards.json)
-    boardWidth  int
-    boardHeight int
-    cardColors  []colorful.Color
-
-    registerPlayer         chan *Player
-    unregisterPlayer       chan *Player
-    incomingPlayerMessages chan string
-
-    //TODO: we could save all events to make game replays possible, for fun
 }
 
 //TODO: actually do something with the channels
