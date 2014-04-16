@@ -267,7 +267,7 @@ func (g *Game) Run() {
             // If he had any open card, close it.
             if p.openCard != NO_CARD {
                 g.Cards[p.openCard].IsOpen = false
-                g.Broadcast(getJsonCardClose1(g.Cards[p.openCard]))
+                g.Broadcast(GetJsonCardClose1(g.Cards[p.openCard]))
             }
 
             // And if this was a turnbased game (classic) and it is his turn, end his turn.
@@ -344,7 +344,7 @@ func (g *Game) TryFlip(p *Player, cardid int) {
             firstCard.IsOpen = false
             secondCard.IsOpen = false
             // In the classic mode, we need to close both card for everyone.
-            g.Broadcast(getJsonCardClose2(firstCard, secondCard))
+            g.Broadcast(GetJsonCardClose2(firstCard, secondCard))
 
             // And then switch to the next player.
             p.SetCanPlay(false, g)
@@ -354,7 +354,7 @@ func (g *Game) TryFlip(p *Player, cardid int) {
             // they are scored. This means no need to "re-close" here since they
             // haven't been opened! Thus the following two lines send the close
             // messages.
-            p.send <- getJsonCardClose2(firstCard, secondCard)
+            p.send <- GetJsonCardClose2(firstCard, secondCard)
         }
         p.Turns++ //and one more played turn at the end of it
 

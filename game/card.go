@@ -32,11 +32,11 @@ func (c *Card) GetJsonCardOpen() string {
 
 // Could probably be done more elegantly with an array of cards
 // and map and join, but whatever, we only ever need up to two.
-func getJsonCardClose1(c *Card) string {
+func GetJsonCardClose1(c *Card) string {
     return fmt.Sprintf(`{"msg": "cardsClose", "ids": [%v]}`, c.Id)
 }
 
-func getJsonCardClose2(c1 *Card, c2 *Card) string {
+func GetJsonCardClose2(c1 *Card, c2 *Card) string {
     return fmt.Sprintf(`{"msg": "cardsClose", "ids": [%v, %v]}`, c1.Id, c2.Id)
 }
 
