@@ -63,8 +63,8 @@ func gameHandler(w http.ResponseWriter, req *http.Request) {
         log.Println("Game", gameId, "requested")
 
         //redirect to the start page if the game does not exist
-        _, ok := gameManager.ActiveGames[gameId]
-        if !ok {
+        _, err := gameManager.GetGame(gameId)
+        if err != nil {
             log.Println("Game not found: ", gameId)
             errmsg := "The game you were trying to join (id: <b>" + gameId + "</b>) doesn't exist!"
             http.Redirect(w, req, "/?errmsg="+url.QueryEscape(errmsg), 303)
@@ -74,13 +74,15 @@ func gameHandler(w http.ResponseWriter, req *http.Request) {
     }
 }
 
-// Accepts web socket connections from users and tries to associate them to a given open game.
+/*
+Accepts web socket connections from users and tries to associate them to a given open game.
+*/
 func wsHandler(ws *websocket.Conn) {
     // Get the game we're talking about, if it exists.
     gameId := ws.Request().URL.Query().Get("g")
 
-    gameInstance, ok := gameManager.ActiveGames[gameId]
-    if !ok {
+    gameInstance, err := gameManager.GetGame(gameId)
+    if err != nil {
         log.Println("Websocket request with invalid gameId: ", gameId)
         websocket.Message.Send(ws, `{"msg": "err_gameid", "gid": "`+gameId+`"}`)
         return
@@ -105,10 +107,12 @@ func wsHandler(ws *websocket.Conn) {
     player.Reader()
 }
 
-// parses url arguments and tries to create a new game with the given parameters
-// called by the gameHandler, when no game id is given or the id looks invalid
+/*
+This function is called by the gameHandler to initiate a new game, when no game ID is given or a provided ID is judged as invalid.
+Parses GET arguments of a request and tries to create a new game with the interpreted parameters.
+*/
 func tryCreateNewGame(w http.ResponseWriter, req *http.Request) {
-    // create a new game if no gameid is given
+    // create a new game if no game ID is given
     nCards, err := strconv.Atoi(req.URL.Query().Get("n"))
     if err != nil {
         log.Println("Invalid number of pairs", req.URL.Query().Get("n"), ", defaulting to ", DEFAULT_PAIR_COUNT)

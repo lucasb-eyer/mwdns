@@ -4,6 +4,7 @@ import (
     "sync"
     "log"
     "time"
+    "errors"
 
     "github.com/lucasb-eyer/mwdns/utils"
 )
@@ -14,13 +15,13 @@ const (
 )
 
 type GameManager struct {
-    ActiveGames map[string]*Game
+    activeGames map[string]*Game
     gameMutex sync.Mutex //to manage access to the ActiveGames map
 }
 
 func NewGameManager() *GameManager {
     gm := &GameManager{}
-    gm.ActiveGames = make(map[string]*Game)
+    gm.activeGames = make(map[string]*Game)
     return gm
 }
 
@@ -32,13 +33,22 @@ func (gm *GameManager) CreateNewGame(nCards, gameType, maxPlayers, cardType, car
 
     gm.gameMutex.Lock()
     defer gm.gameMutex.Unlock() //this is holding the mutex longer than needed
-    gm.ActiveGames[gameId] = g
+    gm.activeGames[gameId] = g
 
     log.Println("New game of type", gameType, "with", nCards, "cards and at most", maxPlayers, "players created: ", gameId)
     log.Println("The above game's card type is", cardType, "the card layout is", cardLayout, "and their rotation is", cardRotation)
     go g.Run()
 
     return
+}
+
+func (gm *GameManager) GetGame(gameId string) (*Game, error) {
+    gameInstance, ok := gm.activeGames[gameId]
+
+    if !ok {
+        return nil, errors.New("Game with this id was not found")
+    }
+    return gameInstance, nil
 }
 
 //TODO: may not clean them right away?
@@ -48,11 +58,11 @@ func (gm *GameManager) CleanGames() {
 
     gm.gameMutex.Lock()
     defer gm.gameMutex.Unlock()
-    for gid, g := range gm.ActiveGames {
+    for gid, g := range gm.activeGames {
         // Gotta leave the first player some time to join tho!
         if g.Players.Len() == 0 && time.Since(g.Started).Seconds() > 10 {
             log.Println("Removing empty game ", gid)
-            delete(gm.ActiveGames, gid)
+            delete(gm.activeGames, gid)
         }
     }
 }
