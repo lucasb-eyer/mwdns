@@ -8,7 +8,7 @@ type cardPosition struct {
     Id  int
     X   float64
     Y   float64
-    Phi float64
+    Phi float64 //rotation
 }
 
 type Card struct {

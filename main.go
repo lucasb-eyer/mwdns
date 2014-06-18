@@ -15,7 +15,6 @@ import (
     "github.com/lucasb-eyer/mwdns/utils"
 )
 
-
 const (
     DEV_MODE            = true //whether development is currently going on - constant template reload
     MIN_RES             = false //whether minified js/less ressources shall be linked in the templates
@@ -51,10 +50,6 @@ func homeHandler(c http.ResponseWriter, req *http.Request) {
 }
 
 func gameHandler(w http.ResponseWriter, req *http.Request) {
-    // This is the "reaper" form of cleanup: cleanup every now and then
-    // (i.e. whenever there is a request to /game).
-    gameManager.CleanGames()
-
     gameId := req.URL.Query().Get("g")
     if gameId == "" || len(gameId) != 6 {
         tryCreateNewGame(w,req)
@@ -112,6 +107,11 @@ This function is called by the gameHandler to initiate a new game, when no game 
 Parses GET arguments of a request and tries to create a new game with the interpreted parameters.
 */
 func tryCreateNewGame(w http.ResponseWriter, req *http.Request) {
+    // Use the chance to clean up ded gaems.
+    // This is the "reaper" form of cleanup: cleanup every now and then
+    // (i.e. whenever there is a request to /game).
+    gameManager.CleanGames()
+
     // create a new game if no game ID is given
     nCards, err := strconv.Atoi(req.URL.Query().Get("n"))
     if err != nil {

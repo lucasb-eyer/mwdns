@@ -14,7 +14,7 @@ import (
 
 type Player struct {
     Id      int
-    CanPlay bool //TODO: set this through a player method, so the player is always notified
+    CanPlay bool
     Points  int
     Turns   int  //Rush Turns == # of flips != Classic Turns
     Flips   int

@@ -10,7 +10,6 @@ import (
     "math/rand"
     "strings"
     "time"
-    //"sync"
 
     "github.com/lucasb-eyer/mwdns/utils"
 )

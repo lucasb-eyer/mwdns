@@ -43,6 +43,8 @@ func (gm *GameManager) CreateNewGame(nCards, gameType, maxPlayers, cardType, car
 }
 
 func (gm *GameManager) GetGame(gameId string) (*Game, error) {
+    gm.gameMutex.Lock()
+    defer gm.gameMutex.Unlock()
     gameInstance, ok := gm.activeGames[gameId]
 
     if !ok {
