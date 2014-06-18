@@ -92,8 +92,8 @@
                     <label class=control-label for=card_rotation>Random Rotations:</label>
                     <div class=controls>
                         <div class=btn-group data-toggle=buttons-radio >
-                            <button type=button data-toggle=button value=0 name=cr class="btn rotcards">Aligned</button>
-                            <button type=button data-toggle=button value=1 name=cr class="btn rotcards btn-primary active">Jiggly</button>
+                            <button type=button data-toggle=button value=0 name=cr class="btn rotcards btn-primary active">Aligned</button>
+                            <button type=button data-toggle=button value=1 name=cr class="btn rotcards">Jiggly</button>
                             <button type=button data-toggle=button value=2 name=cr class="btn rotcards">Realistic</button>
                             <button type=button data-toggle=button value=3 name=cr class="btn rotcards">Chaotic</button>
                         </div>
@@ -101,7 +101,7 @@
                     <!-- Unfortunately, I don't know of any other solution than
                          to use a hidden input in here in order to pass the val
                          as a URL query parameter. It's synced by js below. -->
-                    <input id=cr type=text style="display: none" name=cr value=1></input>
+                    <input id=cr type=text style="display: none" name=cr value=0></input>
                 </div>
             </div>
         </form>

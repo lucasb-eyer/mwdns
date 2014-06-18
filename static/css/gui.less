@@ -130,6 +130,28 @@
     }
 }
 
+@gameOverW: 420px;
+@gameOverH: 140px;
+
+#gameOver {
+    display: none;
+    width: @gameOverW;
+    height: @gameOverH;
+    position: fixed;
+    left: 50%;
+    margin-left: (-(@gameOverW + @playerGuiW) / 2);  // Centers the thing
+    top: 10%;
+    z-index: 10;
+    padding: 3em;
+    background: white;
+    border: 5px solid black;
+    border-radius: 15px;
+
+    .name {
+        text-shadow: 2px 2px 4px;
+    }
+}
+
 #gameOverWon {
     display: none;
 
