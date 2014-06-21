@@ -14,7 +14,8 @@
 	"imgCountX": 5,
 	"imgCountY": 5,
 	"tileSizeX": 50,
-	"tileSizeY": 50
+	"tileSizeY": 50,
+	"skipTile": 1
 	},
 	{
 	"id": 1,

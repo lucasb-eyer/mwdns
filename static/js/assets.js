@@ -98,6 +98,9 @@ function ImageSourceTileMap(cardInformation) {
     this.tileSizeX = cardInformation.tileSizeX
     this.tileSizeY = cardInformation.tileSizeY
 
+    // maybe the first card is not usable, skip it then
+    this.skipTile = cardInformation.skipTile
+
     this.fileName = cardInformation.fileName
 
     //TODO: handle lists of single images?
@@ -146,5 +149,5 @@ ImageSourceTileMap.prototype.init = function() {
 }
 
 ImageSourceTileMap.prototype.getElement = function(type) {
-    return $(this.images[parseInt(type)]).clone()
+    return $(this.images[parseInt(type)+this.skipTile]).clone()
 }
