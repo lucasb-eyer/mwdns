@@ -153,16 +153,6 @@ Scoreboard.prototype.leaver = function(pid) {
         'text-decoration': 'line-through'
     })
 
-    // ...and of course no points!
-    //this.pid_rows[pid].find('.points').append('<a> (LEFT)</a>')
-    //this.pid_rows[pid].find('.points').css('color', 'red')
-    /*
-    this.pid_rows[pid].find('.points').css({
-        'color': 'grey',
-        //'text-decoration': 'line-through'
-    })
-    */
-
     // If we are less than the maximum of players, show the invite again.
     // -1 because the player is not removed from the array yet.
     // != instead of <= so that we catch maxPlayers==0 too.
@@ -172,21 +162,12 @@ Scoreboard.prototype.leaver = function(pid) {
 }
 
 Scoreboard.prototype.gameOver = function(winnerid) {
-    // TODO: what about a "replay" button?
     // one friendly screen for all occasions!
     $('#gameOver .name').css('color', this.players[winnerid].color)
                                 .text(this.players[winnerid].name)
     $('#gameOver').fadeIn()
 
-    /*
-    if(winnerid == g_mypid) {
-        $('#gameOverWon').fadeIn()  // OMG YES
-    } else {
-        $('#gameOverLost').fadeIn()
-        $('#gameOverLost .name').css('color', this.players[winnerid].color)
-                                .text(this.players[winnerid].name)
-    }
-    */
+    // TODO: what about a 'play one more' button?
 }
 
 Chat = function(msglist_selector, form_selector) {
